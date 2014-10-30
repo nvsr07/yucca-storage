@@ -1,5 +1,6 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -15,7 +16,7 @@ import org.csi.yucca.storage.datamanagementapi.model.DatasetCollectionItem;
 
 import com.mongodb.MongoClient;
 
-@WebServlet(description = "Api dataset Servlet", urlPatterns = { "/api/dataset/*" }, asyncSupported = false)
+@WebServlet(description = "Api dataset Servlet", urlPatterns = { "/api/dataset" }, asyncSupported = false)
 public class ApiDatasetServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -24,6 +25,7 @@ public class ApiDatasetServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// select
+		log.debug("[ApiDatasetServlet::doGet] - START");
 		String id = request.getParameter("id");
 		if (id == null || "".equals(id)) {
 			throw new ServletException("id missing");
@@ -48,6 +50,7 @@ public class ApiDatasetServlet extends HttpServlet {
 	@Override
 	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// update
+		log.debug("[ApiDatasetServlet::doPut] - START");
 		String id = request.getParameter("id"); // keep it non-editable in UI
 		if (id == null || "".equals(id)) {
 			throw new ServletException("id missing for edit operation");
@@ -57,7 +60,7 @@ public class ApiDatasetServlet extends HttpServlet {
 
 		MongoClient mongo = (MongoClient) request.getServletContext().getAttribute("MONGO_CLIENT");
 		MongoDBDatasetDAO datasetDAO = new MongoDBDatasetDAO(mongo, "smartlab", "provaAle");
-		DatasetCollectionItem datasetCollectionItem = new DatasetCollectionItem(datasetJSONParam);
+		DatasetCollectionItem datasetCollectionItem = DatasetCollectionItem.fromJson(datasetJSONParam);
 		datasetCollectionItem.setId(id);
 		datasetDAO.updateDatasetCollectionItem(datasetCollectionItem);
 		System.out.println("Person edited successfully with id=" + id);
@@ -74,12 +77,24 @@ public class ApiDatasetServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// insert
-		String datasetJSONParam = request.getParameter("dataset");
-
+		log.debug("[ApiDatasetServlet::doPost] - START");
+		StringBuffer inBodyRequest = new StringBuffer();
+		String line = null;
+		try {
+			BufferedReader reader = request.getReader();
+			while ((line = reader.readLine()) != null) {
+				inBodyRequest.append(line);
+				log.debug("[ApiDatasetServlet::doPost] - request body: " + line);
+			}
+			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		MongoClient mongo = (MongoClient) request.getServletContext().getAttribute("MONGO_CLIENT");
 		MongoDBDatasetDAO datasetDAO = new MongoDBDatasetDAO(mongo, "smartlab", "provaAle");
 
-		DatasetCollectionItem datasetCollectionItem = new DatasetCollectionItem(datasetJSONParam);
+		DatasetCollectionItem datasetCollectionItem = DatasetCollectionItem.fromJson(inBodyRequest.toString());
 		datasetCollectionItem = datasetDAO.createDatasetCollectionItem(datasetCollectionItem);
 		PrintWriter out = response.getWriter();
 
@@ -93,6 +108,7 @@ public class ApiDatasetServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// delete
+		log.debug("[ApiDatasetServlet::doDelete] - START");
 		super.doDelete(req, resp);
 	}
 

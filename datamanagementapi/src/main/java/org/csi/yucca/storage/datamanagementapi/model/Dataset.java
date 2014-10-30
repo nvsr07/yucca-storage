@@ -1,9 +1,13 @@
 package org.csi.yucca.storage.datamanagementapi.model;
 
 import java.util.Date;
-import java.util.List;
 
-public class Dataset extends AbstractEntity{
+import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class Dataset extends AbstractEntity {
 
 	private String name;
 	private String licence;
@@ -22,8 +26,16 @@ public class Dataset extends AbstractEntity{
 	private String importFileType;
 	private String datasetStatus;
 
-	private List<Tag> tags[];
-	private List<Field> fields;
+	private Tag tags[];
+	private Field fields[];
+
+	public Dataset() {
+	}
+
+	public String toJson() {
+		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		return gson.toJson(this);
+	}
 
 	public String getName() {
 		return name;
@@ -145,20 +157,22 @@ public class Dataset extends AbstractEntity{
 		this.datasetStatus = datasetStatus;
 	}
 
-	public List<Tag>[] getTags() {
+	public Tag[] getTags() {
 		return tags;
 	}
 
-	public void setTags(List<Tag>[] tags) {
+	public void setTags(Tag[] tags) {
 		this.tags = tags;
 	}
 
-	public List<Field> getFields() {
+	public Field[] getFields() {
 		return fields;
 	}
 
-	public void setFields(List<Field> fields) {
+	public void setFields(Field[] fields) {
 		this.fields = fields;
 	}
+
+	
 
 }

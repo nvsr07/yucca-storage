@@ -21,7 +21,8 @@ public class MongoDBDatasetDAO {
 	}
 
 	public DatasetCollectionItem createDatasetCollectionItem(DatasetCollectionItem datasetCollectionItem) {
-		DBObject dbObject = (DBObject) JSON.parse(datasetCollectionItem.toJson());
+		String json = datasetCollectionItem.toJson();
+		DBObject dbObject = (DBObject) JSON.parse(json);
 		this.collection.insert(dbObject);
 		ObjectId id = (ObjectId) dbObject.get("_id");
 		datasetCollectionItem.setId(id.toString());
@@ -39,7 +40,7 @@ public class MongoDBDatasetDAO {
 		DBCursor cursor = collection.find();
 		while (cursor.hasNext()) {
 			DBObject doc = cursor.next();
-			DatasetCollectionItem datasetCollectionItem = new DatasetCollectionItem(JSON.serialize(doc));
+			DatasetCollectionItem datasetCollectionItem = DatasetCollectionItem.fromJson(JSON.serialize(doc));
 			data.add(datasetCollectionItem);
 		}
 		return data;
@@ -53,6 +54,6 @@ public class MongoDBDatasetDAO {
 	public DatasetCollectionItem readDatasetCollectionItem(DatasetCollectionItem datasetCollectionItem) {
 		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(datasetCollectionItem.getId())).get();
 		DBObject data = this.collection.findOne(query);
-		return new DatasetCollectionItem(JSON.serialize(data));
+		return DatasetCollectionItem.fromJson(JSON.serialize(data));
 	}
 }

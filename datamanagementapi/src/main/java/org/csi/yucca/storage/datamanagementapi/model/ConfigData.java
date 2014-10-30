@@ -1,6 +1,11 @@
 package org.csi.yucca.storage.datamanagementapi.model;
 
-public class ConfigData extends AbstractEntity{
+import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class ConfigData extends AbstractEntity {
 	private String idDataset;
 	private String tenant;
 	private String collection;
@@ -13,6 +18,14 @@ public class ConfigData extends AbstractEntity{
 	private String datasetversion;
 	private String current;
 	private Trash trash;
+
+	public ConfigData() {
+	}
+
+	public String toJson() {
+		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		return gson.toJson(this);
+	}
 
 	public String getIdDataset() {
 		return idDataset;

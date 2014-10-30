@@ -1,9 +1,10 @@
 package org.csi.yucca.storage.datamanagementapi.model;
 
+import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 import org.csi.yucca.storage.datamanagementapi.util.json.IgnoredJSON;
 
 import com.google.gson.Gson;
-import com.mongodb.util.JSON;
+import com.google.gson.GsonBuilder;
 
 public class DatasetCollectionItem extends AbstractEntity {
 	@IgnoredJSON
@@ -11,12 +12,13 @@ public class DatasetCollectionItem extends AbstractEntity {
 	private ConfigData configData;
 	private Dataset dataset;
 
-	public DatasetCollectionItem(String json) {
-		Gson gson = new Gson();
-		gson.fromJson(JSON.serialize(json), DatasetCollectionItem.class);
+	public DatasetCollectionItem() {
 	}
 
-	public DatasetCollectionItem() {}
+	public String toJson() {
+		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		return gson.toJson(this);
+	}
 
 	public String getId() {
 		return id;
@@ -40,6 +42,11 @@ public class DatasetCollectionItem extends AbstractEntity {
 
 	public void setDataset(Dataset dataset) {
 		this.dataset = dataset;
+	}
+
+	public static DatasetCollectionItem fromJson(String json) {
+		Gson gson = new Gson();
+		return gson.fromJson(json, DatasetCollectionItem.class);
 	}
 
 }

@@ -1,13 +1,24 @@
 package org.csi.yucca.storage.datamanagementapi.model;
 
-import java.util.List;
+import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
-public class Trash extends AbstractEntity{
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class Trash extends AbstractEntity {
 	private String trashCollection;
 	private String trashHost;
 	private String trashPort;
 	private String trashDatabase;
-	private List<TrashInfo> trashInfo;
+	private TrashInfo[] trashInfo;
+
+	public Trash() {
+	}
+
+	public String toJson() {
+		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		return gson.toJson(this);
+	}
 
 	public String getTrashCollection() {
 		return trashCollection;
@@ -41,11 +52,11 @@ public class Trash extends AbstractEntity{
 		this.trashDatabase = trashDatabase;
 	}
 
-	public List<TrashInfo> getTrashInfo() {
+	public TrashInfo[] getTrashInfo() {
 		return trashInfo;
 	}
 
-	public void setTrashInfo(List<TrashInfo> trashInfo) {
+	public void setTrashInfo(TrashInfo[] trashInfo) {
 		this.trashInfo = trashInfo;
 	}
 
