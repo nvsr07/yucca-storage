@@ -9,15 +9,13 @@ public class ConfigData extends AbstractEntity {
 	private String idDataset;
 	private String tenant;
 	private String collection;
-	private String host;
-	private String port;
 	private String database;
 	private String type;
 	private String subtype;
 	private String entityNameSpace;
 	private String datasetversion;
 	private String current;
-	private Trash trash;
+	private Archive archive;
 
 	public ConfigData() {
 	}
@@ -49,22 +47,6 @@ public class ConfigData extends AbstractEntity {
 
 	public void setCollection(String collection) {
 		this.collection = collection;
-	}
-
-	public String getHost() {
-		return host;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	public String getPort() {
-		return port;
-	}
-
-	public void setPort(String port) {
-		this.port = port;
 	}
 
 	public String getDatabase() {
@@ -115,11 +97,13 @@ public class ConfigData extends AbstractEntity {
 		this.current = current;
 	}
 
-	public Trash getTrash() {
-		return trash;
+	public Archive getArchive() {
+		return archive;
 	}
 
-	public void setTrash(Trash trash) {
-		this.trash = trash;
+	public void setArchive(Archive archive) {
+		this.archive = archive;
 	}
+
+
 }

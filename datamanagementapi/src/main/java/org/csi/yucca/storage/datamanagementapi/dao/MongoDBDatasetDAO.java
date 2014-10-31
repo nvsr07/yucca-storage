@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.types.ObjectId;
-import org.csi.yucca.storage.datamanagementapi.model.DatasetCollectionItem;
+import org.csi.yucca.storage.datamanagementapi.model.Dataset;
 
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
@@ -20,40 +20,40 @@ public class MongoDBDatasetDAO {
 		this.collection = mongo.getDB(db).getCollection(collection);
 	}
 
-	public DatasetCollectionItem createDatasetCollectionItem(DatasetCollectionItem datasetCollectionItem) {
-		String json = datasetCollectionItem.toJson();
+	public Dataset createDataset(Dataset dataset) {
+		String json = dataset.toJson();
 		DBObject dbObject = (DBObject) JSON.parse(json);
 		this.collection.insert(dbObject);
 		ObjectId id = (ObjectId) dbObject.get("_id");
-		datasetCollectionItem.setId(id.toString());
-		return datasetCollectionItem;
+		dataset.setId(id.toString());
+		return dataset;
 	}
 
-	public void updateDatasetCollectionItem(DatasetCollectionItem datasetCollectionItem) {
-		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(datasetCollectionItem.getId())).get();
-		DBObject dbObject = (DBObject) JSON.parse(datasetCollectionItem.toJson());
+	public void updateDataset(Dataset dataset) {
+		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(dataset.getId())).get();
+		DBObject dbObject = (DBObject) JSON.parse(dataset.toJson());
 		this.collection.update(query, dbObject);
 	}
 
-	public List<DatasetCollectionItem> readAllDatasetCollectionItem() {
-		List<DatasetCollectionItem> data = new ArrayList<DatasetCollectionItem>();
+	public List<Dataset> readAllDataset() {
+		List<Dataset> data = new ArrayList<Dataset>();
 		DBCursor cursor = collection.find();
 		while (cursor.hasNext()) {
 			DBObject doc = cursor.next();
-			DatasetCollectionItem datasetCollectionItem = DatasetCollectionItem.fromJson(JSON.serialize(doc));
-			data.add(datasetCollectionItem);
+			Dataset dataset = Dataset.fromJson(JSON.serialize(doc));
+			data.add(dataset);
 		}
 		return data;
 	}
 
-	public void deleteDatasetCollectionItem(DatasetCollectionItem datasetCollectionItem) {
-		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(datasetCollectionItem.getId())).get();
+	public void deleteDataset(Dataset dataset) {
+		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(dataset.getId())).get();
 		this.collection.remove(query);
 	}
 
-	public DatasetCollectionItem readDatasetCollectionItem(DatasetCollectionItem datasetCollectionItem) {
-		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(datasetCollectionItem.getId())).get();
+	public Dataset readDataset(Dataset dataset) {
+		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(dataset.getId())).get();
 		DBObject data = this.collection.findOne(query);
-		return DatasetCollectionItem.fromJson(JSON.serialize(data));
+		return Dataset.fromJson(JSON.serialize(data));
 	}
 }

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBDatasetDAO;
-import org.csi.yucca.storage.datamanagementapi.model.DatasetCollectionItem;
+import org.csi.yucca.storage.datamanagementapi.model.Dataset;
 
 import com.mongodb.MongoClient;
 
@@ -33,16 +33,16 @@ public class ApiDatasetServlet extends HttpServlet {
 		System.out.println("DatasetItem requested with id=" + id);
 		MongoClient mongo = (MongoClient) request.getServletContext().getAttribute("MONGO_CLIENT");
 		MongoDBDatasetDAO datasetDAO = new MongoDBDatasetDAO(mongo, "smartlab", "provaAle");
-		DatasetCollectionItem datasetCollectionItem = new DatasetCollectionItem();
-		datasetCollectionItem.setId(id);
-		datasetCollectionItem = datasetDAO.readDatasetCollectionItem(datasetCollectionItem);
+		Dataset dataset = new Dataset();
+		dataset.setId(id);
+		dataset = datasetDAO.readDataset(dataset);
 
 		PrintWriter out = response.getWriter();
 
 		response.setContentType("application/json; charset=utf-8");
 		response.setCharacterEncoding("UTF-8");
 
-		String jsonOut = datasetCollectionItem.toJson();
+		String jsonOut = dataset.toJson();
 		out.println(jsonOut);
 		out.close();
 	}
@@ -60,16 +60,16 @@ public class ApiDatasetServlet extends HttpServlet {
 
 		MongoClient mongo = (MongoClient) request.getServletContext().getAttribute("MONGO_CLIENT");
 		MongoDBDatasetDAO datasetDAO = new MongoDBDatasetDAO(mongo, "smartlab", "provaAle");
-		DatasetCollectionItem datasetCollectionItem = DatasetCollectionItem.fromJson(datasetJSONParam);
-		datasetCollectionItem.setId(id);
-		datasetDAO.updateDatasetCollectionItem(datasetCollectionItem);
+		Dataset dataset = Dataset.fromJson(datasetJSONParam);
+		dataset.setId(id);
+		datasetDAO.updateDataset(dataset);
 		System.out.println("Person edited successfully with id=" + id);
 		PrintWriter out = response.getWriter();
 
 		response.setContentType("application/json; charset=utf-8");
 		response.setCharacterEncoding("UTF-8");
 
-		String jsonOut = datasetCollectionItem.toJson();
+		String jsonOut = dataset.toJson();
 		out.println(jsonOut);
 		out.close();
 	}
@@ -94,14 +94,14 @@ public class ApiDatasetServlet extends HttpServlet {
 		MongoClient mongo = (MongoClient) request.getServletContext().getAttribute("MONGO_CLIENT");
 		MongoDBDatasetDAO datasetDAO = new MongoDBDatasetDAO(mongo, "smartlab", "provaAle");
 
-		DatasetCollectionItem datasetCollectionItem = DatasetCollectionItem.fromJson(inBodyRequest.toString());
-		datasetCollectionItem = datasetDAO.createDatasetCollectionItem(datasetCollectionItem);
+		Dataset dataset = Dataset.fromJson(inBodyRequest.toString());
+		dataset = datasetDAO.createDataset(dataset);
 		PrintWriter out = response.getWriter();
 
 		response.setContentType("application/json; charset=utf-8");
 		response.setCharacterEncoding("UTF-8");
 
-		String jsonOut = datasetCollectionItem.toJson();
+		String jsonOut = dataset.toJson();
 		out.println(jsonOut);
 	}
 
