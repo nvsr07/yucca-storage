@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.types.ObjectId;
-import org.csi.yucca.storage.datamanagementapi.model.Dataset;
+import org.csi.yucca.storage.datamanagementapi.model.dataset.Dataset;
 
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
@@ -40,7 +40,9 @@ public class MongoDBDatasetDAO {
 		DBCursor cursor = collection.find();
 		while (cursor.hasNext()) {
 			DBObject doc = cursor.next();
+			ObjectId id = (ObjectId) doc.get("_id");
 			Dataset dataset = Dataset.fromJson(JSON.serialize(doc));
+			dataset.setId(id.toString());
 			data.add(dataset);
 		}
 		return data;
@@ -54,6 +56,9 @@ public class MongoDBDatasetDAO {
 	public Dataset readDataset(Dataset dataset) {
 		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(dataset.getId())).get();
 		DBObject data = this.collection.findOne(query);
-		return Dataset.fromJson(JSON.serialize(data));
+		ObjectId id = (ObjectId) data.get("_id");
+		Dataset datasetLoaded = Dataset.fromJson(JSON.serialize(data));
+		datasetLoaded.setId(id.toString());
+		return datasetLoaded;
 	}
 }

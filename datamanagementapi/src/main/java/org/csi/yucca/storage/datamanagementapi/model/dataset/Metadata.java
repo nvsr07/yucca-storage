@@ -1,4 +1,4 @@
-package org.csi.yucca.storage.datamanagementapi.model;
+package org.csi.yucca.storage.datamanagementapi.model.dataset;
 
 import java.util.Date;
 
@@ -10,8 +10,9 @@ import com.google.gson.GsonBuilder;
 public class Metadata extends AbstractEntity {
 
 	private String name;
-	private String licence;
+	private String license;
 	private String disclaimer;
+	private String description;
 	private String copyright;
 	private String visibility;
 	private Date registrationDate;
@@ -45,12 +46,12 @@ public class Metadata extends AbstractEntity {
 		this.name = name;
 	}
 
-	public String getLicence() {
-		return licence;
+	public String getLicense() {
+		return license;
 	}
 
-	public void setLicence(String licence) {
-		this.licence = licence;
+	public void setLicense(String license) {
+		this.license = license;
 	}
 
 	public String getDisclaimer() {
@@ -171,6 +172,14 @@ public class Metadata extends AbstractEntity {
 
 	public void setFields(Field[] fields) {
 		this.fields = fields;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	

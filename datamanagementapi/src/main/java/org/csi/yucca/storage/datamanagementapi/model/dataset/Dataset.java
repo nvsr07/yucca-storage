@@ -1,13 +1,11 @@
-package org.csi.yucca.storage.datamanagementapi.model;
+package org.csi.yucca.storage.datamanagementapi.model.dataset;
 
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
-import org.csi.yucca.storage.datamanagementapi.util.json.IgnoredJSON;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Dataset extends AbstractEntity {
-	@IgnoredJSON
 	private String id;
 	private ConfigData configData;
 	private Metadata metadata;
