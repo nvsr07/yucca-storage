@@ -1,11 +1,13 @@
 package org.csi.yucca.storage.datamanagementapi.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.csi.yucca.storage.datamanagementapi.model.dataset.Dataset;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -21,6 +23,9 @@ public class MongoDBDatasetDAO {
 	}
 
 	public Dataset createDataset(Dataset dataset) {
+		dataset.getConfigData().setDatasetversion("1");
+		dataset.getConfigData().setCurrent("1");
+		dataset.getMetadata().setRegistrationDate(new Date());
 		String json = dataset.toJson();
 		DBObject dbObject = (DBObject) JSON.parse(json);
 		this.collection.insert(dbObject);
@@ -32,12 +37,17 @@ public class MongoDBDatasetDAO {
 	public void updateDataset(Dataset dataset) {
 		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(dataset.getId())).get();
 		DBObject dbObject = (DBObject) JSON.parse(dataset.toJson());
+		dbObject.removeField("id");
 		this.collection.update(query, dbObject);
 	}
 
-	public List<Dataset> readAllDataset() {
+	public List<Dataset> readAllDataset(String tenant) {
 		List<Dataset> data = new ArrayList<Dataset>();
-		DBCursor cursor = collection.find();
+		BasicDBObject searchQuery = new BasicDBObject();
+		if (tenant != null)
+			searchQuery.put("configData.tenant", tenant);
+
+		DBCursor cursor = collection.find(searchQuery);
 		while (cursor.hasNext()) {
 			DBObject doc = cursor.next();
 			ObjectId id = (ObjectId) doc.get("_id");

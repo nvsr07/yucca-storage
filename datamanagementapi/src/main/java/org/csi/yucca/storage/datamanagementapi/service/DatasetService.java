@@ -1,6 +1,5 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -16,7 +15,10 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBDatasetDAO;
 import org.csi.yucca.storage.datamanagementapi.model.dataset.Dataset;
+import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mongodb.MongoClient;
 
 @Path("/dataset")
@@ -27,28 +29,26 @@ public class DatasetService {
 	static Logger log = Logger.getLogger(DatasetService.class);
 
 	@GET
-	@Path("/")
+	@Path("/{tenant}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<String> getAll() {
+	public String getAll(@PathParam("tenant") String tenant) {
 		log.debug("[DatasetService::getAll] - START");
 		MongoClient mongo = (MongoClient) context.getAttribute("MONGO_CLIENT");
 		MongoDBDatasetDAO datasetDAO = new MongoDBDatasetDAO(mongo, "smartlab", "provaAle");
 
-		List<String> result = new LinkedList<String>();
-		List<Dataset> allDataset = datasetDAO.readAllDataset();
+		String result = "[]";
+		List<Dataset> allDataset = datasetDAO.readAllDataset(tenant);
 		if (allDataset != null) {
-			for (Dataset dataset : allDataset) {
-				result.add(dataset.toJson());
-			}
+			Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+			result = gson.toJson(allDataset);
 		}
-
 		return result;
 	}
 
 	@GET
-	@Path("/{id}")
+	@Path("/{tenant}/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String get(@PathParam("id") String id) {
+	public String get(@PathParam("tenant") String tenant, @PathParam("id") String id) {
 		// select
 		log.debug("[DatasetService::get] - START - id: " + id);
 		System.out.println("DatasetItem requested with id=" + id);
@@ -63,8 +63,9 @@ public class DatasetService {
 	}
 
 	@POST
+	@Path("/{tenant}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String createDataset(final String datasetInput) {
+	public String createDataset(@PathParam("tenant") String tenant, final String datasetInput) {
 		log.debug("[DatasetService::createDataset] - START");
 
 		MongoClient mongo = (MongoClient) context.getAttribute("MONGO_CLIENT");
@@ -77,17 +78,17 @@ public class DatasetService {
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}")
-	public String updateDataset(@PathParam("id") String id, final String datasetInput) {
+	@Path("/{tenant}/{id}")
+	public String updateDataset(@PathParam("tenant") String tenant, @PathParam("id") String id, final String datasetInput) {
 		log.debug("[DatasetService::createDataset] - START");
 		MongoClient mongo = (MongoClient) context.getAttribute("MONGO_CLIENT");
 		MongoDBDatasetDAO datasetDAO = new MongoDBDatasetDAO(mongo, "smartlab", "provaAle");
 
 		Dataset newDataset = Dataset.fromJson(datasetInput);
 		newDataset.setId(id);
-		
+
 		datasetDAO.updateDataset(newDataset);
-		
+
 		return datasetDAO.readDataset(newDataset).toJson();
 	}
 }

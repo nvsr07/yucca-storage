@@ -34,16 +34,16 @@ public class Dataset extends AbstractEntity {
 		this.configData = configData;
 	}
 
-	public Metadata getDataset() {
+	public Metadata getMetadata() {
 		return metadata;
 	}
 
-	public void setDataset(Metadata metadata) {
+	public void setMetadata(Metadata metadata) {
 		this.metadata = metadata;
 	}
 
 	public static Dataset fromJson(String json) {
-		Gson gson = new Gson();
+		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
 		return gson.fromJson(json, Dataset.class);
 	}
 
