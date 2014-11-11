@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
@@ -49,14 +50,14 @@ public class InstallCepService {
 		
 		POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
 		if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
-			MetadataFiller.fillMetadata(pojoStreams.getStreams().getStream());
+			Metadata myMeta= 	MetadataFiller.fillMetadata(pojoStreams.getStreams().getStream());
 			MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream());
 			StreamOut strOut = StreamFiller.fillStream(pojoStreams.getStreams().getStream());
 			
 			
 			System.out.println(gson.toJson(api, MyApi.class));
 			System.out.println(gson.toJson(strOut, StreamOut.class));
-			
+			System.out.println(gson.toJson(myMeta, Metadata.class));
 		}
 		
 		return json;
