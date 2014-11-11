@@ -11,7 +11,7 @@ public class ApplicationConfig extends Application {
 	private Set<Object> singletons = new HashSet<Object>();
 
 	public ApplicationConfig() {
-		singletons.add(new DatasetService());
+		singletons.add(new MetadataService());
 	}
 
 	public Set<Object> getSingletons() {

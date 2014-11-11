@@ -1,4 +1,4 @@
-package org.csi.yucca.storage.datamanagementapi.model.dataset;
+package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Field extends AbstractEntity {
+	
 	private String fieldName;
 	private String fieldAlias;
 	private String dataType;

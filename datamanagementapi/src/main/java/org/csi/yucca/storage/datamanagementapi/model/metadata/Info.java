@@ -1,4 +1,4 @@
-package org.csi.yucca.storage.datamanagementapi.model.dataset;
+package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import java.util.Date;
 
@@ -7,30 +7,29 @@ import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class Metadata extends AbstractEntity {
+public class Info extends AbstractEntity {
 
-	private String name;
+	private String datasetName;
+	private String description;
 	private String license;
 	private String disclaimer;
-	private String description;
 	private String copyright;
 	private String visibility;
 	private Date registrationDate;
 	private String requestorName;
 	private String requestorSurname;
-	private String dataDomain;
 	private String requestornEmail;
-	private Integer fp;
+	private String dataDomain;
+	private Integer fps;
 
 	private Date startIngestionDate;
 	private Date endIngestionDate;
 	private String importFileType;
-	private String datasetStatus;
 
 	private Tag tags[];
 	private Field fields[];
 
-	public Metadata() {
+	public Info() {
 	}
 
 	public String toJson() {
@@ -38,12 +37,20 @@ public class Metadata extends AbstractEntity {
 		return gson.toJson(this);
 	}
 
-	public String getName() {
-		return name;
+	public String getDatasetName() {
+		return datasetName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setDatasetName(String datasetName) {
+		this.datasetName = datasetName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public String getLicense() {
@@ -102,14 +109,6 @@ public class Metadata extends AbstractEntity {
 		this.requestorSurname = requestorSurname;
 	}
 
-	public String getDataDomain() {
-		return dataDomain;
-	}
-
-	public void setDataDomain(String dataDomain) {
-		this.dataDomain = dataDomain;
-	}
-
 	public String getRequestornEmail() {
 		return requestornEmail;
 	}
@@ -118,12 +117,20 @@ public class Metadata extends AbstractEntity {
 		this.requestornEmail = requestornEmail;
 	}
 
-	public Integer getFp() {
-		return fp;
+	public String getDataDomain() {
+		return dataDomain;
 	}
 
-	public void setFp(Integer fp) {
-		this.fp = fp;
+	public void setDataDomain(String dataDomain) {
+		this.dataDomain = dataDomain;
+	}
+
+	public Integer getFps() {
+		return fps;
+	}
+
+	public void setFps(Integer fps) {
+		this.fps = fps;
 	}
 
 	public Date getStartIngestionDate() {
@@ -150,14 +157,6 @@ public class Metadata extends AbstractEntity {
 		this.importFileType = importFileType;
 	}
 
-	public String getDatasetStatus() {
-		return datasetStatus;
-	}
-
-	public void setDatasetStatus(String datasetStatus) {
-		this.datasetStatus = datasetStatus;
-	}
-
 	public Tag[] getTags() {
 		return tags;
 	}
@@ -173,15 +172,5 @@ public class Metadata extends AbstractEntity {
 	public void setFields(Field[] fields) {
 		this.fields = fields;
 	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	
 
 }

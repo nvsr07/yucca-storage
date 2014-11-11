@@ -1,4 +1,4 @@
-package org.csi.yucca.storage.datamanagementapi.model.dataset;
+package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
@@ -6,14 +6,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class ConfigData extends AbstractEntity {
-	private String idDataset;
-	private String tenant;
+
+	private Integer idTenant;
+	private String tenantCode;
 	private String collection;
 	private String database;
 	private String type;
 	private String subtype;
 	private String entityNameSpace;
-	private String datasetversion;
+	private String datasetStatus;
 	private String current;
 	private Archive archive;
 
@@ -25,20 +26,20 @@ public class ConfigData extends AbstractEntity {
 		return gson.toJson(this);
 	}
 
-	public String getIdDataset() {
-		return idDataset;
+	public Integer getIdTenant() {
+		return idTenant;
 	}
 
-	public void setIdDataset(String idDataset) {
-		this.idDataset = idDataset;
+	public void setIdTenant(Integer idTenant) {
+		this.idTenant = idTenant;
 	}
 
-	public String getTenant() {
-		return tenant;
+	public String getTenantCode() {
+		return tenantCode;
 	}
 
-	public void setTenant(String tenant) {
-		this.tenant = tenant;
+	public void setTenantCode(String tenantCode) {
+		this.tenantCode = tenantCode;
 	}
 
 	public String getCollection() {
@@ -81,12 +82,12 @@ public class ConfigData extends AbstractEntity {
 		this.entityNameSpace = entityNameSpace;
 	}
 
-	public String getDatasetversion() {
-		return datasetversion;
+	public String getDatasetStatus() {
+		return datasetStatus;
 	}
 
-	public void setDatasetversion(String datasetversion) {
-		this.datasetversion = datasetversion;
+	public void setDatasetStatus(String datasetStatus) {
+		this.datasetStatus = datasetStatus;
 	}
 
 	public String getCurrent() {
@@ -104,6 +105,5 @@ public class ConfigData extends AbstractEntity {
 	public void setArchive(Archive archive) {
 		this.archive = archive;
 	}
-
 
 }

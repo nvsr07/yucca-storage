@@ -1,4 +1,4 @@
-package org.csi.yucca.storage.datamanagementapi.model.dataset;
+package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
