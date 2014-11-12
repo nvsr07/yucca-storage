@@ -20,7 +20,7 @@ public class Info extends AbstractEntity {
 	private String requestorSurname;
 	private String requestornEmail;
 	private String dataDomain;
-	private Integer fps;
+	private Double fps;
 
 	private Date startIngestionDate;
 	private Date endIngestionDate;
@@ -125,11 +125,11 @@ public class Info extends AbstractEntity {
 		this.dataDomain = dataDomain;
 	}
 
-	public Integer getFps() {
+	public Double getFps() {
 		return fps;
 	}
 
-	public void setFps(Integer fps) {
+	public void setFps(Double fps) {
 		this.fps = fps;
 	}
 

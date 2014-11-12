@@ -13,6 +13,8 @@ public class MyApi {
     @Expose
     private String apiName;
     @Expose
+    private String apiCode;
+    @Expose
     private String apiDescription;
     @Expose
     private ConfigData configData;
@@ -108,5 +110,13 @@ public class MyApi {
     public void setDataset(List<Dataset> dataset) {
         this.dataset = dataset;
     }
+
+	public String getApiCode() {
+		return apiCode;
+	}
+
+	public void setApiCode(String apiCode) {
+		this.apiCode = apiCode;
+	}
 
 }

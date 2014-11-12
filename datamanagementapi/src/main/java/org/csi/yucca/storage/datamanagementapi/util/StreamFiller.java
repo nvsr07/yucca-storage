@@ -17,13 +17,10 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class StreamFiller {
 
-	static public StreamOut fillStream(Stream stream) {
+	static public StreamOut fillStream(Stream stream,Integer id) {
 
 		System.out.println("FILL STREAM OBJECT");
-
-
 		StreamOut strOut = new StreamOut();
-
 		strOut.setIdStream(stream.getIdStream());
 		strOut.setStreamCode(stream.getCodiceStream());
 		strOut.setStreamName(stream.getNomeStream());
@@ -32,13 +29,9 @@ public class StreamFiller {
 		// Setting ConfigData in Stream Object
 		ConfigData configData = new ConfigData();
 
-		configData.setCollection("");
 		configData.setDatasetVersion(stream.getDeploymentVersion());
-		configData.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+"."+stream.getVirtualEntityName()+"."+stream.getCodiceStream());
-		configData.setIdDataset(stream.getIdStream());
+		configData.setIdDataset(id);
 		configData.setIdTenant(stream.getIdTenant());
-		configData.setSubtype(stream.getTipoVirtualEntity());//FIXME cosa mettere???
-		configData.setType(stream.getTipoVirtualEntity());
 		configData.setTenantCode(stream.getCodiceTenant());
 
 		strOut.setConfigData(configData);

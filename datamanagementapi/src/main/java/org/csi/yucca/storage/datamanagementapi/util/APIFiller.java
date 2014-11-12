@@ -12,15 +12,20 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 public class APIFiller {
 
 	
-	static public MyApi fillApi(Stream stream) {
+	static public MyApi fillApi(Stream stream,Integer id) {
 		
 		System.out.println("FILL API OBJECT");
 		
 		MyApi api = new MyApi();
-		Double idapi = Math.random();
+		Double idapi = Math.random()*100000;
+		
+		
+		String apiCode = "ds_"+stream.getCodiceStream()+"-"+id;//apiCode
 		api.setIdApi(idapi.intValue());
-		api.setApiDescription("Api for "+stream.getNomeStream());
-		api.setApiName("Api for"+stream.getCodiceStream());
+		api.setApiDescription("Dataset " +stream.getNomeStream());
+		api.setApiName("Dataset " +stream.getNomeStream());
+		api.setApiCode(apiCode);
+		
 		
 		ConfigData configData = new ConfigData();
 		
@@ -28,7 +33,7 @@ public class APIFiller {
 		configData.setTenantCode(stream.getCodiceTenant());
 		configData.setType("api");
 		configData.setSubtype("apiMultiStream");
-		configData.setEntityNameSpace("it.csi.smartdata.odata.iotnet"+stream.getCodiceTenant()+stream.getCodiceStream());
+		configData.setEntityNameSpace("it.csi.smartdata.odata.iotnet."+stream.getCodiceTenant()+"."+apiCode);
 		
 		api.setConfigData(configData );
 		
@@ -36,9 +41,10 @@ public class APIFiller {
 		Dataset ds = new Dataset();
 		
 		ds.setDatasetVersion(stream.getDeploymentVersion());
-		ds.setIdDataset(stream.getCodiceStream());
+		ds.setIdDataset(id);
 		ds.setIdTenant(stream.getIdTenant());
 		ds.setStreamCode(stream.getCodiceStream());
+		ds.setIdStream(stream.getIdStream());
 		ds.setTenantCode(stream.getCodiceTenant());
 		ds.setVirtualEntityCode(stream.getCodiceVirtualEntity());
 		dataset.add(ds);		
