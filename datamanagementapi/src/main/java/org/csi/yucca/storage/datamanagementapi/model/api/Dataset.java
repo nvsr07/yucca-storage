@@ -6,7 +6,7 @@ import com.google.gson.annotations.Expose;
 public class Dataset {
 
     @Expose
-    private String idDataset;
+    private Integer idDataset;
     @Expose
     private Integer datasetVersion;
     @Expose
@@ -25,7 +25,7 @@ public class Dataset {
      * @return
      *     The idDataset
      */
-    public String getIdDataset() {
+    public Integer getIdDataset() {
         return idDataset;
     }
 
@@ -34,7 +34,7 @@ public class Dataset {
      * @param idDataset
      *     The idDataset
      */
-    public void setIdDataset(String idDataset) {
+    public void setIdDataset(Integer idDataset) {
         this.idDataset = idDataset;
     }
 

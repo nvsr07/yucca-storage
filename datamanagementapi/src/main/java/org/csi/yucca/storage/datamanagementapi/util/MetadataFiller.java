@@ -18,20 +18,21 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 public class MetadataFiller {
 
 	
-	static public Metadata fillMetadata(Stream stream) {
+	static public Metadata fillMetadata(Stream stream,Integer id) {
 		
 		System.out.println("FILL METADATA OBJECT");
 		
 		Metadata myMeta = new Metadata();
 		
-		myMeta.setIdDataset(stream.getIdStream().longValue());
-		myMeta.setDatasetCode(stream.getCodiceStream());
+		myMeta.setIdDataset(id.longValue());
+		String datasetCode = "ds_"+stream.getCodiceStream()+"-"+id;
+		myMeta.setDatasetCode(datasetCode);
 		myMeta.setDatasetVersion(stream.getDeploymentVersion());
 		ConfigData cf = new ConfigData();
 		cf.setCurrent("1");
 		cf.setType("dataset");
 		cf.setSubtype("streamDataset");
-		cf.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+"."+stream.getCodiceStream());
+		cf.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+"."+datasetCode);
 		cf.setDatasetStatus(stream.getDeploymentStatusCode());
 		cf.setIdTenant(stream.getIdTenant());
 		cf.setTenantCode(stream.getCodiceTenant());
@@ -41,17 +42,17 @@ public class MetadataFiller {
 		Info info= new Info();
 		info.setCopyright(stream.getCopyright());
 		info.setDataDomain(stream.getDomainStream());
-		info.setDatasetName(stream.getNomeStream());
-		info.setDescription(stream.getNomeStream());
+		info.setDatasetName("Dataset " +stream.getNomeStream());
+		info.setDescription("Dataset " +stream.getNomeStream());
 		info.setDisclaimer(stream.getDisclaimer());
 		
-		info.setFps(stream.getFps().intValue());//FIXME meke it double when the model is ok
+		info.setFps(stream.getFps());
 		info.setLicense(stream.getLicence());
 		
 		if(stream.getRegistrationDate()!=null){
 		Date date;
 		try {
-			date = new SimpleDateFormat("dd-MM-yy").parse(stream.getRegistrationDate());
+			date = new SimpleDateFormat("dd/MM/yy").parse(stream.getRegistrationDate());
 			info.setRegistrationDate(date);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
