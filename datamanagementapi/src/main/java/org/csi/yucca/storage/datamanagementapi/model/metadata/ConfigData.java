@@ -15,7 +15,7 @@ public class ConfigData extends AbstractEntity {
 	private String subtype;
 	private String entityNameSpace;
 	private String datasetStatus;
-	private String current;
+	private Integer current;
 	private Archive archive;
 
 	public ConfigData() {
@@ -90,11 +90,11 @@ public class ConfigData extends AbstractEntity {
 		this.datasetStatus = datasetStatus;
 	}
 
-	public String getCurrent() {
+	public Integer getCurrent() {
 		return current;
 	}
 
-	public void setCurrent(String current) {
+	public void setCurrent(Integer current) {
 		this.current = current;
 	}
 

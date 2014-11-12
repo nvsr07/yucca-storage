@@ -7,9 +7,9 @@ import com.google.gson.GsonBuilder;
 
 public class Metadata extends AbstractEntity {
 	private String id;
-	private Long idDataset;
+	private Long idDataset;  // max dei presenti (maggiore di un milione)
 
-	private String datasetCode;
+	private String datasetCode; // trim del nome senza caratteri speciali, max 12 _ idDataset
 	private Integer datasetVersion;
 
 	private ConfigData configData;

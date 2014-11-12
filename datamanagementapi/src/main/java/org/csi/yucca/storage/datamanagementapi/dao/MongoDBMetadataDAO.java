@@ -24,7 +24,7 @@ public class MongoDBMetadataDAO {
 
 	public Metadata createMetadata(Metadata metadata) {
 		metadata.setDatasetVersion(1);
-		metadata.getConfigData().setCurrent("1");
+		metadata.getConfigData().setCurrent(1);
 		metadata.getInfo().setRegistrationDate(new Date());
 		String json = metadata.toJson();
 		DBObject dbObject = (DBObject) JSON.parse(json);
