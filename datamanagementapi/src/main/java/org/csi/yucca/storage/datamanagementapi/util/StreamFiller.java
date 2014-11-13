@@ -146,9 +146,6 @@ public class StreamFiller {
 				sti.setComponents(components );
 			}			
 		}
-		
-		
-
 		streams.setStream(sti);
 		strOut.setStreams(streams );
 
