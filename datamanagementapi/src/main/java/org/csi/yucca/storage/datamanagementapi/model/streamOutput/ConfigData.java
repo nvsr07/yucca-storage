@@ -10,7 +10,7 @@ public class ConfigData {
     @Expose
     private String tenantCode;
     @Expose
-    private Integer idDataset;
+    private Long idDataset;
     @Expose
     private Integer datasetVersion;
 
@@ -56,7 +56,7 @@ public class ConfigData {
      * @return
      *     The idDataset
      */
-    public Integer getIdDataset() {
+    public Long getIdDataset() {
         return idDataset;
     }
 
@@ -65,7 +65,7 @@ public class ConfigData {
      * @param idDataset
      *     The idDataset
      */
-    public void setIdDataset(Integer idDataset) {
+    public void setIdDataset(Long idDataset) {
         this.idDataset = idDataset;
     }
 

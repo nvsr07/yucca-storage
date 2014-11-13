@@ -17,7 +17,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class StreamFiller {
 
-	static public StreamOut fillStream(Stream stream,Integer id) {
+	static public StreamOut fillStream(Stream stream,Long id) {
 
 		System.out.println("FILL STREAM OBJECT");
 		StreamOut strOut = new StreamOut();

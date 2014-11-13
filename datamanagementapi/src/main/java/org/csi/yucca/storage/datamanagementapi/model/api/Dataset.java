@@ -6,7 +6,7 @@ import com.google.gson.annotations.Expose;
 public class Dataset {
 
     @Expose
-    private Integer idDataset;
+    private Long idDataset;
     @Expose
     private Integer datasetVersion;
     @Expose
@@ -25,7 +25,7 @@ public class Dataset {
      * @return
      *     The idDataset
      */
-    public Integer getIdDataset() {
+    public Long getIdDataset() {
         return idDataset;
     }
 
@@ -34,7 +34,7 @@ public class Dataset {
      * @param idDataset
      *     The idDataset
      */
-    public void setIdDataset(Integer idDataset) {
+    public void setIdDataset(Long idDataset) {
         this.idDataset = idDataset;
     }
 

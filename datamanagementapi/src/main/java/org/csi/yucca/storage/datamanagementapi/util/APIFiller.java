@@ -12,7 +12,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 public class APIFiller {
 
 	
-	static public MyApi fillApi(Stream stream,Integer idDataset) {
+	static public MyApi fillApi(Stream stream,Long idDataset) {
 		
 		System.out.println("FILL API OBJECT");
 		
