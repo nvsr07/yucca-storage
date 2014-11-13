@@ -17,8 +17,17 @@
 		<param-name>MONGODB_PORT</param-name>
 		<param-value>27017</param-value>
 	</context-param>
+	<context-param>
+		<param-name>SUPPORT_DB</param-name>
+		<param-value>smartlab</param-value>
+	</context-param>
+	<context-param>
+		<param-name>SUPPORT_DATASET_COLLECTION</param-name>
+		<param-value>prova_ale_supportdataset</param-value>
+	</context-param>
+	<context-param>
+		<param-name>SUPPORT_API_COLLECTION</param-name>
+		<param-value>prova_ale_supportapi</param-value>
+	</context-param>
 
-	<welcome-file-list>
-		<welcome-file>persons.jsp</welcome-file>
-	</welcome-file-list>
 </web-app>

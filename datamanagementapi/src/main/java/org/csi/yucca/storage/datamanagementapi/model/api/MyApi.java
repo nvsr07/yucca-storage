@@ -1,115 +1,117 @@
-
 package org.csi.yucca.storage.datamanagementapi.model.api;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 
 public class MyApi {
 
-    @Expose
-    private Integer idApi;
-    @Expose
-    private String apiName;
-    @Expose
-    private String apiCode;
-    @Expose
-    private String apiDescription;
-    @Expose
-    private ConfigData configData;
-    @Expose
-    private List<Dataset> dataset = new ArrayList<Dataset>();
+	private String id;
 
-    /**
-     * 
-     * @return
-     *     The idApi
-     */
-    public Integer getIdApi() {
-        return idApi;
-    }
+	@Expose
+	private Integer idApi;
+	@Expose
+	private String apiName;
+	@Expose
+	private String apiCode;
+	@Expose
+	private String apiDescription;
+	@Expose
+	private ConfigData configData;
+	@Expose
+	private List<Dataset> dataset = new ArrayList<Dataset>();
 
-    /**
-     * 
-     * @param idApi
-     *     The idApi
-     */
-    public void setIdApi(Integer idApi) {
-        this.idApi = idApi;
-    }
+	/**
+	 * 
+	 * @return The idApi
+	 */
+	public Integer getIdApi() {
+		return idApi;
+	}
 
-    /**
-     * 
-     * @return
-     *     The apiName
-     */
-    public String getApiName() {
-        return apiName;
-    }
+	/**
+	 * 
+	 * @param idApi
+	 *            The idApi
+	 */
+	public void setIdApi(Integer idApi) {
+		this.idApi = idApi;
+	}
 
-    /**
-     * 
-     * @param apiName
-     *     The apiName
-     */
-    public void setApiName(String apiName) {
-        this.apiName = apiName;
-    }
+	/**
+	 * 
+	 * @return The apiName
+	 */
+	public String getApiName() {
+		return apiName;
+	}
 
-    /**
-     * 
-     * @return
-     *     The apiDescription
-     */
-    public String getApiDescription() {
-        return apiDescription;
-    }
+	/**
+	 * 
+	 * @param apiName
+	 *            The apiName
+	 */
+	public void setApiName(String apiName) {
+		this.apiName = apiName;
+	}
 
-    /**
-     * 
-     * @param apiDescription
-     *     The apiDescription
-     */
-    public void setApiDescription(String apiDescription) {
-        this.apiDescription = apiDescription;
-    }
+	/**
+	 * 
+	 * @return The apiDescription
+	 */
+	public String getApiDescription() {
+		return apiDescription;
+	}
 
-    /**
-     * 
-     * @return
-     *     The configData
-     */
-    public ConfigData getConfigData() {
-        return configData;
-    }
+	/**
+	 * 
+	 * @param apiDescription
+	 *            The apiDescription
+	 */
+	public void setApiDescription(String apiDescription) {
+		this.apiDescription = apiDescription;
+	}
 
-    /**
-     * 
-     * @param configData
-     *     The configData
-     */
-    public void setConfigData(ConfigData configData) {
-        this.configData = configData;
-    }
+	/**
+	 * 
+	 * @return The configData
+	 */
+	public ConfigData getConfigData() {
+		return configData;
+	}
 
-    /**
-     * 
-     * @return
-     *     The dataset
-     */
-    public List<Dataset> getDataset() {
-        return dataset;
-    }
+	/**
+	 * 
+	 * @param configData
+	 *            The configData
+	 */
+	public void setConfigData(ConfigData configData) {
+		this.configData = configData;
+	}
 
-    /**
-     * 
-     * @param dataset
-     *     The dataset
-     */
-    public void setDataset(List<Dataset> dataset) {
-        this.dataset = dataset;
-    }
+	/**
+	 * 
+	 * @return The dataset
+	 */
+	public List<Dataset> getDataset() {
+		return dataset;
+	}
+
+	/**
+	 * 
+	 * @param dataset
+	 *            The dataset
+	 */
+	public void setDataset(List<Dataset> dataset) {
+		this.dataset = dataset;
+	}
 
 	public String getApiCode() {
 		return apiCode;
@@ -118,5 +120,52 @@ public class MyApi {
 	public void setApiCode(String apiCode) {
 		this.apiCode = apiCode;
 	}
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public static MyApi fromJson(String json) {
+		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		return gson.fromJson(json, MyApi.class);
+	}
+	
+	public String toJson() {
+		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		return gson.toJson(this);
+	}
+
+	public static MyApi createFromMetadataDataset(Metadata metadata){
+		MyApi api = new MyApi();
+		if(metadata!=null){
+			if(metadata.getInfo()!=null && metadata.getInfo().getDescription()!=null)
+				api.setApiDescription("API - " + metadata.getInfo().getDescription());
+			
+			ConfigData configData = new ConfigData();
+			configData.setIdTenant(metadata.getConfigData().getIdTenant());
+			configData.setTenantCode(metadata.getConfigData().getTenantCode());
+			configData.setType(metadata.getConfigData().getType());
+			configData.setSubtype(metadata.getConfigData().getSubtype());
+			configData.setEntityNameSpace(metadata.getConfigData().getEntityNameSpace());
+			
+			api.setConfigData(configData);
+			
+			Dataset dataset = new Dataset();
+			dataset.setIdDataset(metadata.getIdDataset());
+			dataset.setIdTenant(metadata.getConfigData().getIdTenant());
+			dataset.setTenantCode(metadata.getConfigData().getTenantCode());
+			List<Dataset> datasetList = new LinkedList<Dataset>();
+			datasetList.add(dataset);
+			api.setDataset(datasetList);
+		}
+		return api;
+	}
+	
+
+
 
 }

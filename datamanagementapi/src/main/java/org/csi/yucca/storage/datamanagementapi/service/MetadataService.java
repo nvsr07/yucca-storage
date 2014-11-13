@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,7 +23,9 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
+import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
+import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
@@ -46,13 +47,17 @@ public class MetadataService {
 	ServletContext context;
 	static Logger log = Logger.getLogger(MetadataService.class);
 
+	
 	@GET
 	@Path("/{tenant}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getAll(@PathParam("tenant") String tenant) {
 		log.debug("[MetadataService::getAll] - START");
-		MongoClient mongo = (MongoClient) context.getAttribute("MONGO_CLIENT");
-		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, "smartlab", "provaAle");
+		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+
+		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
+		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		String result = "[]";
 		List<Metadata> allDataset = metadataDAO.readAllMetadata(tenant);
@@ -70,8 +75,11 @@ public class MetadataService {
 		// select
 		log.debug("[MetadataService::get] - START - id: " + id);
 		System.out.println("DatasetItem requested with id=" + id);
-		MongoClient mongo = (MongoClient) context.getAttribute("MONGO_CLIENT");
-		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, "smartlab", "provaAle");
+		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		
+		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
+		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		Metadata metadata = new Metadata();
 		metadata.setId(id);
@@ -113,34 +121,29 @@ public class MetadataService {
 				}
 			}
 
-			if (csvData != null) {
-				String[] ss = new String[csvData.size()];
-				int counter = 0;
-				for (String string : csvData) {
-					ss[counter] = string;
-					counter++;
-				}
-			}
-
-			StringBuilder sb = new StringBuilder("{\"requestHeaders\": [");
-			Enumeration<String> headerNames = request.getHeaderNames();
-			while (headerNames.hasMoreElements()) {
-				String header = headerNames.nextElement();
-				sb.append("\"").append(header).append("\":\"").append(request.getHeader(header)).append("\"");
-				if (headerNames.hasMoreElements()) {
-					sb.append(",");
-				}
-			}
-			sb.append("}}");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		MongoClient mongo = (MongoClient) context.getAttribute("MONGO_CLIENT");
-		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, "smartlab", "provaAle");
-
-		Metadata metadata = Metadata.fromJson("" + datasetMetadata);
+		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		
+		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
+		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		
+		String supportApiCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_API_COLLECTION);
+		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo,supportDb, supportApiCollection);
+		
+		
+		
+		Metadata metadata = Metadata.fromJson(datasetMetadata);
 		Metadata metadataCreated = metadataDAO.createMetadata(metadata);
+
+		MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
+		MyApi apiCreated = apiDAO.createApi(api);
+		
+		
+		
 		return metadataCreated.toJson();
 	}
 
@@ -149,8 +152,11 @@ public class MetadataService {
 	@Path("/{tenant}/{id}")
 	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("id") String id, final String metadataInput) {
 		log.debug("[MetadataService::updateMetadata] - START");
-		MongoClient mongo = (MongoClient) context.getAttribute("MONGO_CLIENT");
-		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, "smartlab", "provaAle");
+		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		
+		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
+		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		Metadata newMetadata = Metadata.fromJson(metadataInput);
 		newMetadata.setId(id);

@@ -45,7 +45,7 @@ public class MongoDBMetadataDAO {
 		List<Metadata> data = new ArrayList<Metadata>();
 		BasicDBObject searchQuery = new BasicDBObject();
 		if (tenant != null)
-			searchQuery.put("configData.tenant", tenant);
+			searchQuery.put("configData.tenantCode", tenant);
 
 		DBCursor cursor = collection.find(searchQuery);
 		while (cursor.hasNext()) {
