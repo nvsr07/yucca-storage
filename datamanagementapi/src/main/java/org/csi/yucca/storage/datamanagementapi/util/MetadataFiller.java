@@ -18,18 +18,18 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 public class MetadataFiller {
 
 	
-	static public Metadata fillMetadata(Stream stream,Integer id) {
+	static public Metadata fillMetadata(Stream stream) {
 		
 		System.out.println("FILL METADATA OBJECT");
 		
 		Metadata myMeta = new Metadata();
 		
-		myMeta.setIdDataset(id.longValue());
-		String datasetCode = "ds_"+stream.getCodiceStream()+"-"+id;
+		myMeta.setIdDataset(stream.getIdStream().longValue());
+		String datasetCode = "ds_"+stream.getCodiceStream()+"-"+stream.getIdStream();
 		myMeta.setDatasetCode(datasetCode);
 		myMeta.setDatasetVersion(stream.getDeploymentVersion());
 		ConfigData cf = new ConfigData();
-		cf.setCurrent("1");
+		cf.setCurrent(1);
 		cf.setType("dataset");
 		cf.setSubtype("streamDataset");
 		cf.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+"."+datasetCode);

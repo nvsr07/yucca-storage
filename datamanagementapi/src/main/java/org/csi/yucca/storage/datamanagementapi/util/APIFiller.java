@@ -12,16 +12,14 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 public class APIFiller {
 
 	
-	static public MyApi fillApi(Stream stream,Integer id) {
+	static public MyApi fillApi(Stream stream,Integer idDataset) {
 		
 		System.out.println("FILL API OBJECT");
 		
 		MyApi api = new MyApi();
-		Double idapi = Math.random()*100000;
 		
-		
-		String apiCode = "ds_"+stream.getCodiceStream()+"-"+id;//apiCode
-		api.setIdApi(idapi.intValue());
+		String apiCode = "ds_"+stream.getCodiceStream()+"-"+stream.getIdStream();//apiCode
+		api.setIdApi(stream.getIdStream());
 		api.setApiDescription("Dataset " +stream.getNomeStream());
 		api.setApiName("Dataset " +stream.getNomeStream());
 		api.setApiCode(apiCode);
@@ -41,7 +39,7 @@ public class APIFiller {
 		Dataset ds = new Dataset();
 		
 		ds.setDatasetVersion(stream.getDeploymentVersion());
-		ds.setIdDataset(id);
+		ds.setIdDataset(idDataset);
 		ds.setIdTenant(stream.getIdTenant());
 		ds.setStreamCode(stream.getCodiceStream());
 		ds.setIdStream(stream.getIdStream());

@@ -33,8 +33,8 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.util.JSON;
 
-@Path("/metadata")
-public class InstallCepService {
+@Path("/tenant")
+public class InstallTenantService {
 
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
@@ -43,25 +43,19 @@ public class InstallCepService {
 
 	@Context
 	ServletContext context;
-	static Logger log = Logger.getLogger(InstallCepService.class);
+	static Logger log = Logger.getLogger(InstallTenantService.class);
 
 	@POST
-	@Path("/insertFromStream")
+	@Path("/insert")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String createDataset(final String datasetInput) throws UnknownHostException {
-		log.debug("[MetadataService::createMetadataService] - START");
+	public String createTenant(final String tenantInput) throws UnknownHostException {
 
 		mongoParams = ConfigParamsSingleton.getInstance().getParams();
-
-		credential = MongoCredential.createMongoCRCredential(mongoParams.get("MONGO_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
+		credential = MongoCredential.createMongoCRCredential( mongoParams.get("MONGO_DB_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
 
 
 		ServerAddress serverAdd = new ServerAddress(mongoParams.get("MONGO_HOST"), Integer.parseInt(mongoParams.get("MONGO_PORT")));
-
-		if("true".equals(mongoParams.get("MONGO_DB_AUTH_FLAG")))
-			mongo = new MongoClient(serverAdd,Arrays.asList(credential));
-		else
-			mongo = new MongoClient(serverAdd);
+		mongo = new MongoClient(serverAdd,Arrays.asList(credential));
 
 
 		Gson gson = new GsonBuilder()
@@ -70,7 +64,7 @@ public class InstallCepService {
 		.serializeNulls()
 		.create();
 
-		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
+		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
 		try{
 			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
 			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
