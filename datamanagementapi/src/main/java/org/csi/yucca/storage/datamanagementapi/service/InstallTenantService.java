@@ -50,59 +50,59 @@ public class InstallTenantService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String createTenant(final String tenantInput) throws UnknownHostException {
 
-		mongoParams = ConfigParamsSingleton.getInstance().getParams();
-		credential = MongoCredential.createMongoCRCredential( mongoParams.get("MONGO_DB_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
-
-
-		ServerAddress serverAdd = new ServerAddress(mongoParams.get("MONGO_HOST"), Integer.parseInt(mongoParams.get("MONGO_PORT")));
-		mongo = new MongoClient(serverAdd,Arrays.asList(credential));
-
-
-		Gson gson = new GsonBuilder()
-		.disableHtmlEscaping()
-		.setPrettyPrinting()
-		.serializeNulls()
-		.create();
-
-		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
-		try{
-			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
-			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
-
-				DB db = mongo.getDB(mongoParams.get("MONGO_DB_META"));
-				DBCollection col = db.getCollection(mongoParams.get("MONGO_COLLECTION_DATASET"));
-				Metadata myMeta= 	MetadataFiller.fillMetadata(pojoStreams.getStreams().getStream());
-
-				//				DBCollection col = db.getCollection("metadata");
-				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myMeta, Metadata.class));
-				Integer idDataset =insertDocumentWithKey(col,dbObject,"idDataset",MAX_RETRY);
-
-
-				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),idDataset);
-				StreamOut strOut = StreamFiller.fillStream(pojoStreams.getStreams().getStream(),idDataset);
-
-				System.out.println(gson.toJson(api, MyApi.class));
-				System.out.println(gson.toJson(strOut, StreamOut.class));
-				System.out.println(gson.toJson(myMeta, Metadata.class));
-
-
-				//stream gets the idStream from the Json
-				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_STREAM"));
-				dbObject = (DBObject)JSON.parse(gson.toJson(strOut, StreamOut.class));
-				col.insert(dbObject);
-
-
-				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_API"));
-				dbObject = (DBObject)JSON.parse(gson.toJson(api, MyApi.class));
-				insertDocumentWithKey(col,dbObject,"idApi",MAX_RETRY);
-				//				col.insert(dbObject);
-
-			}
-		}catch (Exception e) {
-			e.printStackTrace();
-			System.err.println(e);
-			return JSON.parse("{KO:1}").toString();
-		}
+//		mongoParams = ConfigParamsSingleton.getInstance().getParams();
+//		credential = MongoCredential.createMongoCRCredential( mongoParams.get("MONGO_DB_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
+//
+//
+//		ServerAddress serverAdd = new ServerAddress(mongoParams.get("MONGO_HOST"), Integer.parseInt(mongoParams.get("MONGO_PORT")));
+//		mongo = new MongoClient(serverAdd,Arrays.asList(credential));
+//
+//
+//		Gson gson = new GsonBuilder()
+//		.disableHtmlEscaping()
+//		.setPrettyPrinting()
+//		.serializeNulls()
+//		.create();
+//
+//		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
+//		try{
+//			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
+//			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
+//
+//				DB db = mongo.getDB(mongoParams.get("MONGO_DB_META"));
+//				DBCollection col = db.getCollection(mongoParams.get("MONGO_COLLECTION_DATASET"));
+//				Metadata myMeta= 	MetadataFiller.fillMetadata(pojoStreams.getStreams().getStream());
+//
+//				//				DBCollection col = db.getCollection("metadata");
+//				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myMeta, Metadata.class));
+//				Integer idDataset =insertDocumentWithKey(col,dbObject,"idDataset",MAX_RETRY);
+//
+//
+//				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),idDataset);
+//				StreamOut strOut = StreamFiller.fillStream(pojoStreams.getStreams().getStream(),idDataset);
+//
+//				System.out.println(gson.toJson(api, MyApi.class));
+//				System.out.println(gson.toJson(strOut, StreamOut.class));
+//				System.out.println(gson.toJson(myMeta, Metadata.class));
+//
+//
+//				//stream gets the idStream from the Json
+//				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_STREAM"));
+//				dbObject = (DBObject)JSON.parse(gson.toJson(strOut, StreamOut.class));
+//				col.insert(dbObject);
+//
+//
+//				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_API"));
+//				dbObject = (DBObject)JSON.parse(gson.toJson(api, MyApi.class));
+//				insertDocumentWithKey(col,dbObject,"idApi",MAX_RETRY);
+//				//				col.insert(dbObject);
+//
+//			}
+//		}catch (Exception e) {
+//			e.printStackTrace();
+//			System.err.println(e);
+//			return JSON.parse("{KO:1}").toString();
+//		}
 
 		return JSON.parse("{OK:1}").toString();
 	}
