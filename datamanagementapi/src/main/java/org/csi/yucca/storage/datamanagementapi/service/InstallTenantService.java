@@ -90,7 +90,7 @@ public class InstallTenantService {
 
 		return JSON.parse("{OK:1}").toString();
 	}
-
+  
 	private static Integer insertDocumentWithKey(DBCollection col,DBObject obj,String key,Integer maxRetry) throws Exception{
 		Integer id =0;
 		try{
