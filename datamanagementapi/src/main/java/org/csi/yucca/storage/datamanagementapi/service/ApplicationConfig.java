@@ -13,6 +13,7 @@ public class ApplicationConfig extends Application {
 	public ApplicationConfig() {
 		singletons.add(new MetadataService());
 		singletons.add(new InstallCepService());
+		singletons.add(new InstallTenantService());
 	}
 
 	public Set<Object> getSingletons() {

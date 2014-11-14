@@ -17,6 +17,7 @@ import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
+import org.csi.yucca.storage.datamanagementapi.mongoSingleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
 import org.csi.yucca.storage.datamanagementapi.util.ConfigParamsSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
@@ -39,7 +40,7 @@ public class InstallCepService {
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
 	Map<String,String> mongoParams = null;
-	MongoCredential credential=null;
+//	MongoCredential credential=null;
 
 	@Context
 	ServletContext context;
@@ -49,19 +50,19 @@ public class InstallCepService {
 	@Path("/insertFromStream")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String createDataset(final String datasetInput) throws UnknownHostException {
-		log.debug("[MetadataService::createMetadataService] - START");
-
+//		log.debug("[MetadataService::createMetadataService] - START");
+//
 		mongoParams = ConfigParamsSingleton.getInstance().getParams();
-
-		credential = MongoCredential.createMongoCRCredential(mongoParams.get("MONGO_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
-
-
-		ServerAddress serverAdd = new ServerAddress(mongoParams.get("MONGO_HOST"), Integer.parseInt(mongoParams.get("MONGO_PORT")));
-
-		if("true".equals(mongoParams.get("MONGO_DB_AUTH_FLAG")))
-			mongo = new MongoClient(serverAdd,Arrays.asList(credential));
-		else
-			mongo = new MongoClient(serverAdd);
+//
+//		credential = MongoCredential.createMongoCRCredential(mongoParams.get("MONGO_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
+//
+//
+//		ServerAddress serverAdd = new ServerAddress(mongoParams.get("MONGO_HOST"), Integer.parseInt(mongoParams.get("MONGO_PORT")));
+//
+//		if("true".equals(mongoParams.get("MONGO_DB_AUTH_FLAG")))
+//			mongo = new MongoClient(serverAdd,Arrays.asList(credential));
+//		else
+			mongo = MongoSingleton.getMongoClient();
 
 
 		Gson gson = new GsonBuilder()

@@ -17,10 +17,14 @@ import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
+import org.csi.yucca.storage.datamanagementapi.model.tenantin.TenantIn;
+import org.csi.yucca.storage.datamanagementapi.model.tenantout.TenantOut;
+import org.csi.yucca.storage.datamanagementapi.mongoSingleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
 import org.csi.yucca.storage.datamanagementapi.util.ConfigParamsSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.StreamFiller;
+import org.csi.yucca.storage.datamanagementapi.util.TenantFiller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,7 +43,7 @@ public class InstallTenantService {
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
 	Map<String,String> mongoParams = null;
-	MongoCredential credential=null;
+//	MongoCredential credential=null;
 
 	@Context
 	ServletContext context;
@@ -50,59 +54,39 @@ public class InstallTenantService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String createTenant(final String tenantInput) throws UnknownHostException {
 
-//		mongoParams = ConfigParamsSingleton.getInstance().getParams();
+		mongoParams = ConfigParamsSingleton.getInstance().getParams();
 //		credential = MongoCredential.createMongoCRCredential( mongoParams.get("MONGO_DB_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
 //
 //
 //		ServerAddress serverAdd = new ServerAddress(mongoParams.get("MONGO_HOST"), Integer.parseInt(mongoParams.get("MONGO_PORT")));
-//		mongo = new MongoClient(serverAdd,Arrays.asList(credential));
-//
-//
-//		Gson gson = new GsonBuilder()
-//		.disableHtmlEscaping()
-//		.setPrettyPrinting()
-//		.serializeNulls()
-//		.create();
-//
-//		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
-//		try{
-//			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
-//			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
-//
-//				DB db = mongo.getDB(mongoParams.get("MONGO_DB_META"));
-//				DBCollection col = db.getCollection(mongoParams.get("MONGO_COLLECTION_DATASET"));
-//				Metadata myMeta= 	MetadataFiller.fillMetadata(pojoStreams.getStreams().getStream());
-//
-//				//				DBCollection col = db.getCollection("metadata");
-//				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myMeta, Metadata.class));
-//				Integer idDataset =insertDocumentWithKey(col,dbObject,"idDataset",MAX_RETRY);
-//
-//
-//				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),idDataset);
-//				StreamOut strOut = StreamFiller.fillStream(pojoStreams.getStreams().getStream(),idDataset);
-//
-//				System.out.println(gson.toJson(api, MyApi.class));
-//				System.out.println(gson.toJson(strOut, StreamOut.class));
-//				System.out.println(gson.toJson(myMeta, Metadata.class));
-//
-//
-//				//stream gets the idStream from the Json
-//				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_STREAM"));
-//				dbObject = (DBObject)JSON.parse(gson.toJson(strOut, StreamOut.class));
-//				col.insert(dbObject);
-//
-//
-//				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_API"));
-//				dbObject = (DBObject)JSON.parse(gson.toJson(api, MyApi.class));
-//				insertDocumentWithKey(col,dbObject,"idApi",MAX_RETRY);
-//				//				col.insert(dbObject);
-//
-//			}
-//		}catch (Exception e) {
-//			e.printStackTrace();
-//			System.err.println(e);
-//			return JSON.parse("{KO:1}").toString();
-//		}
+		mongo =  MongoSingleton.getMongoClient();
+
+
+		Gson gson = new GsonBuilder()
+		.disableHtmlEscaping()
+		.setPrettyPrinting()
+		.serializeNulls()
+		.create();
+
+		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
+		try{
+			TenantIn tenantin = gson.fromJson(json, TenantIn.class);
+			if(tenantin != null && tenantin.getTenants()!= null && tenantin.getTenants().getTenant()!= null){
+
+				DB db = mongo.getDB(mongoParams.get("MONGO_DB_META"));
+				DBCollection col = db.getCollection(mongoParams.get("MONGO_COLLECTION_TENANT"));
+				TenantOut myTenant= 	TenantFiller.fillTenant(tenantin.getTenants().getTenant());
+
+				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myTenant, TenantOut.class));
+				insertDocumentWithKey(col,dbObject,"idTenant",MAX_RETRY);
+
+
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+			System.err.println(e);
+			return JSON.parse("{KO:1}").toString();
+		}
 
 		return JSON.parse("{OK:1}").toString();
 	}
@@ -113,7 +97,6 @@ public class InstallTenantService {
 			BasicDBObject sortobj = new BasicDBObject();
 			sortobj.append(key, -1);			
 			DBObject doc = col.find().sort(sortobj).limit(1).one();
-			System.out.println(doc);
 			id = ((Number)doc.get(key)).intValue() +1;
 			obj.put(key, id);
 			col.insert(obj);

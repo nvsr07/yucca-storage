@@ -24,6 +24,8 @@ public class ConfigParamsSingleton {
 		params.put("MONGO_PASSWORD", rb.getString("MONGO_PASSWORD"));
 		params.put("MONGO_DB_AUTH", rb.getString("MONGO_DB_AUTH"));
 		params.put("MONGO_DB_AUTH_FLAG", rb.getString("MONGO_DB_AUTH_FLAG"));
+		params.put("MONGO_COLLECTION_TENANT", rb.getString("MONGO_COLLECTION_TENANT"));
+		
 		
 	}
 	
