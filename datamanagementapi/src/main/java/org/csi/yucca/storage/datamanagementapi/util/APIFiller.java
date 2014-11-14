@@ -6,6 +6,7 @@ import java.util.List;
 import org.csi.yucca.storage.datamanagementapi.model.api.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.api.Dataset;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class APIFiller {
@@ -30,7 +31,7 @@ public class APIFiller {
 		configData.setTenantCode(stream.getCodiceTenant());
 		configData.setType("api");
 		configData.setSubtype("apiMultiStream");
-		configData.setEntityNameSpace("it.csi.smartdata.odata.iotnet."+stream.getCodiceTenant()+"."+apiCode);
+		configData.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+"."+apiCode);
 		
 		api.setConfigData(configData );
 		

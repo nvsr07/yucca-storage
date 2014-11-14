@@ -25,7 +25,7 @@ public class MetadataFiller {
 		Metadata myMeta = new Metadata();
 		
 		myMeta.setIdDataset(stream.getIdStream().longValue());
-		String datasetCode = "ds_"+stream.getCodiceStream()+"-"+stream.getIdStream();
+		String datasetCode = "ds_"+stream.getCodiceStream()+"_";
 		myMeta.setDatasetCode(datasetCode);
 		myMeta.setDatasetVersion(stream.getDeploymentVersion());
 		ConfigData cf = new ConfigData();
