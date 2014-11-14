@@ -31,7 +31,7 @@ public class APIFiller {
 		configData.setTenantCode(stream.getCodiceTenant());
 		configData.setType("api");
 		configData.setSubtype("apiMultiStream");
-		configData.setEntityNameSpace("it.csi.smartdata.odata.iotnet."+stream.getCodiceTenant()+"."+apiCode);
+		configData.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+"."+apiCode);
 		
 		api.setConfigData(configData );
 		

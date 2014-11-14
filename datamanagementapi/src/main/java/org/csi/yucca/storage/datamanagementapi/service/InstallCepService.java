@@ -82,7 +82,7 @@ public class InstallCepService {
 
 				//				DBCollection col = db.getCollection("metadata");
 				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myMeta, Metadata.class));
-				Long idDataset =insertDocumentWithKey(col,dbObject,"idDataset",MAX_RETRY);
+				Long idDataset =insertDatasetWithKey(col,dbObject,"idDataset",myMeta.getDatasetCode(),MAX_RETRY);
 
 
 				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),idDataset);
@@ -127,6 +127,26 @@ public class InstallCepService {
 		}catch(Exception e){
 			if(maxRetry>0){
 				return insertDocumentWithKey(col, obj,key,--maxRetry);
+			}else{
+				throw e;
+			}
+		}
+		return id;
+	}
+	private static Long insertDatasetWithKey(DBCollection col,DBObject obj,String key,String datasetCode,Integer maxRetry) throws Exception{
+		Long id =0L;
+		try{
+			BasicDBObject sortobj = new BasicDBObject();
+			sortobj.append(key, -1);			
+			DBObject doc = col.find().sort(sortobj).limit(1).one();
+			System.out.println(doc);
+			id = ((Number)doc.get(key)).longValue() +1;
+			obj.put(key, id);
+			obj.put("datasetCode", datasetCode+id);
+			col.insert(obj);
+		}catch(Exception e){
+			if(maxRetry>0){
+				return insertDatasetWithKey(col, obj,key,datasetCode,--maxRetry);
 			}else{
 				throw e;
 			}
