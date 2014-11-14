@@ -1,15 +1,22 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
+import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Metadata extends AbstractEntity {
-	private String id;
-	private Long idDataset;  // max dei presenti (maggiore di un milione)
 
-	private String datasetCode; // trim del nome senza caratteri speciali, max 12 _ idDataset
+	public static final String CONFIG_DATA_TYPE_DATASET = "dataset";
+	public static final String CONFIG_DATA_SUBTYPE_BULK_DATASET = "bulkDataset";
+	public static final String CONFIG_DATA_SUBTYPE_STREAM_DATASET = "streamDataset";
+
+	private String id;
+	private Long idDataset; // max dei presenti (maggiore di un milione)
+
+	private String datasetCode; // trim del nome senza caratteri speciali, max
+								// 12 _ idDataset
 	private Integer datasetVersion;
 
 	private ConfigData configData;
@@ -58,6 +65,7 @@ public class Metadata extends AbstractEntity {
 
 	public void setIdDataset(Long idDataset) {
 		this.idDataset = idDataset;
+		generateCode();
 	}
 
 	public String getDatasetCode() {
@@ -75,4 +83,27 @@ public class Metadata extends AbstractEntity {
 	public void setDatasetVersion(Integer datasetVersion) {
 		this.datasetVersion = datasetVersion;
 	}
+
+	public String generateCode() {
+		String code = null;
+
+		// "ds_debsStream_123", // per Stream "ds"_<streamCode>_<idDataset>, per
+		// Bulk NoSpec(Max12(Trim(<info.datasetName>)))_<idDataset>
+		if (idDataset != null) { // trim del nome senza caratteri speciali, max
+									// 12 _ idDataset
+
+			String prefix = "";
+			if (getConfigData() != null && CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(getConfigData().getSubtype()))
+				prefix = "ds_";
+
+			String datasetNameSafe = "";
+			if (getInfo() != null)
+				datasetNameSafe = Util.safeSubstring(Util.cleanStringCamelCase(getInfo().getDatasetName()), 12);
+
+			code = prefix + datasetNameSafe + "_" + idDataset;
+
+		}
+		return code;
+	}
+
 }

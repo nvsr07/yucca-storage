@@ -2,7 +2,6 @@ package org.csi.yucca.storage.datamanagementapi.service;
 
 
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -13,24 +12,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
-import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
-import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
-import org.csi.yucca.storage.datamanagementapi.util.ConfigParamsSingleton;
-import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
-import org.csi.yucca.storage.datamanagementapi.util.StreamFiller;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.util.JSON;
 
 @Path("/tenant")

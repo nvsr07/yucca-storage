@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 
 import com.mongodb.BasicDBObject;
@@ -17,6 +19,7 @@ import com.mongodb.util.JSON;
 
 public class MongoDBMetadataDAO {
 	private DBCollection collection;
+	static Logger log = Logger.getLogger(MongoDBMetadataDAO.class);
 
 	public MongoDBMetadataDAO(MongoClient mongo, String db, String collection) {
 		this.collection = mongo.getDB(db).getCollection(collection);
@@ -25,12 +28,24 @@ public class MongoDBMetadataDAO {
 	public Metadata createMetadata(Metadata metadata) {
 		metadata.setDatasetVersion(1);
 		metadata.getConfigData().setCurrent(1);
+		if (metadata.getInfo() == null)
+			metadata.setInfo(new Info());
 		metadata.getInfo().setRegistrationDate(new Date());
-		String json = metadata.toJson();
-		DBObject dbObject = (DBObject) JSON.parse(json);
-		this.collection.insert(dbObject);
-		ObjectId id = (ObjectId) dbObject.get("_id");
-		metadata.setId(id.toString());
+		for (int i = 0; i < 5; i++) {
+			try {
+				metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
+				
+				String json = metadata.toJson();
+				DBObject dbObject = (DBObject) JSON.parse(json);
+				
+				this.collection.insert(dbObject);
+				ObjectId id = (ObjectId) dbObject.get("_id");
+				metadata.setId(id.toString());
+				break;
+			} catch (Exception e) {
+				log.error("[] - ERROR in insert. Attempt " + i + " - message: " + e.getMessage());
+			}
+		}
 		return metadata;
 	}
 

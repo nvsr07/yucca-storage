@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
@@ -47,7 +48,6 @@ public class MetadataService {
 	ServletContext context;
 	static Logger log = Logger.getLogger(MetadataService.class);
 
-	
 	@GET
 	@Path("/{tenant}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -76,7 +76,7 @@ public class MetadataService {
 		log.debug("[MetadataService::get] - START - id: " + id);
 		System.out.println("DatasetItem requested with id=" + id);
 		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
-		
+
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
@@ -126,24 +126,26 @@ public class MetadataService {
 		}
 
 		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
-		
+
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-		
+
 		String supportApiCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_API_COLLECTION);
-		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo,supportDb, supportApiCollection);
-		
-		
-		
+		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+
 		Metadata metadata = Metadata.fromJson(datasetMetadata);
+		if (metadata.getConfigData() == null)
+			metadata.setConfigData(new ConfigData());
+		metadata.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_DATASET);
+		metadata.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_BULK_DATASET);
+	
 		Metadata metadataCreated = metadataDAO.createMetadata(metadata);
 
 		MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
 		MyApi apiCreated = apiDAO.createApi(api);
-		
-		
-		
+
 		return metadataCreated.toJson();
 	}
 
@@ -153,7 +155,7 @@ public class MetadataService {
 	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("id") String id, final String metadataInput) {
 		log.debug("[MetadataService::updateMetadata] - START");
 		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
-		
+
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
@@ -166,7 +168,6 @@ public class MetadataService {
 		return metadataDAO.readMetadata(newMetadata).toJson();
 	}
 
-	
 	@SuppressWarnings("unused")
 	private int size(InputStream stream) {
 		int length = 0;

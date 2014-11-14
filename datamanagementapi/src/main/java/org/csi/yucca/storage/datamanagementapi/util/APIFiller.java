@@ -6,7 +6,6 @@ import java.util.List;
 import org.csi.yucca.storage.datamanagementapi.model.api.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.api.Dataset;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class APIFiller {
