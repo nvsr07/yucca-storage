@@ -29,6 +29,7 @@ import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
+import org.csi.yucca.storage.datamanagementapi.mongoSingleton.ConfigSingleton;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
@@ -83,13 +84,18 @@ public class MetadataService {
 
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		String supportApiCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_API_COLLECTION);
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-		Metadata metadata = new Metadata();
-		metadata.setDatasetCode(datasetCode);;
-		metadata = metadataDAO.readMetadataByCode(metadata);
+		Metadata metadata = metadataDAO.readMetadataByCode(datasetCode);
 		
-		return new MetadataWithExtraAttribute(metadata).toJson();
+		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+
+		MyApi api  = apiDAO.readApiByCode(datasetCode);
+		
+		String baseApiUrl = ConfigSingleton.getInstance().getConfig(ConfigSingleton.BASE_API_URL);
+		
+		return new MetadataWithExtraAttribute(metadata, api, baseApiUrl).toJson();
 	}
 
 	@POST

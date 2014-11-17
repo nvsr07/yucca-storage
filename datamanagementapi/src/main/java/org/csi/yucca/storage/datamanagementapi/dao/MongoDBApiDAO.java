@@ -79,4 +79,14 @@ public class MongoDBApiDAO {
 		apiLoaded.setId(id.toString());
 		return apiLoaded;
 	}
+	
+	public MyApi readApiByCode(String apiCode) {
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("apiCode", apiCode);
+		DBObject data = collection.find(searchQuery).one();
+		ObjectId id = (ObjectId) data.get("_id");
+		MyApi apiLoaded = MyApi.fromJson(JSON.serialize(data));
+		apiLoaded.setId(id.toString());
+		return apiLoaded;
+	}
 }

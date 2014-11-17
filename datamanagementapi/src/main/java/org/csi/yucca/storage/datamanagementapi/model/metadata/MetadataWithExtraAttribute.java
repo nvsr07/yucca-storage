@@ -1,5 +1,6 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
+import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
 import com.google.gson.Gson;
@@ -20,10 +21,9 @@ public class MetadataWithExtraAttribute {
 	public MetadataWithExtraAttribute() {
 	}
 
-	public MetadataWithExtraAttribute(Metadata metadata) {
+	public MetadataWithExtraAttribute(Metadata metadata, MyApi api, String baseApiPath) {
 		this.setMetadata(metadata);
-		String baseApiPath = "BASE_API_URL";
-		setApiPath(baseApiPath + metadata.getDatasetCode() + "/");
+		setApiPath(baseApiPath + api.getApiCode() + "/");
 		setApiMetadataPath(getApiPath() + "$metadata");
 		setApiMeasurePath(getApiPath() + "$measure");
 

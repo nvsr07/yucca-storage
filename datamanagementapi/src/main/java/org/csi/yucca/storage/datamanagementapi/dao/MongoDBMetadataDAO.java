@@ -86,9 +86,9 @@ public class MongoDBMetadataDAO {
 		return metadataLoaded;
 	}
 
-	public Metadata readMetadataByCode(Metadata metadata) {
+	public Metadata readMetadataByCode(String metadataCode) {
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("datasetCode", metadata.getDatasetCode());
+		searchQuery.put("datasetCode", metadataCode);
 
 		DBObject data = collection.find(searchQuery).one();
 		ObjectId id = (ObjectId) data.get("_id");
