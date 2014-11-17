@@ -8,9 +8,9 @@ import com.google.gson.GsonBuilder;
 
 public class MetadataWithExtraAttribute {
 
-	private String apiPath;
-	private String apiMetadataPath;
-	private String apiMeasurePath;
+	private String apiUrl;
+	private String apiMetadataUrl;
+	private String apiMeasureUrl;
 	private Metadata metadata;
 
 	public static MetadataWithExtraAttribute fromJson(String json) {
@@ -21,11 +21,11 @@ public class MetadataWithExtraAttribute {
 	public MetadataWithExtraAttribute() {
 	}
 
-	public MetadataWithExtraAttribute(Metadata metadata, MyApi api, String baseApiPath) {
+	public MetadataWithExtraAttribute(Metadata metadata, MyApi api, String baseApiUrl) {
 		this.setMetadata(metadata);
-		setApiPath(baseApiPath + api.getApiCode() + "/");
-		setApiMetadataPath(getApiPath() + "$metadata");
-		setApiMeasurePath(getApiPath() + "$measure");
+		setApiUrl(baseApiUrl + api.getApiCode() + "/");
+		setApiMetadataUrl(getApiUrl() + "$metadata");
+		setApiMeasureUrl(getApiUrl() + "$measure");
 
 	}
 
@@ -34,28 +34,28 @@ public class MetadataWithExtraAttribute {
 		return gson.toJson(this);
 	}
 
-	public String getApiPath() {
-		return apiPath;
+	public String getApiUrl() {
+		return apiUrl;
 	}
 
-	public String getApiMetadataPath() {
-		return apiMetadataPath;
+	public String getApiMetadataUrl() {
+		return apiMetadataUrl;
 	}
 
-	public String getApiMeasurePath() {
-		return apiMeasurePath;
+	public String getApiMeasureUrl() {
+		return apiMeasureUrl;
 	}
 
-	public void setApiPath(String apiPath) {
-		this.apiPath = apiPath;
+	public void setApiUrl(String apiUrl) {
+		this.apiUrl = apiUrl;
 	}
 
-	public void setApiMetadataPath(String apiMetadataPath) {
-		this.apiMetadataPath = apiMetadataPath;
+	public void setApiMetadataUrl(String apiMetadataUrl) {
+		this.apiMetadataUrl = apiMetadataUrl;
 	}
 
-	public void setApiMeasurePath(String apiMeasurePath) {
-		this.apiMeasurePath = apiMeasurePath;
+	public void setApiMeasureUrl(String apiMeasureUrl) {
+		this.apiMeasureUrl = apiMeasureUrl;
 	}
 
 	public Metadata getMetadata() {

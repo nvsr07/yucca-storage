@@ -66,8 +66,6 @@ public class Metadata extends AbstractEntity {
 
 	public void setIdDataset(Long idDataset) {
 		this.idDataset = idDataset;
-		generateCode();
-		generateNameSpace();
 	}
 
 	public String getDatasetCode() {
@@ -108,7 +106,7 @@ public class Metadata extends AbstractEntity {
 		setDatasetCode(code);
 	}
 
-	private void generateNameSpace() {
+	public void generateNameSpace() {
 		if (idDataset != null && getConfigData() != null) {
 			String nameSpace = Constants.API_NAMESPACE_BASE + "." + getConfigData().getTenantCode() + "." + getDatasetCode();
 			getConfigData().setEntityNameSpace(nameSpace);

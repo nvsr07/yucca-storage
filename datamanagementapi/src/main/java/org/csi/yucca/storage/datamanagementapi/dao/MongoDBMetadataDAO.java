@@ -34,6 +34,9 @@ public class MongoDBMetadataDAO {
 		for (int i = 0; i < 5; i++) {
 			try {
 				metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
+				metadata.generateCode();
+				metadata.generateNameSpace();
+
 				String json = metadata.toJson();
 				DBObject dbObject = (DBObject) JSON.parse(json);
 

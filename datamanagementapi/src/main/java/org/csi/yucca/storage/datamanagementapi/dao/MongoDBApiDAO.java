@@ -29,6 +29,7 @@ public class MongoDBApiDAO {
 		for (int i = 0; i < 5; i++) {
 			try {
 				api.setIdApi(MongoDBUtils.getIdForInsert(this.collection, "idApi"));
+				api.generateNameSpace();
 				String json = api.toJson();
 				DBObject dbObject = (DBObject) JSON.parse(json);
 				this.collection.insert(dbObject);

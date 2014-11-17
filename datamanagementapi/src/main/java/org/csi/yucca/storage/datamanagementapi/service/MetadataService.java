@@ -81,6 +81,7 @@ public class MetadataService {
 		log.debug("[MetadataService::get] - START - datasetCode: " + datasetCode);
 		System.out.println("DatasetItem requested with datasetCode=" + datasetCode);
 		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		//MongoClient mongo  = MongoSingleton.getMongoClient();
 
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);

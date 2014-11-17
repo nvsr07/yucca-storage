@@ -120,7 +120,6 @@ public class MyApi {
 
 	public void setApiCode(String apiCode) {
 		this.apiCode = apiCode;
-		generateNameSpace();
 	}
 	
 	public String getId() {
@@ -141,7 +140,7 @@ public class MyApi {
 		return gson.toJson(this);
 	}
 
-	private void generateNameSpace() {
+	public void generateNameSpace() {
 		if (getApiCode() != null && getConfigData() != null) {
 			String nameSpace = Constants.API_NAMESPACE_BASE + "." + getConfigData().getTenantCode() + "." + getApiCode();
 			getConfigData().setEntityNameSpace(nameSpace);
