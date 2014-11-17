@@ -26,11 +26,7 @@ public class MongoDBMetadataDAO {
 	}
 
 	public Metadata createMetadata(Metadata metadata) {
-		metadata.setDatasetVersion(1);
-		metadata.getConfigData().setCurrent(1);
-		if (metadata.getInfo() == null)
-			metadata.setInfo(new Info());
-		metadata.getInfo().setRegistrationDate(new Date());
+		
 		for (int i = 0; i < 5; i++) {
 			try {
 				metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));

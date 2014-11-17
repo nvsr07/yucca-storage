@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
 import org.csi.yucca.storage.datamanagementapi.mongoSingleton.ConfigSingleton;
@@ -140,10 +142,16 @@ public class MetadataService {
 		Metadata metadata = Metadata.fromJson(datasetMetadata);
 		CreateDatasetResponse createDatasetResponse = new CreateDatasetResponse();
 
+		metadata.setDatasetVersion(1);
 		if (metadata.getConfigData() == null)
 			metadata.setConfigData(new ConfigData());
 		metadata.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_DATASET);
 		metadata.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_BULK_DATASET);
+		metadata.getConfigData().setCurrent(1);
+		if (metadata.getInfo() == null)
+			metadata.setInfo(new Info());
+		metadata.getInfo().setRegistrationDate(new Date());
+
 
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
 		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
