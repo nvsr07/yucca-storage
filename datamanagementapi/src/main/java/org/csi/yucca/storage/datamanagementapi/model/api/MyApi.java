@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
 import com.google.gson.Gson;
@@ -16,7 +17,7 @@ public class MyApi {
 	private String id;
 
 	@Expose
-	private Integer idApi;
+	private Long idApi;
 	@Expose
 	private String apiName;
 	@Expose
@@ -32,7 +33,7 @@ public class MyApi {
 	 * 
 	 * @return The idApi
 	 */
-	public Integer getIdApi() {
+	public Long getIdApi() {
 		return idApi;
 	}
 
@@ -41,7 +42,7 @@ public class MyApi {
 	 * @param idApi
 	 *            The idApi
 	 */
-	public void setIdApi(Integer idApi) {
+	public void setIdApi(Long idApi) {
 		this.idApi = idApi;
 	}
 
@@ -119,6 +120,7 @@ public class MyApi {
 
 	public void setApiCode(String apiCode) {
 		this.apiCode = apiCode;
+		generateNameSpace();
 	}
 	
 	public String getId() {
@@ -139,12 +141,21 @@ public class MyApi {
 		return gson.toJson(this);
 	}
 
+	private void generateNameSpace() {
+		if (getApiCode() != null && getConfigData() != null) {
+			String nameSpace = Constants.API_NAMESPACE_BASE + "." + getConfigData().getTenantCode() + "." + getApiCode();
+			getConfigData().setEntityNameSpace(nameSpace);
+		}
+	}
+
+	
 	public static MyApi createFromMetadataDataset(Metadata metadata){
 		MyApi api = new MyApi();
 		if(metadata!=null){
 			if(metadata.getInfo()!=null && metadata.getInfo().getDescription()!=null)
 				api.setApiDescription("API - " + metadata.getInfo().getDescription());
 			
+			api.setApiCode(metadata.getDatasetCode());
 			ConfigData configData = new ConfigData();
 			configData.setIdTenant(metadata.getConfigData().getIdTenant());
 			configData.setTenantCode(metadata.getConfigData().getTenantCode());

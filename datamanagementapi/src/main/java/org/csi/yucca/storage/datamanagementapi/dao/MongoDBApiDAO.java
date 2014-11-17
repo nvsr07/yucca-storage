@@ -3,6 +3,7 @@ package org.csi.yucca.storage.datamanagementapi.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 
@@ -16,17 +17,28 @@ import com.mongodb.util.JSON;
 
 public class MongoDBApiDAO {
 	private DBCollection collection;
+	
+	static Logger log = Logger.getLogger(MongoDBApiDAO.class);
+
 
 	public MongoDBApiDAO(MongoClient mongo, String db, String collection) {
 		this.collection = mongo.getDB(db).getCollection(collection);
 	}
 
 	public MyApi createApi(MyApi api) {
-		String json = api.toJson();
-		DBObject dbObject = (DBObject) JSON.parse(json);
-		this.collection.insert(dbObject);
-		ObjectId id = (ObjectId) dbObject.get("_id");
-		api.setId(id.toString());
+		for (int i = 0; i < 5; i++) {
+			try {
+				api.setIdApi(MongoDBUtils.getIdForInsert(this.collection, "idApi"));
+				String json = api.toJson();
+				DBObject dbObject = (DBObject) JSON.parse(json);
+				this.collection.insert(dbObject);
+				ObjectId id = (ObjectId) dbObject.get("_id");
+				api.setId(id.toString());
+				break;
+			} catch (Exception e) {
+				log.error("[] - ERROR in insert. Attempt " + i + " - message: " + e.getMessage());
+			}
+		}
 		return api;
 	}
 

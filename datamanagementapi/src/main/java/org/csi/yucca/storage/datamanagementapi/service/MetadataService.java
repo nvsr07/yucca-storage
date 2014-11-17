@@ -28,6 +28,10 @@ import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
+import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
+import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
+import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
 import com.google.gson.Gson;
@@ -69,12 +73,12 @@ public class MetadataService {
 	}
 
 	@GET
-	@Path("/{tenant}/{id}")
+	@Path("/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String get(@PathParam("tenant") String tenant, @PathParam("id") String id) {
+	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) {
 		// select
-		log.debug("[MetadataService::get] - START - id: " + id);
-		System.out.println("DatasetItem requested with id=" + id);
+		log.debug("[MetadataService::get] - START - datasetCode: " + datasetCode);
+		System.out.println("DatasetItem requested with datasetCode=" + datasetCode);
 		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
 
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
@@ -82,10 +86,10 @@ public class MetadataService {
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		Metadata metadata = new Metadata();
-		metadata.setId(id);
-		metadata = metadataDAO.readMetadata(metadata);
-
-		return metadata.toJson();
+		metadata.setDatasetCode(datasetCode);;
+		metadata = metadataDAO.readMetadataByCode(metadata);
+		
+		return new MetadataWithExtraAttribute(metadata).toJson();
 	}
 
 	@POST
@@ -125,28 +129,47 @@ public class MetadataService {
 			e.printStackTrace();
 		}
 
-		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
-
-		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
-		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
-		
-		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-
-		String supportApiCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_API_COLLECTION);
-		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
-
+		log.debug("[MetadataService::createMetadata] - encoding: " + encoding + ", formatType: " + formatType + ", csvSeparator: " + csvSeparator);
 		Metadata metadata = Metadata.fromJson(datasetMetadata);
+		CreateDatasetResponse createDatasetResponse = new CreateDatasetResponse();
+
 		if (metadata.getConfigData() == null)
 			metadata.setConfigData(new ConfigData());
 		metadata.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_DATASET);
 		metadata.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_BULK_DATASET);
-	
-		Metadata metadataCreated = metadataDAO.createMetadata(metadata);
 
-		MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
-		MyApi apiCreated = apiDAO.createApi(api);
+		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
+		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
+		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
+			createDatasetResponse.setErrors(checkFileToWriteErrors);
+		} else {
+			MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
 
-		return metadataCreated.toJson();
+			String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
+			String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+
+			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+
+			String supportApiCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_API_COLLECTION);
+			MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+
+			Metadata metadataCreated = metadataDAO.createMetadata(metadata);
+
+			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
+			MyApi apiCreated = apiDAO.createApi(api);
+
+			createDatasetResponse.setMetadata(metadataCreated);
+			createDatasetResponse.setApi(apiCreated);
+			try {
+				dataUpload.writeFileToMongo(mongo,supportDb, "prova_ale_dati", metadataCreated);
+			} catch (Exception e) {
+				log.debug("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
+				createDatasetResponse.addException(e);
+				e.printStackTrace();
+			}
+		}
+
+		return createDatasetResponse.toJson();
 	}
 
 	@PUT
@@ -223,4 +246,6 @@ public class MetadataService {
 		}
 		return rows;
 	}
+
+	
 }

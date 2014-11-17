@@ -34,10 +34,9 @@ public class MongoDBMetadataDAO {
 		for (int i = 0; i < 5; i++) {
 			try {
 				metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
-				
 				String json = metadata.toJson();
 				DBObject dbObject = (DBObject) JSON.parse(json);
-				
+
 				this.collection.insert(dbObject);
 				ObjectId id = (ObjectId) dbObject.get("_id");
 				metadata.setId(id.toString());
@@ -86,4 +85,16 @@ public class MongoDBMetadataDAO {
 		metadataLoaded.setId(id.toString());
 		return metadataLoaded;
 	}
+
+	public Metadata readMetadataByCode(Metadata metadata) {
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("datasetCode", metadata.getDatasetCode());
+
+		DBObject data = collection.find(searchQuery).one();
+		ObjectId id = (ObjectId) data.get("_id");
+		Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(data));
+		metadataLoaded.setId(id.toString());
+		return metadataLoaded;
+	}
+
 }

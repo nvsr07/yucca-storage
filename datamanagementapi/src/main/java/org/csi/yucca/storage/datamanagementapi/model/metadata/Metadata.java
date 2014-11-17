@@ -1,5 +1,6 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
+import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
@@ -66,6 +67,7 @@ public class Metadata extends AbstractEntity {
 	public void setIdDataset(Long idDataset) {
 		this.idDataset = idDataset;
 		generateCode();
+		generateNameSpace();
 	}
 
 	public String getDatasetCode() {
@@ -84,7 +86,7 @@ public class Metadata extends AbstractEntity {
 		this.datasetVersion = datasetVersion;
 	}
 
-	public String generateCode() {
+	public void generateCode() {
 		String code = null;
 
 		// "ds_debsStream_123", // per Stream "ds"_<streamCode>_<idDataset>, per
@@ -103,7 +105,14 @@ public class Metadata extends AbstractEntity {
 			code = prefix + datasetNameSafe + "_" + idDataset;
 
 		}
-		return code;
+		setDatasetCode(code);
+	}
+
+	private void generateNameSpace() {
+		if (idDataset != null && getConfigData() != null) {
+			String nameSpace = Constants.API_NAMESPACE_BASE + "." + getConfigData().getTenantCode() + "." + getDatasetCode();
+			getConfigData().setEntityNameSpace(nameSpace);
+		}
 	}
 
 }
