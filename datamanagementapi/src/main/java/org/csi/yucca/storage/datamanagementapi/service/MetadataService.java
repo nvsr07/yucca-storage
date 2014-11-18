@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
 import org.csi.yucca.storage.datamanagementapi.mongoSingleton.ConfigSingleton;
+import org.csi.yucca.storage.datamanagementapi.mongoSingleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
@@ -58,10 +60,10 @@ public class MetadataService {
 	@GET
 	@Path("/{tenant}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAll(@PathParam("tenant") String tenant) {
+	public String getAll(@PathParam("tenant") String tenant) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getAll] - START");
-		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
-
+		//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		MongoClient mongo = MongoSingleton.getMongoClient();
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
@@ -78,12 +80,12 @@ public class MetadataService {
 	@GET
 	@Path("/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) {
+	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException, UnknownHostException {
 		// select
 		log.debug("[MetadataService::get] - START - datasetCode: " + datasetCode);
 		System.out.println("DatasetItem requested with datasetCode=" + datasetCode);
-		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
-		//MongoClient mongo  = MongoSingleton.getMongoClient();
+		//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		MongoClient mongo  = MongoSingleton.getMongoClient();
 
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
@@ -104,7 +106,7 @@ public class MetadataService {
 	@POST
 	@Path("/{tenant}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String createMetadata(@PathParam("tenant") String tenant, @Context HttpServletRequest request) {
+	public String createMetadata(@PathParam("tenant") String tenant, @Context HttpServletRequest request) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::createMetadata] - START");
 
 		String datasetMetadata = null;
@@ -158,7 +160,8 @@ public class MetadataService {
 		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
 			createDatasetResponse.setErrors(checkFileToWriteErrors);
 		} else {
-			MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+			//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+			MongoClient mongo = MongoSingleton.getMongoClient();
 
 			String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 			String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
@@ -176,7 +179,7 @@ public class MetadataService {
 			createDatasetResponse.setMetadata(metadataCreated);
 			createDatasetResponse.setApi(apiCreated);
 			try {
-				dataUpload.writeFileToMongo(mongo,supportDb, "prova_ale_dati", metadataCreated);
+				dataUpload.writeFileToMongo(mongo, "DB_"+tenant, "data",  metadataCreated);
 			} catch (Exception e) {
 				log.debug("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
 				createDatasetResponse.addException(e);
@@ -190,9 +193,10 @@ public class MetadataService {
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{tenant}/{id}")
-	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("id") String id, final String metadataInput) {
+	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("id") String id, final String metadataInput) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::updateMetadata] - START");
-		MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		MongoClient mongo = MongoSingleton.getMongoClient();
 
 		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
 		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);

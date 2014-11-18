@@ -12,6 +12,7 @@ import com.mongodb.MongoClient;
 @WebListener
 public class MongoDBContextListener implements ServletContextListener {
 	
+	@Deprecated
 	public static final String MONGO_CLIENT = "MONGO_CLIENT";
 	public static final String SUPPORT_DB = "SUPPORT_DB";
 	public static final String SUPPORT_DATASET_COLLECTION = "SUPPORT_DATASET_COLLECTION";
