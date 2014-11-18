@@ -16,8 +16,6 @@ public class ConfigSingleton {
 	public static final String MONGO_COLLECTION_API = "MONGO_COLLECTION_API";
 	public static final String MONGO_COLLECTION_STREAM = "MONGO_COLLECTION_STREAM";
 	public static final String MONGO_COLLECTION_TENANT = "MONGO_COLLECTION_TENANT";
-	public static final String MONGO_API_ADDRESS = "MONGO_API_ADDRESS";
-	public static final String MONGO_STREAM_TOPIC = "MONGO_STREAM_TOPIC";
 	public static final String MONGO_USERNAME = "MONGO_USERNAME";
 	public static final String MONGO_PASSWORD = "MONGO_PASSWORD";
 	public static final String BASE_API_URL = "BASE_API_URL";

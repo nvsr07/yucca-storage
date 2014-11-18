@@ -15,8 +15,6 @@ public class ConfigParamsSingleton {
 	public static final String MONGO_COLLECTION_API = "MONGO_COLLECTION_API";
 	public static final String MONGO_COLLECTION_STREAM = "MONGO_COLLECTION_STREAM";
 	public static final String MONGO_COLLECTION_TENANT = "MONGO_COLLECTION_TENANT";
-	public static final String MONGO_API_ADDRESS = "MONGO_API_ADDRESS";
-	public static final String MONGO_STREAM_TOPIC = "MONGO_STREAM_TOPIC";
 	public static final String MONGO_USERNAME = "MONGO_USERNAME";
 	public static final String MONGO_PASSWORD = "MONGO_PASSWORD";
 	public static final String BASE_API_URL = "BASE_API_URL";
@@ -35,8 +33,6 @@ public class ConfigParamsSingleton {
 		params.put(MONGO_COLLECTION_DATASET, rb.getString(MONGO_COLLECTION_DATASET));
 		params.put(MONGO_COLLECTION_API, rb.getString(MONGO_COLLECTION_API));
 		params.put(MONGO_COLLECTION_STREAM, rb.getString(MONGO_COLLECTION_STREAM));
-		params.put(MONGO_API_ADDRESS, rb.getString(MONGO_API_ADDRESS));
-		params.put(MONGO_STREAM_TOPIC, rb.getString(MONGO_STREAM_TOPIC));
 		params.put(MONGO_USERNAME, rb.getString(MONGO_USERNAME));
 		params.put(MONGO_PASSWORD, rb.getString(MONGO_PASSWORD));
 		params.put(MONGO_DB_AUTH, rb.getString(MONGO_DB_AUTH));
