@@ -17,62 +17,61 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class MetadataFiller {
 
-	
+
 	static public Metadata fillMetadata(Stream stream) {
-		
+
 		System.out.println("FILL METADATA OBJECT");
-		
+
 		Metadata myMeta = new Metadata();
-		
-		myMeta.setIdDataset(stream.getIdStream().longValue());
-		String datasetCode = "ds_"+stream.getCodiceStream()+"_";
-		myMeta.setDatasetCode(datasetCode);
+
+		//		String datasetCode = "ds_"+stream.getCodiceStream()+"_"; calculation on insert
+		//		myMeta.setDatasetCode(datasetCode);
 		myMeta.setDatasetVersion(stream.getDeploymentVersion());
 		ConfigData cf = new ConfigData();
 		cf.setCurrent(1);
 		cf.setType("dataset");
 		cf.setSubtype("streamDataset");
-		cf.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+"."+datasetCode);
+		//		cf.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+".");
 		cf.setDatasetStatus(stream.getDeploymentStatusCode());
 		cf.setIdTenant(stream.getIdTenant());
 		cf.setTenantCode(stream.getCodiceTenant());
 
 		myMeta.setConfigData(cf );
-		
+
 		Info info= new Info();
 		info.setCopyright(stream.getCopyright());
 		info.setDataDomain(stream.getDomainStream());
-		info.setDatasetName("Dataset " +stream.getNomeStream());
+		info.setDatasetName(stream.getCodiceStream());
 		info.setDescription("Dataset " +stream.getNomeStream());
 		info.setDisclaimer(stream.getDisclaimer());
-		
+
 		info.setFps(stream.getFps());
 		info.setLicense(stream.getLicence());
-		
-		if(stream.getRegistrationDate()!=null){
-		Date date;
-		try {
-			date = new SimpleDateFormat("dd/MM/yy").parse(stream.getRegistrationDate());
-			info.setRegistrationDate(date);
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		Date date=null;
+		if(stream.getRegistrationDate()!=null){		
+			try {
+				date = new SimpleDateFormat("yyyy/mm/dd hh:mm:ss").parse(stream.getRegistrationDate());
+			} catch (ParseException e) {
+				date = new Date();
+			}
+		}else{
+			date = new Date();
 		}
-		
-		}
+		info.setRegistrationDate(date);
 		info.setRequestornEmail(stream.getMailRichiedente());
 		info.setRequestorName(stream.getNomeRichiedente());
 		info.setRequestorSurname(stream.getCognomeRichiedente());
 		info.setVisibility(stream.getVisibility());
-		
-		
-		
+
+
+
 		Componenti comp = stream.getComponenti();
 		if(comp!=null){
 			List<Element> elem = comp.getElement();
 			if(elem!=null){
 				List<Field> fields = new ArrayList<Field>();
-				
+
 				for(Element el : elem){
 
 					Field f = new Field();	
@@ -86,7 +85,7 @@ public class MetadataFiller {
 				info.setFields(fields.toArray(new Field[0]));
 			}			
 		}
-		
+
 		List<Tag> tags = new ArrayList<Tag>();
 		if(stream.getStreamTags()!=null && stream.getStreamTags().getTag()!=null){
 			for(  org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag t : stream.getStreamTags().getTag()){
@@ -95,13 +94,13 @@ public class MetadataFiller {
 				tags.add(tag);
 			}
 		}
-		
+
 		info.setTags(tags.toArray(new Tag[0]));
-		
-		
+
+
 		myMeta.setInfo(info);
-		
+
 		return myMeta;
 	}
-	
+
 }

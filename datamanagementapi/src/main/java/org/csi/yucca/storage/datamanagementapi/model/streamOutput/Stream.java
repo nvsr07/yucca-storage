@@ -48,7 +48,7 @@ public class Stream {
     @Expose
     private String deploymentStatusDesc;
     @Expose
-    private Boolean publishStream;
+    private Integer publishStream;
     @Expose
     private Double fps;
     @Expose
@@ -453,7 +453,7 @@ public class Stream {
      * @return
      *     The publishStream
      */
-    public Boolean getPublishStream() {
+    public Integer getPublishStream() {
         return publishStream;
     }
 
@@ -462,7 +462,7 @@ public class Stream {
      * @param publishStream
      *     The publishStream
      */
-    public void setPublishStream(Boolean publishStream) {
+    public void setPublishStream(Integer publishStream) {
         this.publishStream = publishStream;
     }
 

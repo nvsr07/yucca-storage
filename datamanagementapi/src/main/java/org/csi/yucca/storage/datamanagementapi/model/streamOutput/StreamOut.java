@@ -5,6 +5,8 @@ import com.google.gson.annotations.Expose;
 
 public class StreamOut {
 
+	private String id;
+	
     @Expose
     private Integer idStream;
     @Expose
@@ -15,6 +17,15 @@ public class StreamOut {
     private ConfigData configData;
     @Expose
     private Streams streams;
+    
+    
+    public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
     /**
      * 
@@ -105,5 +116,7 @@ public class StreamOut {
     public void setStreams(Streams streams) {
         this.streams = streams;
     }
+
+	
 
 }

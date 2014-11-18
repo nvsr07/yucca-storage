@@ -16,8 +16,7 @@ public class APIFiller {
 
 		MyApi api = new MyApi();
 
-		String apiCode = "ds_" + stream.getCodiceStream() + "-" + stream.getIdStream();// apiCode
-		api.setIdApi(new Long(stream.getIdStream()));
+		String apiCode = "ds_" + stream.getCodiceStream() + "_" + idDataset;// apiCode
 		api.setApiDescription("Dataset " + stream.getNomeStream());
 		api.setApiName("Dataset " + stream.getNomeStream());
 		api.setApiCode(apiCode);

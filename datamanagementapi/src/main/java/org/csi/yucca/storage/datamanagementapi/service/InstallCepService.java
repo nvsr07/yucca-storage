@@ -13,6 +13,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
+import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
@@ -79,14 +80,17 @@ public class InstallCepService {
 				DB db = mongo.getDB(mongoParams.get("MONGO_DB_META"));
 				DBCollection col = db.getCollection(mongoParams.get("MONGO_COLLECTION_DATASET"));
 				Metadata myMeta= 	MetadataFiller.fillMetadata(pojoStreams.getStreams().getStream());
-
+				
+				
+				//myMeta get persisted on db and returns the object with the id updated
+				new MongoDBMetadataDAO(mongo,mongoParams.get("MONGO_DB_META"),mongoParams.get("MONGO_COLLECTION_DATASET")).createMetadata(myMeta);
 				//				DBCollection col = db.getCollection("metadata");
-				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myMeta, Metadata.class));
-				Long idDataset =insertDatasetWithKey(col,dbObject,"idDataset",myMeta.getDatasetCode(),MAX_RETRY);
+//				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myMeta, Metadata.class));
+//				Long idDataset =insertDatasetWithKey(col,dbObject,"idDataset",myMeta.getDatasetCode(),MAX_RETRY);
 
 
-				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),idDataset);
-				StreamOut strOut = StreamFiller.fillStream(pojoStreams.getStreams().getStream(),idDataset);
+				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),myMeta.getIdDataset());
+				StreamOut strOut = StreamFiller.fillStream(pojoStreams.getStreams().getStream(),myMeta.getIdDataset());
 
 				System.out.println(gson.toJson(api, MyApi.class));
 				System.out.println(gson.toJson(strOut, StreamOut.class));
@@ -95,12 +99,14 @@ public class InstallCepService {
 
 				//stream gets the idStream from the Json
 				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_STREAM"));
-				dbObject = (DBObject)JSON.parse(gson.toJson(strOut, StreamOut.class));
+				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(strOut, StreamOut.class));
+				dbObject.removeField("id");
 				col.insert(dbObject);
 
 
 				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_API"));
 				dbObject = (DBObject)JSON.parse(gson.toJson(api, MyApi.class));
+				dbObject.removeField("id");
 				insertDocumentWithKey(col,dbObject,"idApi",MAX_RETRY);
 				//				col.insert(dbObject);
 
@@ -133,24 +139,24 @@ public class InstallCepService {
 		}
 		return id;
 	}
-	private static Long insertDatasetWithKey(DBCollection col,DBObject obj,String key,String datasetCode,Integer maxRetry) throws Exception{
-		Long id =0L;
-		try{
-			BasicDBObject sortobj = new BasicDBObject();
-			sortobj.append(key, -1);			
-			DBObject doc = col.find().sort(sortobj).limit(1).one();
-			System.out.println(doc);
-			id = ((Number)doc.get(key)).longValue() +1;
-			obj.put(key, id);
-			obj.put("datasetCode", datasetCode+id);
-			col.insert(obj);
-		}catch(Exception e){
-			if(maxRetry>0){
-				return insertDatasetWithKey(col, obj,key,datasetCode,--maxRetry);
-			}else{
-				throw e;
-			}
-		}
-		return id;
-	}
+//	private static Long insertDatasetWithKey(DBCollection col,DBObject obj,String key,String datasetCode,Integer maxRetry) throws Exception{
+//		Long id =0L;
+//		try{
+//			BasicDBObject sortobj = new BasicDBObject();
+//			sortobj.append(key, -1);			
+//			DBObject doc = col.find().sort(sortobj).limit(1).one();
+//			System.out.println(doc);
+//			id = ((Number)doc.get(key)).longValue() +1;
+//			obj.put(key, id);
+//			obj.put("datasetCode", datasetCode+id);
+//			col.insert(obj);
+//		}catch(Exception e){
+//			if(maxRetry>0){
+//				return insertDatasetWithKey(col, obj,key,datasetCode,--maxRetry);
+//			}else{
+//				throw e;
+//			}
+//		}
+//		return id;
+//	}
 }
