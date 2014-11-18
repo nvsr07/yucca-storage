@@ -23,11 +23,11 @@
 	</context-param>
 	<context-param>
 		<param-name>SUPPORT_DATASET_COLLECTION</param-name>
-		<param-value>prova_ale_supportdataset</param-value>
+		<param-value>metadata</param-value>
 	</context-param>
 	<context-param>
 		<param-name>SUPPORT_API_COLLECTION</param-name>
-		<param-value>prova_ale_supportapi</param-value>
+		<param-value>api</param-value>
 	</context-param>
 
 </web-app>
