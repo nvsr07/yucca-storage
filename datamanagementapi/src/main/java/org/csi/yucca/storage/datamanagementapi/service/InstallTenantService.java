@@ -2,8 +2,6 @@ package org.csi.yucca.storage.datamanagementapi.service;
 
 
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
@@ -13,17 +11,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
-import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.tenantin.TenantIn;
 import org.csi.yucca.storage.datamanagementapi.model.tenantout.TenantOut;
-import org.csi.yucca.storage.datamanagementapi.mongoSingleton.MongoSingleton;
-import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
-import org.csi.yucca.storage.datamanagementapi.util.ConfigParamsSingleton;
-import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
-import org.csi.yucca.storage.datamanagementapi.util.StreamFiller;
+import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.TenantFiller;
 
 import com.google.gson.Gson;
@@ -33,8 +24,6 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.util.JSON;
 
 @Path("/tenant")
@@ -42,8 +31,7 @@ public class InstallTenantService {
 
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
-	Map<String,String> mongoParams = null;
-//	MongoCredential credential=null;
+	//Map<String,String> mongoParams = null;
 
 	@Context
 	ServletContext context;
@@ -54,11 +42,7 @@ public class InstallTenantService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String createTenant(final String tenantInput) throws UnknownHostException {
 
-		mongoParams = ConfigParamsSingleton.getInstance().getParams();
-//		credential = MongoCredential.createMongoCRCredential( mongoParams.get("MONGO_DB_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
-//
-//
-//		ServerAddress serverAdd = new ServerAddress(mongoParams.get("MONGO_HOST"), Integer.parseInt(mongoParams.get("MONGO_PORT")));
+		//mongoParams = ConfigParamsSingleton.getInstance().getParams();
 		mongo =  MongoSingleton.getMongoClient();
 
 
@@ -73,8 +57,8 @@ public class InstallTenantService {
 			TenantIn tenantin = gson.fromJson(json, TenantIn.class);
 			if(tenantin != null && tenantin.getTenants()!= null && tenantin.getTenants().getTenant()!= null){
 
-				DB db = mongo.getDB(mongoParams.get("MONGO_DB_META"));
-				DBCollection col = db.getCollection(mongoParams.get("MONGO_COLLECTION_TENANT"));
+				DB db = mongo.getDB(Config.getInstance().getDbSupport());
+				DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportTenant());
 				TenantOut myTenant= 	TenantFiller.fillTenant(tenantin.getTenants().getTenant());
 
 				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myTenant, TenantOut.class));

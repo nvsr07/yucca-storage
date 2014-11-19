@@ -1,11 +1,8 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streaminput;
 
-import javax.annotation.Generated;
-
 import com.google.gson.annotations.Expose;
 
-@Generated("org.jsonschema2pojo")
 public class Element {
 
     @Expose

@@ -2,8 +2,6 @@ package org.csi.yucca.storage.datamanagementapi.service;
 
 
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
@@ -18,9 +16,9 @@ import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
-import org.csi.yucca.storage.datamanagementapi.mongoSingleton.MongoSingleton;
+import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
-import org.csi.yucca.storage.datamanagementapi.util.ConfigParamsSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.StreamFiller;
 
@@ -31,8 +29,6 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.util.JSON;
 
 @Path("/metadata")
@@ -40,7 +36,7 @@ public class InstallCepService {
 
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
-	Map<String,String> mongoParams = null;
+//	Map<String,String> mongoParams = null;
 //	MongoCredential credential=null;
 
 	@Context
@@ -53,7 +49,7 @@ public class InstallCepService {
 	public String createDataset(final String datasetInput) throws UnknownHostException {
 //		log.debug("[MetadataService::createMetadataService] - START");
 //
-		mongoParams = ConfigParamsSingleton.getInstance().getParams();
+//		mongoParams = ConfigParamsSingleton.getInstance().getParams();
 //
 //		credential = MongoCredential.createMongoCRCredential(mongoParams.get("MONGO_USERNAME"), mongoParams.get("MONGO_DB_AUTH"), mongoParams.get("MONGO_PASSWORD").toCharArray());
 //
@@ -77,13 +73,13 @@ public class InstallCepService {
 			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
 			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
 
-				DB db = mongo.getDB(mongoParams.get("MONGO_DB_META"));
-				DBCollection col = db.getCollection(mongoParams.get("MONGO_COLLECTION_DATASET"));
+				DB db = mongo.getDB(Config.getInstance().getDbSupport());
+				DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 				Metadata myMeta= 	MetadataFiller.fillMetadata(pojoStreams.getStreams().getStream());
 				
 				
 				//myMeta get persisted on db and returns the object with the id updated
-				new MongoDBMetadataDAO(mongo,mongoParams.get("MONGO_DB_META"),mongoParams.get("MONGO_COLLECTION_DATASET")).createMetadata(myMeta);
+				new MongoDBMetadataDAO(mongo,Config.getInstance().getDbSupport(),Config.getInstance().getCollectionSupportDataset()).createMetadata(myMeta);
 				//				DBCollection col = db.getCollection("metadata");
 //				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myMeta, Metadata.class));
 //				Long idDataset =insertDatasetWithKey(col,dbObject,"idDataset",myMeta.getDatasetCode(),MAX_RETRY);
@@ -98,13 +94,13 @@ public class InstallCepService {
 
 
 				//stream gets the idStream from the Json
-				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_STREAM"));
+				col = db.getCollection(Config.getInstance().getCollectionSupportStream());
 				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(strOut, StreamOut.class));
 				dbObject.removeField("id");
 				col.insert(dbObject);
 
 
-				col = db.getCollection(mongoParams.get("MONGO_COLLECTION_API"));
+				col = db.getCollection(Config.getInstance().getCollectionSupportApi());
 				dbObject = (DBObject)JSON.parse(gson.toJson(api, MyApi.class));
 				dbObject.removeField("id");
 				insertDocumentWithKey(col,dbObject,"idApi",MAX_RETRY);

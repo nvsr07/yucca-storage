@@ -104,7 +104,7 @@ public class MongoDBDataUpload {
 				while (valoriCampi != null && numColonna < valoriCampi.length && !found) {
 					String typeCode = null;
 					String fieldName = null;
-					if (Integer.parseInt(datasetMetadata.getInfo().getFields()[j].getSourceColumn()) == (numColonna + 1)) {
+					if (datasetMetadata.getInfo().getFields()[j].getSourceColumn() == (numColonna + 1)) {
 						found = true;
 						typeCode = datasetMetadata.getInfo().getFields()[j].getDataType();
 						fieldName = datasetMetadata.getInfo().getFields()[j].getFieldName();

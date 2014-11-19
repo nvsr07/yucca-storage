@@ -10,7 +10,7 @@ public class Dataset {
     @Expose
     private Integer datasetVersion;
     @Expose
-    private Integer idTenant;
+    private Long idTenant;
     @Expose
     private String tenantCode;
     @Expose
@@ -61,7 +61,7 @@ public class Dataset {
      * @return
      *     The idTenant
      */
-    public Integer getIdTenant() {
+    public Long getIdTenant() {
         return idTenant;
     }
 
@@ -70,7 +70,7 @@ public class Dataset {
      * @param idTenant
      *     The idTenant
      */
-    public void setIdTenant(Integer idTenant) {
+    public void setIdTenant(Long idTenant) {
         this.idTenant = idTenant;
     }
 

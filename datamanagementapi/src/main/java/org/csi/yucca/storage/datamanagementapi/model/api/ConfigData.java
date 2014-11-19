@@ -6,7 +6,7 @@ import com.google.gson.annotations.Expose;
 public class ConfigData {
 
     @Expose
-    private Integer idTenant;
+    private Long idTenant;
     @Expose
     private String tenantCode;
     @Expose
@@ -21,7 +21,7 @@ public class ConfigData {
      * @return
      *     The idTenant
      */
-    public Integer getIdTenant() {
+    public Long getIdTenant() {
         return idTenant;
     }
 
@@ -30,7 +30,7 @@ public class ConfigData {
      * @param idTenant
      *     The idTenant
      */
-    public void setIdTenant(Integer idTenant) {
+    public void setIdTenant(Long idTenant) {
         this.idTenant = idTenant;
     }
 

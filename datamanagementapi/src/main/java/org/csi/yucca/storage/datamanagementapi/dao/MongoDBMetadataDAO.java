@@ -1,12 +1,10 @@
 package org.csi.yucca.storage.datamanagementapi.dao;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 
 import com.mongodb.BasicDBObject;

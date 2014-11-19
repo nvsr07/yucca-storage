@@ -1,10 +1,14 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.LinkedList;
@@ -18,8 +22,11 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -29,18 +36,23 @@ import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
-import org.csi.yucca.storage.datamanagementapi.mongoSingleton.ConfigSingleton;
-import org.csi.yucca.storage.datamanagementapi.mongoSingleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
+import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 
 @Path("/dataset")
@@ -62,10 +74,9 @@ public class MetadataService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getAll(@PathParam("tenant") String tenant) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getAll] - START");
-		//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
 		MongoClient mongo = MongoSingleton.getMongoClient();
-		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
-		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		String result = "[]";
@@ -78,28 +89,86 @@ public class MetadataService {
 	}
 
 	@GET
+	@Path("/download/{tenant}/{datasetCode}/{format}")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @PathParam("format") String format)
+			throws NumberFormatException, UnknownHostException {
+		log.debug("[MetadataService::downloadData] - START tenant: " + tenant + "|datasetCode: " + datasetCode + "|format: " + format);
+		final String separator = ";";
+
+		if (format == null) {
+			format = "csv";
+		}
+
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		Metadata metadata = metadataDAO.readMetadataByCode(datasetCode);
+
+		String fileName = metadata.getInfo().getDatasetName() + "." + format;
+
+		final List<Object> header = new LinkedList<Object>();
+		for (Field field : metadata.getInfo().getFields()) {
+			header.add(field.getFieldName());
+		}
+
+		// DBCollection dataCollection = mongo.getDB("DB_" +
+		// tenant).getCollection("data");
+		DBCollection dataCollection = mongo.getDB("smartlab").getCollection("prova_ale_dati");
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("idDataset", metadata.getIdDataset());
+
+		final DBCursor cursor = dataCollection.find(searchQuery);
+
+		StreamingOutput stream = new StreamingOutput() {
+
+			public void write(OutputStream os) throws IOException, WebApplicationException {
+				Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+				writer.write(concatStrings(header, separator) + "\n");
+				while (cursor.hasNext()) {
+					DBObject doc = cursor.next();
+					List<Object> row = new LinkedList<Object>();
+					for (Object fieldName : header) {
+						row.add(doc.get((String) fieldName));
+					}
+					writer.write(concatStrings(row, separator) + "\n");
+
+				}
+
+				writer.flush();
+			}
+		};
+		Response build = Response.ok(stream).header("Content-Disposition", "attachment; filename=" + fileName).header("Content-Type", "text/csv").type("text/csv")
+		.build();
+		return build;
+	}
+
+	@GET
 	@Path("/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException, UnknownHostException {
 		// select
 		log.debug("[MetadataService::get] - START - datasetCode: " + datasetCode);
 		System.out.println("DatasetItem requested with datasetCode=" + datasetCode);
-		//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
-		MongoClient mongo  = MongoSingleton.getMongoClient();
+		// MongoClient mongo = (MongoClient)
+		// context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+		String supportApiCollection = Config.getInstance().getCollectionSupportApi();
 
-		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
-		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
-		String supportApiCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_API_COLLECTION);
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		Metadata metadata = metadataDAO.readMetadataByCode(datasetCode);
-		
+
 		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
 
-		MyApi api  = apiDAO.readApiByCode(datasetCode);
-		
-		String baseApiUrl = ConfigSingleton.getInstance().getConfig(ConfigSingleton.BASE_API_URL);
-		
+		MyApi api = apiDAO.readApiByCode(datasetCode);
+
+		String baseApiUrl = Config.getInstance().getBaseApiUrl();
+
 		return new MetadataWithExtraAttribute(metadata, api, baseApiUrl).toJson();
 	}
 
@@ -152,34 +221,50 @@ public class MetadataService {
 		metadata.getConfigData().setCurrent(1);
 		if (metadata.getInfo() == null)
 			metadata.setInfo(new Info());
-		metadata.getInfo().setRegistrationDate(new Date());
 
+		if (metadata.getInfo().getFields() != null) {
+			for (Field field : metadata.getInfo().getFields()) {
+				if (field != null && field.getDataType() == null)
+					field.setDataType("string");
+			}
+		}
+		metadata.getInfo().setRegistrationDate(new Date());
 
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
 		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
 		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
 			createDatasetResponse.setErrors(checkFileToWriteErrors);
 		} else {
-			//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
 			MongoClient mongo = MongoSingleton.getMongoClient();
-
-			String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
-			String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+			String supportDb = Config.getInstance().getDbSupport();
+			String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
 			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-			String supportApiCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_API_COLLECTION);
+			String supportApiCollection =Config.getInstance().getCollectionSupportApi();
 			MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+
+			// FIXME improve...
+			BasicDBObject searchTenantQuery = new BasicDBObject();
+			searchTenantQuery.put("tenantCode", tenant);
+			DBCollection tenantCollection = mongo.getDB(supportDb).getCollection("tenant");
+			DBObject tenantData = tenantCollection.find(searchTenantQuery).one();
+			Long idTenant = ((Number) tenantData.get("idTenant")).longValue();
+
+			metadata.getConfigData().setIdTenant(idTenant);
 
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata);
 
 			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
+			api.getConfigData().setType("api");
+			api.getConfigData().setSubtype("apiMultiBulk");
+
 			MyApi apiCreated = apiDAO.createApi(api);
 
 			createDatasetResponse.setMetadata(metadataCreated);
 			createDatasetResponse.setApi(apiCreated);
 			try {
-				dataUpload.writeFileToMongo(mongo, "DB_"+tenant, "data",  metadataCreated);
+				dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
 			} catch (Exception e) {
 				log.debug("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
 				createDatasetResponse.addException(e);
@@ -193,13 +278,12 @@ public class MetadataService {
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{tenant}/{id}")
-	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("id") String id, final String metadataInput) throws NumberFormatException, UnknownHostException {
+	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("id") String id, final String metadataInput) throws NumberFormatException,
+			UnknownHostException {
 		log.debug("[MetadataService::updateMetadata] - START");
-		//MongoClient mongo = (MongoClient) context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
 		MongoClient mongo = MongoSingleton.getMongoClient();
-
-		String supportDb = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DB);
-		String supportDatasetCollection = (String) context.getAttribute(MongoDBContextListener.SUPPORT_DATASET_COLLECTION);
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		Metadata newMetadata = Metadata.fromJson(metadataInput);
@@ -266,5 +350,22 @@ public class MetadataService {
 		return rows;
 	}
 
-	
+	private String concatStrings(List<Object> objectList, String separator) {
+
+		String out = "";
+		int counter = 0;
+		if (objectList != null) {
+			for (Object o : objectList) {
+				if (o instanceof String)
+					out += o;
+				else
+					out += o.toString();
+				if (counter < objectList.size() - 1)
+					out += separator;
+				counter++;
+			}
+		}
+		return out;
+	}
+
 }

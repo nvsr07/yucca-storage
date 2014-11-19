@@ -7,7 +7,7 @@ import com.google.gson.GsonBuilder;
 
 public class ConfigData extends AbstractEntity {
 
-	private Integer idTenant;
+	private Long idTenant;
 	private String tenantCode;
 	private String collection;
 	private String database;
@@ -26,11 +26,11 @@ public class ConfigData extends AbstractEntity {
 		return gson.toJson(this);
 	}
 
-	public Integer getIdTenant() {
+	public Long getIdTenant() {
 		return idTenant;
 	}
 
-	public void setIdTenant(Integer idTenant) {
+	public void setIdTenant(Long idTenant) {
 		this.idTenant = idTenant;
 	}
 

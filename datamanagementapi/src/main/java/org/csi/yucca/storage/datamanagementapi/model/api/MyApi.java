@@ -158,8 +158,6 @@ public class MyApi {
 			ConfigData configData = new ConfigData();
 			configData.setIdTenant(metadata.getConfigData().getIdTenant());
 			configData.setTenantCode(metadata.getConfigData().getTenantCode());
-			configData.setType(metadata.getConfigData().getType());
-			configData.setSubtype(metadata.getConfigData().getSubtype());
 			configData.setEntityNameSpace(metadata.getConfigData().getEntityNameSpace());
 			
 			api.setConfigData(configData);
@@ -168,6 +166,7 @@ public class MyApi {
 			dataset.setIdDataset(metadata.getIdDataset());
 			dataset.setIdTenant(metadata.getConfigData().getIdTenant());
 			dataset.setTenantCode(metadata.getConfigData().getTenantCode());
+			dataset.setDatasetVersion(metadata.getDatasetVersion());
 			List<Dataset> datasetList = new LinkedList<Dataset>();
 			datasetList.add(dataset);
 			api.setDataset(datasetList);

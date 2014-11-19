@@ -9,25 +9,4 @@
 	<description>
        This is the Data Management API of The Smart Data Platform
     </description>
-	<context-param>
-		<param-name>MONGODB_HOST</param-name>
-		<param-value>tst-sdnet-bgslave1.sdp.csi.it</param-value>
-	</context-param>
-	<context-param>
-		<param-name>MONGODB_PORT</param-name>
-		<param-value>27017</param-value>
-	</context-param>
-	<context-param>
-		<param-name>SUPPORT_DB</param-name>
-		<param-value>smartlab</param-value>
-	</context-param>
-	<context-param>
-		<param-name>SUPPORT_DATASET_COLLECTION</param-name>
-		<param-value>metadata</param-value>
-	</context-param>
-	<context-param>
-		<param-name>SUPPORT_API_COLLECTION</param-name>
-		<param-value>api</param-value>
-	</context-param>
-
 </web-app>

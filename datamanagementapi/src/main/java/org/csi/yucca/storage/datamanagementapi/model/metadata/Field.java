@@ -10,7 +10,7 @@ public class Field extends AbstractEntity {
 	private String fieldName;
 	private String fieldAlias;
 	private String dataType;
-	private String sourceColumn;
+	private Integer sourceColumn;
 	private Integer isKey;
 	private String measureUnit;
 
@@ -46,11 +46,11 @@ public class Field extends AbstractEntity {
 		this.dataType = dataType;
 	}
 
-	public String getSourceColumn() {
+	public Integer getSourceColumn() {
 		return sourceColumn;
 	}
 
-	public void setSourceColumn(String sourceColumn) {
+	public void setSourceColumn(Integer sourceColumn) {
 		this.sourceColumn = sourceColumn;
 	}
 

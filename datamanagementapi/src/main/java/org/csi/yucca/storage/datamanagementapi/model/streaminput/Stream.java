@@ -7,7 +7,7 @@ import com.google.gson.annotations.Expose;
 public class Stream {
 
     @Expose
-    private Integer idTenant;
+    private Long idTenant;
     @Expose
     private Integer idVirtualEntity;
     @Expose
@@ -90,7 +90,7 @@ public class Stream {
      * @return
      *     The idTenant
      */
-    public Integer getIdTenant() {
+    public Long getIdTenant() {
         return idTenant;
     }
 
@@ -99,7 +99,7 @@ public class Stream {
      * @param idTenant
      *     The idTenant
      */
-    public void setIdTenant(Integer idTenant) {
+    public void setIdTenant(Long idTenant) {
         this.idTenant = idTenant;
     }
 
