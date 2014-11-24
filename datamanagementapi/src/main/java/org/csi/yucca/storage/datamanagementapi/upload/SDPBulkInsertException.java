@@ -1,32 +1,37 @@
 package org.csi.yucca.storage.datamanagementapi.upload;
 
-import org.csi.yucca.storage.datamanagementapi.util.json.IgnoredJSON;
-
 public class SDPBulkInsertException {
 
-	public static final int ERROR_TYPE_TOTALFIELDINROW = 1;
-	public static final int ERROR_TYPE_INVALIDTYPE = 2;
-	public static final int ERROR_TYPE_COLUMNNOTFOUND = 3;
+	public static final String[] ERROR_TYPE_UNDEFINED = new String[] { "ERROR_UNDEFINED", "Undefined error" };
+	public static final String[] ERROR_TYPE_TOTALFIELDINROW = new String[] { "ERROR_FIELD_COUNT", "Row containing an invalid number of column" };
+	public static final String[] ERROR_TYPE_INVALIDTYPE = new String[] { "ERROR_INVALIDTYPE", "Invalid data type in colum" };
+	public static final String[] ERROR_TYPE_COLUMNNOTFOUND = new String[] { "ERROR_COLUMN_NOT_FOUND", "Undefined error" };
 
 	private String rowAffected = null;
 	private Integer rowAffectedNumber = -1;
 	private Integer columnNumber = -1;
 
-	@IgnoredJSON
-	private String[] errorMessages = new String[] { "undefined error", "row containing an invalid number of column", "invalid data type in colum",
-			"column not found" };
-	private String errorDetail = null;
-	@IgnoredJSON
-	private int errorType = -1;
+	private String errorCode;
+	private String errorMessage;
+	private String errorDetail;
 
-	public SDPBulkInsertException(int errorType, String rowAffected, Integer rowAffectedNumber, Integer columnNumber, String messageDetail) {
-		this.errorDetail = messageDetail;
-		this.errorType = errorType;
+	public SDPBulkInsertException(String[] errorType, String rowAffected, Integer rowAffectedNumber, Integer columnNumber, String messageDetail) {
+		this.setErrorDetail(messageDetail);
+		this.setErrorCode(errorType[0]);
+		this.setErrorMessage(errorType[1]);
 		this.rowAffected = rowAffected;
 		this.rowAffectedNumber = rowAffectedNumber;
 		this.columnNumber = columnNumber;
-		if (this.errorType < 1 || this.errorType > 3)
-			this.errorType = 0;
+
+		String detail = "";
+		if (this.rowAffectedNumber != -1)
+			detail += "ROW " + this.rowAffectedNumber + " - ";
+		if (this.columnNumber != -1)
+			detail += " COLUMN " + this.columnNumber + " - ";
+		if (null != this.errorDetail && this.errorDetail.trim().length() > 0)
+			detail += " DETAIL " + messageDetail;
+		setErrorDetail(detail);
+
 	}
 
 	public String getRowAffected() {
@@ -41,29 +46,32 @@ public class SDPBulkInsertException {
 		return columnNumber == null ? "-" : columnNumber.toString();
 	}
 
-	public String[] getErrorMessages() {
-		return errorMessages;
-	}
-
 	public String getErrorDetail() {
 		return errorDetail;
 	}
 
-	public int getErrorType() {
-		return errorType;
+	public String toString() {
+		return getErrorDetail();
 	}
 
-	public String toString() {
-		String ret = "";
-		ret += errorMessages[this.errorType];
-		if (this.rowAffectedNumber != -1)
-			ret += " (rowNumber:" + this.rowAffectedNumber + ") ";
-		if (this.columnNumber != -1)
-			ret += " (columnNumber:" + this.columnNumber + ") ";
-		if (null != this.errorDetail && this.errorDetail.trim().length() > 0)
-			ret += " (detail: " + this.errorDetail + ")";
+	public String getErrorCode() {
+		return errorCode;
+	}
 
-		return ret;
+	public void setErrorCode(String errorCode) {
+		this.errorCode = errorCode;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public void setErrorDetail(String errorDetail) {
+		this.errorDetail = errorDetail;
 	}
 
 }

@@ -1,9 +1,14 @@
 package org.csi.yucca.storage.datamanagementapi.upload;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.util.Util;
+
+import au.com.bytecode.opencsv.CSVReader;
 
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.BulkWriteOperation;
@@ -21,8 +26,14 @@ public class MongoDBDataUpload {
 
 	}
 
-	public List<SDPBulkInsertException> checkFileToWrite(List<String> datiIn, String separatore, Metadata datasetMetadata, boolean skipFirstRow){
-		this.prepareDataInsert(datiIn, separatore, datasetMetadata, skipFirstRow);
+	public List<SDPBulkInsertException> checkFileToWrite(String datiIn, String separator, Metadata datasetMetadata, boolean skipFirstRow) {
+		try {
+			this.prepareDataInsert(datiIn, separator, datasetMetadata, skipFirstRow);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			formalErrors.add(new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_UNDEFINED, "-1", -1, -1, e.getMessage()));
+		}
 		return this.formalErrors;
 	}
 
@@ -43,12 +54,11 @@ public class MongoDBDataUpload {
 			throw new Exception("Input data contains formal Errors");
 
 		DBCollection collection = mongoClient.getDB(db).getCollection(dbcollection);
-		
 
 		if (this.mongoOperation.size() > 0) {
 			BulkWriteOperation bulkbuilder = collection.initializeUnorderedBulkOperation();
 			for (int i = 0; i < this.mongoOperation.size(); i++) {
-				
+
 				DBObject dbObject = this.mongoOperation.get(i);
 				dbObject.put("idDataset", datasetMetadata.getIdDataset());
 				dbObject.put("datasetVersion", datasetMetadata.getDatasetVersion());
@@ -56,9 +66,6 @@ public class MongoDBDataUpload {
 				bulkbuilder.insert(dbObject);
 			}
 			BulkWriteResult res = bulkbuilder.execute();
-			// System.out.println("DATA IN          --> "+datiIn.length);
-			System.out.println("******************************InsertOperations --> " + this.mongoOperation.size());
-			System.out.println("******************************InsertResults    --> " + res.getInsertedCount());
 
 			return res;
 
@@ -71,44 +78,54 @@ public class MongoDBDataUpload {
 		return this.mongoOperation.size();
 	}
 
-	private void prepareDataInsert(List<String> datiIn, String separatore, Metadata datasetMetadata, boolean skipFirstRow) {
+	private void prepareDataInsert(String dataIn, String separator, Metadata datasetMetadata, boolean skipFirstRow) throws IOException {
 
-		ArrayList<SDPBulkInsertException> errori = new ArrayList<SDPBulkInsertException>();
+		ArrayList<SDPBulkInsertException> errors = new ArrayList<SDPBulkInsertException>();
 
-		ArrayList<DBObject> operazioni = new ArrayList<DBObject>();
-		int numColonneFileIn = 0;
-		for (int i = 0; i < datiIn.size(); i++) {
+		ArrayList<DBObject> operations = new ArrayList<DBObject>();
+		char separatorChar = separator.charAt(0);
+		CSVReader reader = new CSVReader(new StringReader(dataIn), separatorChar);
 
-			String[] valoriCampi = datiIn.get(i).split(separatore);
+		int numColumnFileIn = 0;
+		String[] nextRow;
+		int lineNumber = 0;
+		while ((nextRow = reader.readNext()) != null) {
+			lineNumber++;
+			System.out.println("Line # " + lineNumber);
 
-			if (i == 0) { // first Row
-				numColonneFileIn = valoriCampi.length;
+			String[] fieldValues = nextRow;
+			String row = Util.join(nextRow, ",");
+			// for (int i = 0; i < dataIn.size(); i++) {
+
+			// String[] fieldValues = dataIn.get(i).split(separator);
+
+			if (lineNumber == 1) { // first Row
+				numColumnFileIn = fieldValues.length;
 				if (skipFirstRow)
 					continue;
 			}
 
-			if (valoriCampi.length != numColonneFileIn) {
-				SDPBulkInsertException curErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_TOTALFIELDINROW, datiIn.get(i), i, -1, "Expected "
-						+ numColonneFileIn + " columns, found " + valoriCampi.length);
-				errori.add(curErr);
+			if (fieldValues.length != numColumnFileIn) {
+				SDPBulkInsertException curErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_TOTALFIELDINROW, row, lineNumber, -1, "Expected "
+						+ numColumnFileIn + " columns, found " + fieldValues.length);
+				errors.add(curErr);
 			}
 
-			// int numColonna=0;
 			BasicDBObjectBuilder builder = BasicDBObjectBuilder.start();
-			System.out.println("inizio .. is empty --> " + builder.isEmpty());
+			System.out.println("start .. is empty --> " + builder.isEmpty());
 
-			ArrayList<SDPBulkInsertException> erroriCurrRow = new ArrayList<SDPBulkInsertException>();
+			ArrayList<SDPBulkInsertException> errorCurrentRow = new ArrayList<SDPBulkInsertException>();
 			for (int j = 0; datasetMetadata.getInfo().getFields() != null && j < datasetMetadata.getInfo().getFields().length; j++) {
-				int numColonna = 0;
+				int numColumn = 0;
 				boolean found = false;
-				while (valoriCampi != null && numColonna < valoriCampi.length && !found) {
+				while (fieldValues != null && numColumn < fieldValues.length && !found) {
 					String typeCode = null;
 					String fieldName = null;
-					if (datasetMetadata.getInfo().getFields()[j].getSourceColumn() == (numColonna + 1)) {
+					if (datasetMetadata.getInfo().getFields()[j].getSourceColumn() == (numColumn + 1)) {
 						found = true;
 						typeCode = datasetMetadata.getInfo().getFields()[j].getDataType();
 						fieldName = datasetMetadata.getInfo().getFields()[j].getFieldName();
-						String curValue = valoriCampi[numColonna];
+						String curValue = fieldValues[numColumn];
 
 						if (curValue == null || curValue.length() == 0) {
 							builder.add(fieldName, null);
@@ -132,102 +149,43 @@ public class MongoDBDataUpload {
 									builder.add(fieldName, new String(curValue));
 								}
 							} catch (Exception e) {
-								SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_INVALIDTYPE, datiIn.get(i), i,
-										numColonna, "Expected value of type " + typeCode + "  found " + curValue);
-								erroriCurrRow.add(curRowErr);
+								SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_INVALIDTYPE, row, lineNumber,
+										numColumn, "Expected value of type " + typeCode + "  found " + curValue);
+								errorCurrentRow.add(curRowErr);
 							}
 						}
 
 					}
 
-					numColonna++;
+					numColumn++;
 				}
 
 				if (!found) {
-					SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_COLUMNNOTFOUND, datiIn.get(i), i, -1,
+					SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_COLUMNNOTFOUND, row, lineNumber, -1,
 							" cannot find column " + datasetMetadata.getInfo().getFields()[j].getFieldName());
-					erroriCurrRow.add(curRowErr);
+					errorCurrentRow.add(curRowErr);
 				}
 
 			}
 
-			if (erroriCurrRow != null && erroriCurrRow.size() > 0) {
-				errori.addAll(erroriCurrRow);
-				System.out.println("fine riga ..errori");
+			if (errorCurrentRow != null && errorCurrentRow.size() > 0) {
+				errors.addAll(errorCurrentRow);
+				System.out.println("end row ..errors");
 			} else {
-				System.out.println("fine riga .. is empty --> " + builder.isEmpty());
+				System.out.println("end row .. is empty --> " + builder.isEmpty());
 				DBObject obj = builder.get();
 				System.out.println(obj);
-				operazioni.add(obj);
+				operations.add(obj);
 			}
 
-			// for (int numColonna=0;valoriCampi!=null &&
-			// numColonna<valoriCampi.length; numColonna++) {
-			// String curValue=valoriCampi[numColonna];
-			// String typeCode=null;
-			// String fieldName=null;
-			// for (int j=0;datasetMetadata.getInfo().getFields()!=null &&
-			// j<datasetMetadata.getInfo().getFields().length;j++ ) {
-			// if
-			// (Integer.parseInt(datasetMetadata.getInfo().getFields()[j].getSourceColumn())==(numColonna+1))
-			// {
-			// typeCode=datasetMetadata.getInfo().getFields()[j].getDataType();
-			// fieldName=datasetMetadata.getInfo().getFields()[j].getFieldName();
-			// }
-			// }
-			//
-			// if (null!=typeCode && null!=fieldName) {
-			// if ("int".equals(typeCode)) {
-			// builder.add(fieldName, new Integer(curValue));
-			// } else if ("long".equals(typeCode)) {
-			// builder.add(fieldName, new Long(curValue));
-			// } else if ("double".equals(typeCode)) {
-			// builder.add(fieldName, new Double(curValue));
-			// } else if ("float".equals(typeCode)) {
-			// builder.add(fieldName, new Float(curValue));
-			// } else if ("string".equals(typeCode)) {
-			// builder.add(fieldName, new String(curValue));
-			// } else if ("boolean".equals(typeCode)) {
-			// builder.add(fieldName, new Boolean(curValue));
-			//
-			// } else {
-			// builder.add(fieldName, new String(curValue));
-			// }
-			// }
-			// }
-
 		}
-		// System.out.println("DATA IN          --> "+datiIn.length);
-		// System.out.println("InsertOperations --> "+operazioni.size());
+		if(reader!=null)
+			reader.close();
 
-		// System.out.println("InsertOperations --> "+operazioni.size());
-		// for (int i=0;i<operazioni.size();i++) {
-		// System.out.println("      ->"+operazioni.get(i));
-		// }
-		//
-		// System.out.println("Errori controlli --> "+errori.size());
-		// for (int i=0;i<errori.size();i++) {
-		// System.out.println("      ->"+errori.get(i).toString());
-		// }
-
-		if (null != operazioni && operazioni.size() > 0)
-			this.mongoOperation.addAll(operazioni);
-		if (null != errori && errori.size() > 0)
-			this.formalErrors.addAll(errori);
-
-		// if (operazioni.size()>0) {
-		// BulkWriteOperation bulkbuilder =
-		// collection.initializeUnorderedBulkOperation();
-		// for (int i=0;i<operazioni.size();i++) {
-		// bulkbuilder.insert(operazioni.get(i));
-		// }
-		// BulkWriteResult res=bulkbuilder.execute();
-		// System.out.println("DATA IN          --> "+datiIn.length);
-		// System.out.println("InsertOperations --> "+operazioni.size());
-		// System.out.println("InsertResults    --> "+res.getInsertedCount());
-		//
-		//
-		// }
+		if (null != operations && operations.size() > 0)
+			this.mongoOperation.addAll(operations);
+		if (null != errors && errors.size() > 0)
+			this.formalErrors.addAll(errors);
 
 	}
 

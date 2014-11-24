@@ -3,33 +3,23 @@ package org.csi.yucca.storage.datamanagementapi.service.response;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class CreateDatasetResponse {
+public class UpdateDatasetResponse {
 	private List<ErrorMessage> errors;
 	private Metadata metadata;
-	private MyApi api;
 
-	public CreateDatasetResponse() {
+	public UpdateDatasetResponse() {
 		super();
 	}
 
 	public String toJson() {
 		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
 		return gson.toJson(this);
-	}
-
-	public List<ErrorMessage> getErrors() {
-		return errors;
-	}
-
-	public void setErrors(List<ErrorMessage> errors) {
-		this.errors = errors;
 	}
 
 	public Metadata getMetadata() {
@@ -40,12 +30,12 @@ public class CreateDatasetResponse {
 		this.metadata = metadata;
 	}
 
-	public MyApi getApi() {
-		return api;
+	public List<ErrorMessage> getErrors() {
+		return errors;
 	}
 
-	public void setApi(MyApi api) {
-		this.api = api;
+	public void setErrors(List<ErrorMessage> errors) {
+		this.errors = errors;
 	}
 
 	public void addErrorMessage(ErrorMessage errorMessage) {

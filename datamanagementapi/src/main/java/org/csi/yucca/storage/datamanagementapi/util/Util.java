@@ -1,5 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.util;
 
+import java.util.List;
+
 public class Util {
 	public static String nvl(Object o) {
 		return o == null ? "" : o.toString();
@@ -24,29 +26,30 @@ public class Util {
 		return "";
 
 	}
-	public static String safeSubstring(String in, int length){
+
+	public static String safeSubstring(String in, int length) {
 		String out = in;
-		if(in!=null && in.length()>length)
-				out = in.substring(0,length);
-		
-		return out==null?"":out;
+		if (in != null && in.length() > length)
+			out = in.substring(0, length);
+
+		return out == null ? "" : out;
 	}
 
-	public static String cleanStringCamelCase(String in){
+	public static String cleanStringCamelCase(String in) {
 		String out = "";
-		if(in!=null){
+		if (in != null) {
 			String[] words = in.split(" ");
 			for (String word : words) {
 				out += toProperCase(cleanString(word));
 			}
 		}
-		
+
 		return out;
 	}
-	public static String cleanStringCamelCase(String in, int length){
+
+	public static String cleanStringCamelCase(String in, int length) {
 		return safeSubstring(cleanStringCamelCase(in), length);
 	}
-	
 
 	public static void main(String[] args) {
 		// String json =
@@ -76,11 +79,49 @@ public class Util {
 		System.out.println(Util.cleanStringCamelCase(null));
 		System.out.println(Util.safeSubstring("alessandro", 9));
 		System.out.println(Util.safeSubstring("ale", 9));
-		System.out.println(Util.safeSubstring(null,2));
+		System.out.println(Util.safeSubstring(null, 2));
 		System.out.println(Util.cleanStringCamelCase(null, 12));
 		System.out.println(Util.cleanStringCamelCase("ciao ", 12));
 
+		System.out.println(join(new String[] { "uno", "due", "tre" }, "-"));
+		System.out.println(join(new String[] { "uno" }, "-"));
 
+	}
+
+	public static String join(String[] strings, String glue) {
+
+		String result = "";
+		if (glue == null)
+			glue = ",";
+
+		if (strings != null) {
+			int counter = 0;
+			for (String s : strings) {
+				result += s;
+				counter++;
+				if (counter < strings.length)
+					result += glue;
+			}
+		}
+		return result;
+	}
+
+	public static String join(List<Object> objectList, String glue) {
+
+		String out = "";
+		int counter = 0;
+		if (objectList != null) {
+			for (Object o : objectList) {
+				if (o instanceof String)
+					out += o;
+				else
+					out += o.toString();
+				if (counter < objectList.size() - 1)
+					out += glue;
+				counter++;
+			}
+		}
+		return out;
 	}
 
 }

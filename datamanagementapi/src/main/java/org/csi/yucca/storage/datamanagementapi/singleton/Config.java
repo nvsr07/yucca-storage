@@ -37,6 +37,7 @@ public class Config {
 		params.put(MONGO_DB_AUTH, rb.getString(MONGO_DB_AUTH));
 		params.put(MONGO_DB_AUTH_FLAG, rb.getString(MONGO_DB_AUTH_FLAG));
 		params.put(MONGO_COLLECTION_SUPPORT_TENANT, rb.getString(MONGO_COLLECTION_SUPPORT_TENANT));
+		params.put(BASE_API_URL, rb.getString(BASE_API_URL));
 
 	}
 

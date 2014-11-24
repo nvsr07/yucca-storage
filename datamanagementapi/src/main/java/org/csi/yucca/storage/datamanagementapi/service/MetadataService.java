@@ -1,14 +1,12 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.LinkedList;
@@ -41,11 +39,15 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
+import org.csi.yucca.storage.datamanagementapi.service.response.ErrorMessage;
+import org.csi.yucca.storage.datamanagementapi.service.response.UpdateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -94,7 +96,7 @@ public class MetadataService {
 	public Response downloadData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @PathParam("format") String format)
 			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::downloadData] - START tenant: " + tenant + "|datasetCode: " + datasetCode + "|format: " + format);
-		final String separator = ";";
+		final char separator = ';';
 
 		if (format == null) {
 			format = "csv";
@@ -114,9 +116,7 @@ public class MetadataService {
 			header.add(field.getFieldName());
 		}
 
-		// DBCollection dataCollection = mongo.getDB("DB_" +
-		// tenant).getCollection("data");
-		DBCollection dataCollection = mongo.getDB("smartlab").getCollection("prova_ale_dati");
+		DBCollection dataCollection = mongo.getDB("DB_" + tenant).getCollection("data");
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("idDataset", metadata.getIdDataset());
 
@@ -125,23 +125,27 @@ public class MetadataService {
 		StreamingOutput stream = new StreamingOutput() {
 
 			public void write(OutputStream os) throws IOException, WebApplicationException {
-				Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-				writer.write(concatStrings(header, separator) + "\n");
+
+				CSVWriter writer = new CSVWriter(new OutputStreamWriter(os), separator);
+				writer.writeNext(header.toArray(new String[0]));
 				while (cursor.hasNext()) {
 					DBObject doc = cursor.next();
-					List<Object> row = new LinkedList<Object>();
+					String[] row = new String[header.size()];
+					int counter = 0;
 					for (Object fieldName : header) {
-						row.add(doc.get((String) fieldName));
+						row[counter] = (String) doc.get((String) fieldName);
+						counter++;
 					}
-					writer.write(concatStrings(row, separator) + "\n");
+					writer.writeNext(row);
 
 				}
 
 				writer.flush();
+				writer.close();
 			}
 		};
-		Response build = Response.ok(stream).header("Content-Disposition", "attachment; filename=" + fileName).header("Content-Type", "text/csv").type("text/csv")
-		.build();
+
+		Response build = Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName).build();
 		return build;
 	}
 
@@ -152,8 +156,6 @@ public class MetadataService {
 		// select
 		log.debug("[MetadataService::get] - START - datasetCode: " + datasetCode);
 		System.out.println("DatasetItem requested with datasetCode=" + datasetCode);
-		// MongoClient mongo = (MongoClient)
-		// context.getAttribute(MongoDBContextListener.MONGO_CLIENT);
 		MongoClient mongo = MongoSingleton.getMongoClient();
 		String supportDb = Config.getInstance().getDbSupport();
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
@@ -183,7 +185,7 @@ public class MetadataService {
 		String formatType = null;
 		String csvSeparator = null;
 		boolean skipFirstRow = false;
-		List<String> csvData = null;
+		String csvData = null;
 
 		try {
 			ServletFileUpload upload = new ServletFileUpload();
@@ -233,7 +235,9 @@ public class MetadataService {
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
 		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
 		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
-			createDatasetResponse.setErrors(checkFileToWriteErrors);
+			for (SDPBulkInsertException error : checkFileToWriteErrors) {
+				createDatasetResponse.addErrorMessage(new ErrorMessage(error.getErrorCode(), error.getErrorMessage(), error.getErrorDetail()));
+			}
 		} else {
 			MongoClient mongo = MongoSingleton.getMongoClient();
 			String supportDb = Config.getInstance().getDbSupport();
@@ -241,10 +245,9 @@ public class MetadataService {
 
 			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-			String supportApiCollection =Config.getInstance().getCollectionSupportApi();
+			String supportApiCollection = Config.getInstance().getCollectionSupportApi();
 			MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
 
-			// FIXME improve...
 			BasicDBObject searchTenantQuery = new BasicDBObject();
 			searchTenantQuery.put("tenantCode", tenant);
 			DBCollection tenantCollection = mongo.getDB(supportDb).getCollection("tenant");
@@ -266,8 +269,8 @@ public class MetadataService {
 			try {
 				dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
 			} catch (Exception e) {
-				log.debug("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
-				createDatasetResponse.addException(e);
+				log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
+				createDatasetResponse.addErrorMessage(new ErrorMessage(e));
 				e.printStackTrace();
 			}
 		}
@@ -277,21 +280,43 @@ public class MetadataService {
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{tenant}/{id}")
-	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("id") String id, final String metadataInput) throws NumberFormatException,
-			UnknownHostException {
+	@Path("/{tenant}/{datasetCode}")
+	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, final String metadataInput)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::updateMetadata] - START");
-		MongoClient mongo = MongoSingleton.getMongoClient();
-		String supportDb = Config.getInstance().getDbSupport();
-		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
-		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
+		try {
+			MongoClient mongo = MongoSingleton.getMongoClient();
+			String supportDb = Config.getInstance().getDbSupport();
+			String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-		Metadata newMetadata = Metadata.fromJson(metadataInput);
-		newMetadata.setId(id);
+			Metadata newMetadata = Metadata.fromJson(metadataInput);
+			Metadata existingMetadata = metadataDAO.readMetadataByCode(datasetCode);
 
-		metadataDAO.updateDataset(newMetadata);
+			existingMetadata.getInfo().setCopyright(newMetadata.getInfo().getCopyright());
+			existingMetadata.getInfo().setDataDomain(newMetadata.getInfo().getDataDomain());
+			existingMetadata.getInfo().setDescription(newMetadata.getInfo().getDescription());
+			existingMetadata.getInfo().setDisclaimer(newMetadata.getInfo().getDisclaimer());
+			existingMetadata.getInfo().setLicense(newMetadata.getInfo().getLicense());
+			existingMetadata.getInfo().setTags(newMetadata.getInfo().getTags());
+			existingMetadata.getInfo().setVisibility(newMetadata.getInfo().getVisibility());
 
-		return metadataDAO.readMetadata(newMetadata).toJson();
+			int counter = 0;
+			for (Field existingField : existingMetadata.getInfo().getFields()) {
+				existingField.setFieldAlias(newMetadata.getInfo().getFields()[counter].getFieldAlias());
+				counter++;
+			}
+
+			metadataDAO.updateDataset(existingMetadata);
+
+			updateDatasetResponse.setMetadata(existingMetadata);
+		} catch (Exception e) {
+			log.debug("[MetadataService::updateMetadata] - ERROR " + e.getMessage());
+			updateDatasetResponse.addErrorMessage(new ErrorMessage(e));
+			e.printStackTrace();
+		}
+		return updateDatasetResponse.toJson();
 	}
 
 	@SuppressWarnings("unused")
@@ -328,16 +353,17 @@ public class MetadataService {
 		return sb.toString();
 	}
 
-	private List<String> readFileRows(InputStream stream, String encoding) throws UnsupportedEncodingException {
-		List<String> rows = null;
+	private String readFileRows(InputStream stream, String encoding) throws UnsupportedEncodingException {
+		// List<String> rows = null;
+		StringBuffer rows = new StringBuffer();
 		if (encoding == null)
 			encoding = "UTF-8";
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, encoding));
 		try {
-			rows = new LinkedList<String>();
+			// rows = new LinkedList<String>();
 			String line;
 			while ((line = reader.readLine()) != null) {
-				rows.add(line);
+				rows.append(line + "\n");
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -347,25 +373,7 @@ public class MetadataService {
 			} catch (IOException e) {
 			}
 		}
-		return rows;
-	}
-
-	private String concatStrings(List<Object> objectList, String separator) {
-
-		String out = "";
-		int counter = 0;
-		if (objectList != null) {
-			for (Object o : objectList) {
-				if (o instanceof String)
-					out += o;
-				else
-					out += o.toString();
-				if (counter < objectList.size() - 1)
-					out += separator;
-				counter++;
-			}
-		}
-		return out;
+		return rows.toString();
 	}
 
 }

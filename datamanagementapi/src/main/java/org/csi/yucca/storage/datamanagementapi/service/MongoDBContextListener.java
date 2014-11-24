@@ -4,8 +4,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import com.mongodb.MongoClient;
-
 @WebListener
 public class MongoDBContextListener implements ServletContextListener {
 	
@@ -16,8 +14,8 @@ public class MongoDBContextListener implements ServletContextListener {
 //	public static final String SUPPORT_API_COLLECTION = "SUPPORT_API_COLLECTION";
 
 	public void contextDestroyed(ServletContextEvent sce) {
-		MongoClient mongo = (MongoClient) sce.getServletContext().getAttribute("MONGO_CLIENT");
-		mongo.close();
+		//MongoClient mongo = (MongoClient) sce.getServletContext().getAttribute("MONGO_CLIENT");
+		//mongo.close();
 	}
 
 	public void contextInitialized(ServletContextEvent sce) {
