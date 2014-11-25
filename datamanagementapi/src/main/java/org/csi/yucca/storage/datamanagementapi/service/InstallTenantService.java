@@ -81,7 +81,11 @@ public class InstallTenantService {
 			BasicDBObject sortobj = new BasicDBObject();
 			sortobj.append(key, -1);			
 			DBObject doc = col.find().sort(sortobj).limit(1).one();
-			id = ((Number)doc.get(key)).intValue() +1;
+			if(doc != null && doc.get(key)!=null)
+				id = ((Number)doc.get(key)).intValue() +1;
+			else{
+				id=1;
+			}
 			obj.put(key, id);
 			col.insert(obj);
 		}catch(Exception e){

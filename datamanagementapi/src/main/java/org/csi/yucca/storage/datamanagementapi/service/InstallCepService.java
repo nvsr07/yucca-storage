@@ -123,7 +123,11 @@ public class InstallCepService {
 			sortobj.append(key, -1);			
 			DBObject doc = col.find().sort(sortobj).limit(1).one();
 			System.out.println(doc);
-			id = ((Number)doc.get(key)).longValue() +1;
+			if(doc != null && doc.get(key)!=null)
+				id = ((Number)doc.get(key)).longValue() +1;
+			else{
+				id=1L;
+			}
 			obj.put(key, id);
 			col.insert(obj);
 		}catch(Exception e){
