@@ -277,6 +277,72 @@ public class MetadataService {
 
 		return createDatasetResponse.toJson();
 	}
+	
+	@POST
+	@Path("/add/{tenant}/{datasetCode}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String addDataa(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode,  @Context HttpServletRequest request) throws NumberFormatException, UnknownHostException {
+		log.debug("[MetadataService::createMetadata] - START");
+
+		String encoding = null;
+		String formatType = null;
+		String csvSeparator = null;
+		boolean skipFirstRow = false;
+		String csvData = null;
+
+		try {
+			ServletFileUpload upload = new ServletFileUpload();
+			FileItemIterator iterator = upload.getItemIterator(request);
+			while (iterator.hasNext()) {
+				FileItemStream item = iterator.next();
+				if (IMPORT_BULKDATASET_ENCODING_REQ_KEY.equals(item.getFieldName()))
+					encoding = read(item.openStream());
+				else if (IMPORT_BULKDATASET_FORMAT_TYPE_REQ_KEY.equals(item.getFieldName()))
+					formatType = read(item.openStream());
+				else if (IMPORT_BULKDATASET_CSV_SEP_REQ_KEY.equals(item.getFieldName()))
+					csvSeparator = read(item.openStream());
+				else if (IMPORT_BULKDATASET_CSV_SKIP_FIRS_ROW_REQ_KEY.equals(item.getFieldName()))
+					skipFirstRow = new Boolean(read(item.openStream()));
+				else if (IMPORT_BULKDATASET_FILE_REQ_KEY.equals(item.getFieldName())) {
+					csvData = readFileRows(item.openStream(), encoding);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		log.debug("[MetadataService::createMetadata] - encoding: " + encoding + ", formatType: " + formatType + ", csvSeparator: " + csvSeparator);
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+
+		Metadata existingMetadata = metadataDAO.readMetadataByCode(datasetCode);
+		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
+
+		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
+		
+		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, existingMetadata, skipFirstRow);
+		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
+			for (SDPBulkInsertException error : checkFileToWriteErrors) {
+				updateDatasetResponse.addErrorMessage(new ErrorMessage(error.getErrorCode(), error.getErrorMessage(), error.getErrorDetail()));
+			}
+		} else {
+
+
+			try {
+				dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", existingMetadata);
+			} catch (Exception e) {
+				log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
+				updateDatasetResponse.addErrorMessage(new ErrorMessage(e));
+				e.printStackTrace();
+			}
+		}
+
+		return updateDatasetResponse.toJson();
+	}
+
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
