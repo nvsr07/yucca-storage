@@ -1,6 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -24,7 +25,7 @@ public class MongoDBMetadataDAO {
 	}
 
 	public Metadata createMetadata(Metadata metadata) {
-		
+
 		for (int i = 0; i < 5; i++) {
 			try {
 				metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
@@ -45,18 +46,36 @@ public class MongoDBMetadataDAO {
 		return metadata;
 	}
 
-	public void updateDataset(Metadata metadata) {
+	public Metadata createNewVersion(Metadata metadata){
+		
+		metadata.setDatasetVersion(metadata.getDatasetVersion() + 1);
+		metadata.getConfigData().setCurrent(1);
+		metadata.getInfo().setRegistrationDate(new Date());
+
+		String json = metadata.toJson();
+		DBObject dbObject = (DBObject) JSON.parse(json);
+
+		this.collection.insert(dbObject);
+		ObjectId id = (ObjectId) dbObject.get("_id");
+		metadata.setId(id.toString());
+		return metadata;
+	}
+	
+	public void updateMetadata(Metadata metadata) {
 		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(metadata.getId())).get();
 		DBObject dbObject = (DBObject) JSON.parse(metadata.toJson());
 		dbObject.removeField("id");
 		this.collection.update(query, dbObject);
 	}
 
-	public List<Metadata> readAllMetadata(String tenant) {
+	
+	public List<Metadata> readAllMetadata(String tenant, boolean onlyCurrent) {
 		List<Metadata> data = new ArrayList<Metadata>();
 		BasicDBObject searchQuery = new BasicDBObject();
 		if (tenant != null)
 			searchQuery.put("configData.tenantCode", tenant);
+		if(onlyCurrent)
+			searchQuery.put("configData.current", 1);
 
 		DBCursor cursor = collection.find(searchQuery);
 		while (cursor.hasNext()) {
@@ -83,9 +102,10 @@ public class MongoDBMetadataDAO {
 		return metadataLoaded;
 	}
 
-	public Metadata readMetadataByCode(String metadataCode) {
+	public Metadata readCurrentMetadataByCode(String metadataCode) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("datasetCode", metadataCode);
+		searchQuery.put("configData.current", 1);
 
 		DBObject data = collection.find(searchQuery).one();
 		ObjectId id = (ObjectId) data.get("_id");
