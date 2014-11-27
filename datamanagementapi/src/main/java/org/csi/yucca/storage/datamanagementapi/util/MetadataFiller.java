@@ -51,7 +51,7 @@ public class MetadataFiller {
 		Date date=null;
 		if(stream.getRegistrationDate()!=null){		
 			try {
-				date = new SimpleDateFormat("yyyy/mm/dd hh:mm:ss").parse(stream.getRegistrationDate());
+				date = new SimpleDateFormat(Constants.DATE_FORMAT).parse(stream.getRegistrationDate());
 			} catch (ParseException e) {
 				date = new Date();
 			}

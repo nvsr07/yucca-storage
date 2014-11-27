@@ -4,10 +4,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
-import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public class UpdateDatasetResponse {
 	private List<ErrorMessage> errors;
@@ -18,7 +17,7 @@ public class UpdateDatasetResponse {
 	}
 
 	public String toJson() {
-		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		Gson gson = JSonHelper.getInstance();
 		return gson.toJson(this);
 	}
 

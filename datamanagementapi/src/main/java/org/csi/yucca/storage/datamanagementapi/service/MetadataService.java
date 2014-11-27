@@ -45,12 +45,12 @@ import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
-import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+import org.csi.yucca.storage.datamanagementapi.util.Constants;
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -84,7 +84,7 @@ public class MetadataService {
 		String result = "[]";
 		List<Metadata> allDataset = metadataDAO.readAllMetadata(tenant, true);
 		if (allDataset != null) {
-			Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+			Gson gson = JSonHelper.getInstance();
 			result = gson.toJson(allDataset);
 		}
 		return result;
@@ -111,9 +111,9 @@ public class MetadataService {
 
 		String fileName = metadata.getInfo().getDatasetName() + "." + format;
 
-		final List<Object> header = new LinkedList<Object>();
+		final List<Field> header = new LinkedList<Field>();
 		for (Field field : metadata.getInfo().getFields()) {
-			header.add(field.getFieldName());
+			header.add(field);
 		}
 
 		DBCollection dataCollection = mongo.getDB("DB_" + tenant).getCollection("data");
@@ -127,16 +127,24 @@ public class MetadataService {
 			public void write(OutputStream os) throws IOException, WebApplicationException {
 
 				CSVWriter writer = new CSVWriter(new OutputStreamWriter(os), separator);
-				writer.writeNext(header.toArray(new String[0]));
+				String[] headerNames = new String[header.size()];
+				int counter = 0;
+				for (Field field : header) {
+					headerNames[counter] = field.getFieldName();
+					counter++;
+				}
+				writer.writeNext(headerNames);
 				while (cursor.hasNext()) {
 					DBObject doc = cursor.next();
 					String[] row = new String[header.size()];
-					int counter = 0;
-					for (Object fieldName : header) {
-						row[counter] = (String) doc.get((String) fieldName);
+					counter = 0;
+					for (Field field : header) {
+						row[counter] = ""+doc.get(field.getFieldName());
 						counter++;
 					}
 					writer.writeNext(row);
+					if(counter>Constants.MAX_NUM_ROW_DATA_DOWNLOAD)
+						break;
 
 				}
 

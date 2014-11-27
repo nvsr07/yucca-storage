@@ -16,9 +16,9 @@ import org.csi.yucca.storage.datamanagementapi.model.tenantout.TenantOut;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.TenantFiller;
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -46,11 +46,7 @@ public class InstallTenantService {
 		mongo =  MongoSingleton.getMongoClient();
 
 
-		Gson gson = new GsonBuilder()
-		.disableHtmlEscaping()
-		.setPrettyPrinting()
-		.serializeNulls()
-		.create();
+		Gson gson = JSonHelper.getInstance();
 
 		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
 		try{

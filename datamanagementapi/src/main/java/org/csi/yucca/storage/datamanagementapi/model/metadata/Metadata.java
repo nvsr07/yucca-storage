@@ -2,10 +2,9 @@ package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
-import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public class Metadata extends AbstractEntity {
 
@@ -24,7 +23,7 @@ public class Metadata extends AbstractEntity {
 	private Info info;
 
 	public static Metadata fromJson(String json) {
-		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		Gson gson = JSonHelper.getInstance();
 		return gson.fromJson(json, Metadata.class);
 	}
 
@@ -32,7 +31,7 @@ public class Metadata extends AbstractEntity {
 	}
 
 	public String toJson() {
-		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		Gson gson = JSonHelper.getInstance();
 		return gson.toJson(this);
 	}
 

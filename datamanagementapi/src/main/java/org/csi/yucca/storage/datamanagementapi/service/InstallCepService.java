@@ -21,9 +21,9 @@ import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.StreamFiller;
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -62,11 +62,7 @@ public class InstallCepService {
 			mongo = MongoSingleton.getMongoClient();
 
 
-		Gson gson = new GsonBuilder()
-		.disableHtmlEscaping()
-		.setPrettyPrinting()
-		.serializeNulls()
-		.create();
+		Gson gson = JSonHelper.getInstance();
 
 		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
 		try{

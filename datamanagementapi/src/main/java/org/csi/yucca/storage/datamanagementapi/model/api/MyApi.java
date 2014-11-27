@@ -6,10 +6,9 @@ import java.util.List;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
-import org.csi.yucca.storage.datamanagementapi.util.json.GSONExclusionStrategy;
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 
 public class MyApi {
@@ -131,12 +130,12 @@ public class MyApi {
 	}
 
 	public static MyApi fromJson(String json) {
-		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		Gson gson = JSonHelper.getInstance();
 		return gson.fromJson(json, MyApi.class);
 	}
 	
 	public String toJson() {
-		Gson gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).create();
+		Gson gson = JSonHelper.getInstance();
 		return gson.toJson(this);
 	}
 
