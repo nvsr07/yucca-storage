@@ -11,6 +11,9 @@ public class Metadata extends AbstractEntity {
 	public static final String CONFIG_DATA_TYPE_DATASET = "dataset";
 	public static final String CONFIG_DATA_SUBTYPE_BULK_DATASET = "bulkDataset";
 	public static final String CONFIG_DATA_SUBTYPE_STREAM_DATASET = "streamDataset";
+	public static final String CONFIG_DATA_TYPE_API = "api";
+	public static final String CONFIG_DATA_SUBTYPE_API_MULTI_BULK = "apiMultiBulk";
+
 
 	private String id;
 	private Long idDataset; // max dei presenti (maggiore di un milione)

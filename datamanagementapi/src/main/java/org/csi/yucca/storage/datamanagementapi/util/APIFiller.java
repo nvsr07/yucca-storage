@@ -6,17 +6,19 @@ import java.util.List;
 import org.csi.yucca.storage.datamanagementapi.model.api.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.api.Dataset;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class APIFiller {
 
-	static public MyApi fillApi(Stream stream, Long idDataset) {
+	static public MyApi fillApi(Stream stream, Metadata metadata) {
 
 		System.out.println("FILL API OBJECT");
 
 		MyApi api = new MyApi();
-
-		String apiCode = "ds_" + stream.getCodiceStream() + "_" + idDataset;// apiCode
+		
+		//String apiCode = "ds_" + stream.getCodiceStream() + "_" + idDataset;// apiCode
+		String apiCode = metadata.getDatasetCode();
 		api.setApiDescription("Dataset " + stream.getNomeStream());
 		api.setApiName("Dataset " + stream.getNomeStream());
 		api.setApiCode(apiCode);
@@ -27,7 +29,8 @@ public class APIFiller {
 		configData.setTenantCode(stream.getCodiceTenant());
 		configData.setType("api");
 		configData.setSubtype("apiMultiStream");
-		configData.setEntityNameSpace("it.csi.smartdata.odata." + stream.getCodiceTenant() + "." + apiCode);
+		//configData.setEntityNameSpace("it.csi.smartdata.odata." + stream.getCodiceTenant() + "." + apiCode);
+		
 
 		api.setConfigData(configData);
 
@@ -35,7 +38,7 @@ public class APIFiller {
 		Dataset ds = new Dataset();
 
 		ds.setDatasetVersion(stream.getDeploymentVersion());
-		ds.setIdDataset(idDataset);
+		ds.setIdDataset(metadata.getIdDataset());
 		ds.setIdTenant(stream.getIdTenant());
 		ds.setStreamCode(stream.getCodiceStream());
 		ds.setIdStream(stream.getIdStream());
@@ -44,7 +47,7 @@ public class APIFiller {
 		dataset.add(ds);
 
 		api.setDataset(dataset);
-
+		api.generateNameSpace();
 		return api;
 	}
 

@@ -81,7 +81,7 @@ public class InstallCepService {
 //				Long idDataset =insertDatasetWithKey(col,dbObject,"idDataset",myMeta.getDatasetCode(),MAX_RETRY);
 
 
-				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),myMeta.getIdDataset());
+				MyApi api = APIFiller.fillApi(pojoStreams.getStreams().getStream(),myMeta);
 				StreamOut strOut = StreamFiller.fillStream(pojoStreams.getStreams().getStream(),myMeta.getIdDataset());
 
 				System.out.println(gson.toJson(api, MyApi.class));

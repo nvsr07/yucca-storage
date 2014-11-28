@@ -265,8 +265,8 @@ public class MetadataService {
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata);
 
 			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
-			api.getConfigData().setType("api");
-			api.getConfigData().setSubtype("apiMultiBulk");
+			api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
+			api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
 
 			MyApi apiCreated = apiDAO.createApi(api);
 
