@@ -120,7 +120,7 @@ public class MetadataService {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("idDataset", metadata.getIdDataset());
 
-		final DBCursor cursor = dataCollection.find(searchQuery);
+		final DBCursor cursor = dataCollection.find(searchQuery).limit(Constants.MAX_NUM_ROW_DATA_DOWNLOAD);
 
 		StreamingOutput stream = new StreamingOutput() {
 
@@ -143,9 +143,6 @@ public class MetadataService {
 						counter++;
 					}
 					writer.writeNext(row);
-					if(counter>Constants.MAX_NUM_ROW_DATA_DOWNLOAD)
-						break;
-
 				}
 
 				writer.flush();
@@ -153,6 +150,7 @@ public class MetadataService {
 			}
 		};
 
+	
 		Response build = Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName).build();
 		return build;
 	}

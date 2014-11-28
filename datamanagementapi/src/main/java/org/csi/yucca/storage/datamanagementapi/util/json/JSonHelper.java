@@ -8,7 +8,7 @@ public class JSonHelper {
 
 	public static Gson getInstance() {
 		if (gson == null)
-			gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).disableHtmlEscaping().setPrettyPrinting().serializeNulls().create();
+			gson = new GsonBuilder().setExclusionStrategies(new GSONExclusionStrategy()).disableHtmlEscaping().setPrettyPrinting().create();
 		return gson;
 	}
 
