@@ -24,8 +24,8 @@
 
 # creazione delle cartelle su HDFS
 
-hdfs dfs -rm -r /tenant/$1
-hdfs dfs -rm -r /pre-tenant/$1
+#hdfs dfs -rm -r /tenant/$1
+#hdfs dfs -rm -r /pre-tenant/$1
 hdfs dfs -mkdir /tenant/$1
 hdfs dfs -mkdir /pre-tenant/$1
 hdfs dfs -mkdir /tenant/$1/rawdata
