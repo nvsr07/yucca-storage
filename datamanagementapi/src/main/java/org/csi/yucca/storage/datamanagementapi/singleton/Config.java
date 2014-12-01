@@ -33,12 +33,12 @@ public class Config {
 		params.put(MONGO_COLLECTION_SUPPORT_API, rb.getString(MONGO_COLLECTION_SUPPORT_API));
 		params.put(MONGO_COLLECTION_SUPPORT_STREAM, rb.getString(MONGO_COLLECTION_SUPPORT_STREAM));
 		params.put(MONGO_USERNAME, rb.getString(MONGO_USERNAME));
-		params.put(MONGO_PASSWORD, rb.getString(MONGO_PASSWORD));
 		params.put(MONGO_DB_AUTH, rb.getString(MONGO_DB_AUTH));
 		params.put(MONGO_DB_AUTH_FLAG, rb.getString(MONGO_DB_AUTH_FLAG));
 		params.put(MONGO_COLLECTION_SUPPORT_TENANT, rb.getString(MONGO_COLLECTION_SUPPORT_TENANT));
 		params.put(BASE_API_URL, rb.getString(BASE_API_URL));
-
+		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
+		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
 	}
 
 	public static Config getInstance() {
