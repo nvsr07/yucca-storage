@@ -116,7 +116,12 @@ public class MetadataService {
 			header.add(field);
 		}
 
-		DBCollection dataCollection = mongo.getDB("DB_" + tenant).getCollection("data");
+		String collectionName = Config.getInstance().getCollectionTenantData();
+		if (metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(metadata.getConfigData().getSubtype()))
+			collectionName = Config.getInstance().getCollectionTenantMeasures();
+
+		DBCollection dataCollection = mongo.getDB("DB_" + tenant).getCollection(collectionName);
+
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("idDataset", metadata.getIdDataset());
 
@@ -139,7 +144,7 @@ public class MetadataService {
 					String[] row = new String[header.size()];
 					counter = 0;
 					for (Field field : header) {
-						row[counter] = ""+doc.get(field.getFieldName());
+						row[counter] = "" + doc.get(field.getFieldName());
 						counter++;
 					}
 					writer.writeNext(row);
@@ -150,7 +155,6 @@ public class MetadataService {
 			}
 		};
 
-	
 		Response build = Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName).build();
 		return build;
 	}
@@ -283,11 +287,12 @@ public class MetadataService {
 
 		return createDatasetResponse.toJson();
 	}
-	
+
 	@POST
 	@Path("/add/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String addDataa(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode,  @Context HttpServletRequest request) throws NumberFormatException, UnknownHostException {
+	public String addDataa(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::createMetadata] - START");
 
 		String encoding = null;
@@ -328,14 +333,13 @@ public class MetadataService {
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
-		
+
 		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, existingMetadata, skipFirstRow);
 		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
 			for (SDPBulkInsertException error : checkFileToWriteErrors) {
 				updateDatasetResponse.addErrorMessage(new ErrorMessage(error.getErrorCode(), error.getErrorMessage(), error.getErrorDetail()));
 			}
 		} else {
-
 
 			try {
 				dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", existingMetadata);
@@ -348,7 +352,6 @@ public class MetadataService {
 
 		return updateDatasetResponse.toJson();
 	}
-
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
@@ -364,13 +367,14 @@ public class MetadataService {
 			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 			Metadata inputMetadata = Metadata.fromJson(metadataInput);
-			
+
 			// change version: in the existing metadata set current=0;
-			//                 new metadata created from the existing one changing only the field editable (get from input) and increment version
+			// new metadata created from the existing one changing only the
+			// field editable (get from input) and increment version
 			//
 			Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
-			Metadata newMetadata  = metadataDAO.readCurrentMetadataByCode(datasetCode);
-			
+			Metadata newMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+
 			newMetadata.getInfo().setCopyright(inputMetadata.getInfo().getCopyright());
 			newMetadata.getInfo().setDataDomain(inputMetadata.getInfo().getDataDomain());
 			newMetadata.getInfo().setDescription(inputMetadata.getInfo().getDescription());
@@ -378,7 +382,7 @@ public class MetadataService {
 			newMetadata.getInfo().setLicense(inputMetadata.getInfo().getLicense());
 			newMetadata.getInfo().setTags(inputMetadata.getInfo().getTags());
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
-			
+
 			int counter = 0;
 			for (Field existingField : newMetadata.getInfo().getFields()) {
 				existingField.setFieldAlias(inputMetadata.getInfo().getFields()[counter].getFieldAlias());
@@ -387,7 +391,7 @@ public class MetadataService {
 			existingMetadata.getConfigData().setCurrent(0);
 			metadataDAO.updateMetadata(existingMetadata);
 			metadataDAO.createNewVersion(newMetadata);
-			
+
 			updateDatasetResponse.setMetadata(newMetadata);
 		} catch (Exception e) {
 			log.debug("[MetadataService::updateMetadata] - ERROR " + e.getMessage());

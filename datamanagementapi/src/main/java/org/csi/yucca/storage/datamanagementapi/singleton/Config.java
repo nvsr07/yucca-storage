@@ -17,6 +17,8 @@ public class Config {
 	public static final String MONGO_COLLECTION_SUPPORT_TENANT = "MONGO_COLLECTION_SUPPORT_TENANT";
 	public static final String MONGO_USERNAME = "MONGO_USERNAME";
 	public static final String MONGO_PASSWORD = "MONGO_PASSWORD";
+	public static final String MONGO_COLLECTION_TENANT_DATA = "MONGO_COLLECTION_TENANT_DATA";
+	public static final String MONGO_COLLECTION_TENANT_MEASURES = "MONGO_COLLECTION_TENANT_MEASURES";
 	public static final String BASE_API_URL = "BASE_API_URL";
 
 	private static Map<String, String> params = null;
@@ -37,6 +39,8 @@ public class Config {
 		params.put(MONGO_DB_AUTH_FLAG, rb.getString(MONGO_DB_AUTH_FLAG));
 		params.put(MONGO_COLLECTION_SUPPORT_TENANT, rb.getString(MONGO_COLLECTION_SUPPORT_TENANT));
 		params.put(BASE_API_URL, rb.getString(BASE_API_URL));
+		params.put(MONGO_COLLECTION_TENANT_DATA, rb.getString(MONGO_COLLECTION_TENANT_DATA));
+		params.put(MONGO_COLLECTION_TENANT_MEASURES, rb.getString(MONGO_COLLECTION_TENANT_MEASURES));
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
 	}
@@ -82,6 +86,14 @@ public class Config {
 
 	public String getCollectionSupportTenant() {
 		return params.get(MONGO_COLLECTION_SUPPORT_TENANT);
+	}
+
+	public String getCollectionTenantData() {
+		return params.get(MONGO_COLLECTION_TENANT_DATA);
+	}
+
+	public String getCollectionTenantMeasures() {
+		return params.get(MONGO_COLLECTION_TENANT_MEASURES);
 	}
 
 	public String getMongoUsername() {
