@@ -72,9 +72,34 @@ public class MetadataFiller {
 			if(elem!=null){
 				List<Field> fields = new ArrayList<Field>();
 
+				Field f = new Field();	
+				f.setFieldAlias("-");
+				f.setFieldName("streamCode");
+				f.setIsKey(0);
+				f.setDataType("string");
+				f.setMeasureUnit("-");
+				fields.add(f );
+				
+				f = new Field();	
+				f.setFieldAlias("-");
+				f.setFieldName("sensor");
+				f.setIsKey(0);
+				f.setDataType("string");
+				f.setMeasureUnit("-");
+				fields.add(f );
+
+				
+				f = new Field();	
+				f.setFieldAlias("-");
+				f.setFieldName("time");
+				f.setIsKey(0);
+				f.setDataType("dateTime");
+				f.setMeasureUnit("-");
+				fields.add(f );
+				
 				for(Element el : elem){
 
-					Field f = new Field();	
+					f = new Field();	
 					f.setFieldAlias(el.getPhenomenon());
 					f.setFieldName(el.getNome());
 					f.setIsKey(0);
