@@ -2,10 +2,14 @@ package org.csi.yucca.storage.datamanagementapi.upload;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -119,12 +123,25 @@ public class MongoDBDataUpload {
 				int numColumn = 0;
 				boolean found = false;
 				while (fieldValues != null && numColumn < fieldValues.length && !found) {
+
 					String typeCode = null;
 					String fieldName = null;
+					DateFormat formatter = Constants.DEFAULT_FIELD_DATE_FORMAT;
 					if (datasetMetadata.getInfo().getFields()[j].getSourceColumn() == (numColumn + 1)) {
 						found = true;
 						typeCode = datasetMetadata.getInfo().getFields()[j].getDataType();
 						fieldName = datasetMetadata.getInfo().getFields()[j].getFieldName();
+
+						if (datasetMetadata.getInfo().getFields()[j].getDateTimeFormat() != null) {
+							try {
+								formatter = new SimpleDateFormat(datasetMetadata.getInfo().getFields()[j].getDateTimeFormat());
+							} catch (Exception e) {
+								formatter = Constants.DEFAULT_FIELD_DATE_FORMAT;
+							}
+							formatter.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+
+						}
+
 						String curValue = fieldValues[numColumn];
 
 						if (curValue == null || curValue.length() == 0) {
@@ -144,7 +161,8 @@ public class MongoDBDataUpload {
 									builder.add(fieldName, new String(curValue));
 								} else if ("boolean".equals(typeCode)) {
 									builder.add(fieldName, new Boolean(Boolean.parseBoolean(curValue)));
-
+								} else if ("dateTime".equals(typeCode)) {
+									builder.add(fieldName, formatter.parse(curValue));
 								} else {
 									builder.add(fieldName, new String(curValue));
 								}
@@ -179,7 +197,7 @@ public class MongoDBDataUpload {
 			}
 
 		}
-		if(reader!=null)
+		if (reader != null)
 			reader.close();
 
 		if (null != operations && operations.size() > 0)

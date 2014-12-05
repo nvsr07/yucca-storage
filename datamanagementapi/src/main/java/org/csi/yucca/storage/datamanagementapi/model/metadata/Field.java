@@ -12,6 +12,7 @@ public class Field extends AbstractEntity {
 	private Integer sourceColumn;
 	private Integer isKey;
 	private String measureUnit;
+	private String dateTimeFormat;
 
 	public Field() {
 	}
@@ -67,6 +68,14 @@ public class Field extends AbstractEntity {
 
 	public void setIsKey(Integer isKey) {
 		this.isKey = isKey;
+	}
+
+	public String getDateTimeFormat() {
+		return dateTimeFormat;
+	}
+
+	public void setDateTimeFormat(String dateTimeFormat) {
+		this.dateTimeFormat = dateTimeFormat;
 	}
 
 }
