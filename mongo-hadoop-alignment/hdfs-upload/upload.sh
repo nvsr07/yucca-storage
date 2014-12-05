@@ -17,6 +17,7 @@ ERR="ERROR: environment to deploy not found (-prod | -preprod)"
 
 if [ -z $1 ]; then
     echo $ERR
+    exit
 elif [ $1 = "prod" ]; then
     ORIGIN_FOLDER=$PROD_STAGE_FOLDER
     USER_PREF="prod-"
@@ -33,6 +34,7 @@ elif [ $1 = "preprod" ]; then
     WASTE=$WASTE_PREPROD
 else
    echo $ERR
+   exit
 fi
 
 echo "WASTE DIR is $WASTE"
