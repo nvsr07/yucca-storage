@@ -2,9 +2,11 @@
 # settings for mongo-hadoop integration
 
 # origin production folder
-PROD_STAGE_FOLDER="/home/hdfs/input"
+PROD_STAGE_FOLDER="/home/oozie/temp/prod"
+WASTE_PROD="/home/oozie/temp/waste/prod"
 # origin pre-production folder
-PREPROD_STAGE_FOLDER="/home/hdfs/input2"
+PREPROD_STAGE_FOLDER="/home/oozie/temp/preprod"
+WASTE_PREPROD="/home/oozie/temp/waste/preprod"
 
 # hadoop end point
 HEAD_PROD="/tenant"

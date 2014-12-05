@@ -58,7 +58,8 @@ public class InstallTenantService {
 				TenantOut myTenant= 	TenantFiller.fillTenant(tenantin.getTenants().getTenant());
 
 				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myTenant, TenantOut.class));
-				insertDocumentWithKey(col,dbObject,"idTenant",MAX_RETRY);
+				col.insert(dbObject);
+//				insertDocumentWithKey(col,dbObject,"idTenant",MAX_RETRY);
 
 
 			}
@@ -71,26 +72,26 @@ public class InstallTenantService {
 		return JSON.parse("{OK:1}").toString();
 	}
   
-	private static Integer insertDocumentWithKey(DBCollection col,DBObject obj,String key,Integer maxRetry) throws Exception{
-		Integer id =0;
-		try{
-			BasicDBObject sortobj = new BasicDBObject();
-			sortobj.append(key, -1);			
-			DBObject doc = col.find().sort(sortobj).limit(1).one();
-			if(doc != null && doc.get(key)!=null)
-				id = ((Number)doc.get(key)).intValue() +1;
-			else{
-				id=1;
-			}
-			obj.put(key, id);
-			col.insert(obj);
-		}catch(Exception e){
-			if(maxRetry>0){
-				return insertDocumentWithKey(col, obj,key,--maxRetry);
-			}else{
-				throw e;
-			}
-		}
-		return id;
-	}
+//	private static Integer insertDocumentWithKey(DBCollection col,DBObject obj,String key,Integer maxRetry) throws Exception{
+//		Integer id =0;
+//		try{
+//			BasicDBObject sortobj = new BasicDBObject();
+//			sortobj.append(key, -1);			
+//			DBObject doc = col.find().sort(sortobj).limit(1).one();
+//			if(doc != null && doc.get(key)!=null)
+//				id = ((Number)doc.get(key)).intValue() +1;
+//			else{
+//				id=1;
+//			}
+//			obj.put(key, id);
+//			col.insert(obj);
+//		}catch(Exception e){
+//			if(maxRetry>0){
+//				return insertDocumentWithKey(col, obj,key,--maxRetry);
+//			}else{
+//				throw e;
+//			}
+//		}
+//		return id;
+//	}
 }
