@@ -123,7 +123,8 @@ public class MetadataService {
 		final List<String> headerFixedColumn = new LinkedList<String>();
 
 		String collectionName = Config.getInstance().getCollectionTenantData();
-		if (metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(metadata.getConfigData().getSubtype())) {
+		final boolean isStream = metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(metadata.getConfigData().getSubtype());
+		if (isStream) {
 			collectionName = Config.getInstance().getCollectionTenantMeasures();
 
 			// stream metadata
@@ -190,14 +191,19 @@ public class MetadataService {
 					counter++;
 				}
 				for (Field field : fields) {
-					headerNames[counter] = field.getFieldName() + ".alias";
-					counter++;
-					headerNames[counter] = field.getFieldName() + ".measureUnit";
-					counter++;
-					headerNames[counter] = field.getFieldName() + ".dataType";
-					counter++;
-					headerNames[counter] = field.getFieldName() + ".measure";
-					counter++;
+					if (isStream) {
+						headerNames[counter] = field.getFieldName() + ".alias";
+						counter++;
+						headerNames[counter] = field.getFieldName() + ".measureUnit";
+						counter++;
+						headerNames[counter] = field.getFieldName() + ".dataType";
+						counter++;
+						headerNames[counter] = field.getFieldName() + ".measure";
+						counter++;
+					} else {
+						headerNames[counter] = Util.nvlt(field.getFieldAlias());
+						counter++;
+					}
 				}
 				writer.writeNext(headerNames);
 
@@ -218,14 +224,19 @@ public class MetadataService {
 					}
 
 					for (Field field : fields) {
-						row[counter] = Util.nvlt(field.getFieldAlias());
-						counter++;
-						row[counter] = Util.nvlt(field.getMeasureUnit());
-						counter++;
-						row[counter] = Util.nvlt(field.getDataType());
-						counter++;
-						row[counter] = Util.nvlt(doc.get(field.getFieldName()));
-						counter++;
+						if (isStream) {
+							row[counter] = Util.nvlt(field.getFieldAlias());
+							counter++;
+							row[counter] = Util.nvlt(field.getMeasureUnit());
+							counter++;
+							row[counter] = Util.nvlt(field.getDataType());
+							counter++;
+							row[counter] = Util.nvlt(doc.get(field.getFieldName()));
+							counter++;
+						} else {
+							row[counter] = Util.nvlt(doc.get(field.getFieldName()));
+							counter++;
+						}
 					}
 					writer.writeNext(row);
 				}
