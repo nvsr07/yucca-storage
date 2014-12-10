@@ -48,7 +48,7 @@ public class Stream {
     @Expose
     private String deploymentStatusDesc;
     @Expose
-    private Integer publishStream;
+    private Boolean publishStream;
     @Expose
     private Double fps;
     @Expose
@@ -69,6 +69,8 @@ public class Stream {
     private Components components;
     @Expose
     private StreamTags streamTags;
+    @Expose
+    private VirtualEntityPositions virtualEntityPositions;
 
     /**
      * 
@@ -453,7 +455,7 @@ public class Stream {
      * @return
      *     The publishStream
      */
-    public Integer getPublishStream() {
+    public Boolean getPublishStream() {
         return publishStream;
     }
 
@@ -462,7 +464,7 @@ public class Stream {
      * @param publishStream
      *     The publishStream
      */
-    public void setPublishStream(Integer publishStream) {
+    public void setPublishStream(Boolean publishStream) {
         this.publishStream = publishStream;
     }
 
@@ -645,5 +647,13 @@ public class Stream {
     public void setStreamTags(StreamTags streamTags) {
         this.streamTags = streamTags;
     }
+
+	public VirtualEntityPositions getVirtualEntityPositions() {
+		return virtualEntityPositions;
+	}
+
+	public void setVirtualEntityPositions(VirtualEntityPositions virtualEntityPositions) {
+		this.virtualEntityPositions = virtualEntityPositions;
+	}
 
 }

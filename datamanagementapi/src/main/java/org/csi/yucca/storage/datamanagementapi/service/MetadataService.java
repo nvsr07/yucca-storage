@@ -32,12 +32,14 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
+import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.service.response.ErrorMessage;
 import org.csi.yucca.storage.datamanagementapi.service.response.UpdateDatasetResponse;
@@ -46,6 +48,7 @@ import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
+import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import au.com.bytecode.opencsv.CSVWriter;
@@ -107,18 +110,56 @@ public class MetadataService {
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-		Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
 
 		String fileName = metadata.getInfo().getDatasetName() + "." + format;
 
-		final List<Field> header = new LinkedList<Field>();
+		final List<Field> fields = new LinkedList<Field>();
+
+		final List<String> fixedFields = new LinkedList<String>();
 		for (Field field : metadata.getInfo().getFields()) {
-			header.add(field);
+			fields.add(field);
 		}
+		final List<String> headerFixedColumn = new LinkedList<String>();
 
 		String collectionName = Config.getInstance().getCollectionTenantData();
-		if (metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(metadata.getConfigData().getSubtype()))
+		if (metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(metadata.getConfigData().getSubtype())) {
 			collectionName = Config.getInstance().getCollectionTenantMeasures();
+
+			// stream metadata
+			String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+
+			MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+			StreamOut stream = streamDAO.readStreamByMetadata(metadata);
+
+			headerFixedColumn.add("Sensor.Name");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityName()));
+			headerFixedColumn.add("Sensor.Description");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityDescription()));
+			headerFixedColumn.add("Sensor.SensorID");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityCode()));
+			headerFixedColumn.add("Sensor.Type");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityType()));
+			headerFixedColumn.add("Sensor.Category");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityCategory()));
+
+			if (stream.getStreams().getStream().getVirtualEntityPositions() != null) {
+				headerFixedColumn.add("Sensor.Latitude");
+				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().getLat()));
+				headerFixedColumn.add("Sensor.Longitude");
+				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().getLon()));
+				headerFixedColumn.add("Sensor.Elevation");
+				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().getElevation()));
+			}
+
+			headerFixedColumn.add("Stream.StreamCode");
+			fixedFields.add(Util.nvlt(stream.getStreamCode()));
+			headerFixedColumn.add("Stream.StreamName");
+			fixedFields.add(Util.nvlt(stream.getStreamName()));
+			headerFixedColumn.add("Stream.Frequency");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getFps()));
+			headerFixedColumn.add("Stream.TimeStamp");
+		}
 
 		DBCollection dataCollection = mongo.getDB("DB_" + tenant).getCollection(collectionName);
 
@@ -127,24 +168,63 @@ public class MetadataService {
 
 		final DBCursor cursor = dataCollection.find(searchQuery).limit(Constants.MAX_NUM_ROW_DATA_DOWNLOAD);
 
-		StreamingOutput stream = new StreamingOutput() {
+		StreamingOutput streamResponse = new StreamingOutput() {
 
 			public void write(OutputStream os) throws IOException, WebApplicationException {
 
 				CSVWriter writer = new CSVWriter(new OutputStreamWriter(os), separator);
-				String[] headerNames = new String[header.size()];
+				int totalColumn = headerFixedColumn.size() + fields.size() * 4;// 4
+																				// is
+																				// the
+																				// fields
+																				// column
+																				// exposed
+																				// (alias,
+																				// measureUnit,
+																				// dataType,
+																				// measure)
+				String[] headerNames = new String[totalColumn];
 				int counter = 0;
-				for (Field field : header) {
-					headerNames[counter] = field.getFieldName();
+				for (String s : headerFixedColumn) {
+					headerNames[counter] = s;
+					counter++;
+				}
+				for (Field field : fields) {
+					headerNames[counter] = field.getFieldName() + ".alias";
+					counter++;
+					headerNames[counter] = field.getFieldName() + ".measureUnit";
+					counter++;
+					headerNames[counter] = field.getFieldName() + ".dataType";
+					counter++;
+					headerNames[counter] = field.getFieldName() + ".measure";
 					counter++;
 				}
 				writer.writeNext(headerNames);
+
 				while (cursor.hasNext()) {
 					DBObject doc = cursor.next();
-					String[] row = new String[header.size()];
+					String[] row = new String[totalColumn];
 					counter = 0;
-					for (Field field : header) {
-						row[counter] = "" + doc.get(field.getFieldName());
+					for (String fixedField : fixedFields) {
+						row[counter] = fixedField;
+						counter++;
+					}
+					if (metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(metadata.getConfigData().getSubtype())) {
+						if (doc.get("time") != null)
+							row[counter] = "" + ((Date) doc.get("time")).getTime();
+						else
+							row[counter] = "";
+						counter++;
+					}
+
+					for (Field field : fields) {
+						row[counter] = Util.nvlt(field.getFieldAlias());
+						counter++;
+						row[counter] = Util.nvlt(field.getMeasureUnit());
+						counter++;
+						row[counter] = Util.nvlt(field.getDataType());
+						counter++;
+						row[counter] = Util.nvlt(doc.get(field.getFieldName()));
 						counter++;
 					}
 					writer.writeNext(row);
@@ -155,7 +235,8 @@ public class MetadataService {
 			}
 		};
 
-		Response build = Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName).build();
+		Response build = Response.ok(streamResponse, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName)
+				.build();
 		return build;
 	}
 
@@ -181,7 +262,11 @@ public class MetadataService {
 
 		String baseApiUrl = Config.getInstance().getBaseApiUrl();
 
-		return new MetadataWithExtraAttribute(metadata, api, baseApiUrl).toJson();
+		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+		StreamOut stream = streamDAO.readStreamByMetadata(metadata);
+
+		return new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl).toJson();
 	}
 
 	@POST

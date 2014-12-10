@@ -1,6 +1,9 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
+
+import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 
 public class StreamOut {
@@ -19,6 +22,11 @@ public class StreamOut {
     private Streams streams;
     
     
+    public static StreamOut fromJson(String json) {
+		Gson gson = JSonHelper.getInstance();
+		return gson.fromJson(json, StreamOut.class);
+	}
+
     public String getId() {
 		return id;
 	}
