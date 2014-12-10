@@ -211,7 +211,7 @@ public class MetadataService {
 					}
 					if (metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(metadata.getConfigData().getSubtype())) {
 						if (doc.get("time") != null)
-							row[counter] = "" + ((Date) doc.get("time")).getTime();
+							row[counter] = Constants.ISO_DATE_FORMAT().format(((Date) doc.get("time")));
 						else
 							row[counter] = "";
 						counter++;
