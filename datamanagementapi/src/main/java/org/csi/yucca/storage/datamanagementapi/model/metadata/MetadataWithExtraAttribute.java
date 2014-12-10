@@ -1,6 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
@@ -11,6 +12,8 @@ public class MetadataWithExtraAttribute {
 	private String apiMetadataUrl;
 	private String apiMeasureUrl;
 	private Metadata metadata;
+	private StreamOut stream;
+
 
 	public static MetadataWithExtraAttribute fromJson(String json) {
 		Gson gson = JSonHelper.getInstance();
@@ -20,8 +23,9 @@ public class MetadataWithExtraAttribute {
 	public MetadataWithExtraAttribute() {
 	}
 
-	public MetadataWithExtraAttribute(Metadata metadata, MyApi api, String baseApiUrl) {
+	public MetadataWithExtraAttribute(Metadata metadata, StreamOut stream, MyApi api, String baseApiUrl) {
 		this.setMetadata(metadata);
+		this.setStream(stream);
 		setApiUrl(baseApiUrl + api.getApiCode() + "/");
 		setApiMetadataUrl(getApiUrl() + "$metadata");
 		setApiMeasureUrl(getApiUrl() + "$measure");
@@ -63,6 +67,14 @@ public class MetadataWithExtraAttribute {
 
 	public void setMetadata(Metadata metadata) {
 		this.metadata = metadata;
+	}
+
+	public StreamOut getStream() {
+		return stream;
+	}
+
+	public void setStream(StreamOut stream) {
+		this.stream = stream;
 	}
 
 }

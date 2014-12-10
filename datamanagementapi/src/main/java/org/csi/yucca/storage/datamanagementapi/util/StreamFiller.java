@@ -59,7 +59,7 @@ public class StreamFiller {
 		sti.setLastUpdate(stream.getLastUpdate());
 		sti.setLicence(stream.getLicence());
 		sti.setPrivacyAcceptance(stream.getAccettazionePrivacy());
-		sti.setPublishStream(stream.getPublishStream());
+		sti.setPublishStream(stream.getPublishStream()==1?true:false);
 		sti.setRegistrationDate(stream.getRegistrationDate());
 		sti.setRequesterMail(stream.getMailRichiedente());
 		sti.setRequesterName(stream.getNomeRichiedente());

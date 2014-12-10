@@ -19,7 +19,6 @@ import org.csi.yucca.storage.datamanagementapi.util.TenantFiller;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -29,7 +28,7 @@ import com.mongodb.util.JSON;
 @Path("/tenant")
 public class InstallTenantService {
 
-	private static final Integer MAX_RETRY = 5;
+	//private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
 	//Map<String,String> mongoParams = null;
 
