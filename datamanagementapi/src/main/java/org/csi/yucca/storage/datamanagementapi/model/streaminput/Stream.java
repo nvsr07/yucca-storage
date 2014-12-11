@@ -790,4 +790,13 @@ public class Stream {
         this.streamInternalChildren = streamInternalChildren;
     }
 
+	public VirtualEntityPositions getVirtualEntityPositions() {
+		return virtualEntityPositions;
+	}
+
+	public void setVirtualEntityPositions(
+			VirtualEntityPositions virtualEntityPositions) {
+		this.virtualEntityPositions = virtualEntityPositions;
+	}
+
 }

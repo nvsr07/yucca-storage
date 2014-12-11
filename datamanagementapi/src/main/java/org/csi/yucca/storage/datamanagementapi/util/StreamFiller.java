@@ -13,6 +13,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Streamchild;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Streams;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Tag;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Componenti;
+import org.csi.yucca.storage.datamanagementapi.model.streaminput.Position;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class StreamFiller {
@@ -42,7 +43,7 @@ public class StreamFiller {
 		Streams streams = new Streams();
 
 		org.csi.yucca.storage.datamanagementapi.model.streamOutput.Stream sti = new org.csi.yucca.storage.datamanagementapi.model.streamOutput.Stream();
-		
+
 		sti.setCopyright(stream.getCopyright());
 		sti.setDeploymentStatusCode(stream.getDeploymentStatusCode());
 		sti.setDeploymentStatusDesc(stream.getDeploymentStatusDesc());
@@ -65,20 +66,41 @@ public class StreamFiller {
 		sti.setRequesterName(stream.getNomeRichiedente());
 		sti.setRequesterSurname(stream.getCognomeRichiedente());
 		sti.setSaveData(stream.getSaveData());
-		
+
 		sti.setStreamStatus(stream.getStatoStream());		
-		
-		
+
+
 		sti.setVirtualEntityCategory(stream.getCategoriaVirtualEntity());
 		sti.setVirtualEntityCode(stream.getCodiceVirtualEntity());
 		sti.setVirtualEntityDescription(stream.getVirtualEntityDescription());
 		sti.setVirtualEntityName(stream.getVirtualEntityName());
 		sti.setVirtualEntityType(stream.getTipoVirtualEntity());
 		sti.setVisibility(stream.getVisibility());
-		
+
 		StreamInternalChildren streamInternalChildren=new StreamInternalChildren();
 		sti.setStreamInternalChildren(streamInternalChildren);
+
 		
+		//FIXME make an array when the model changes for now just make it work :P .
+		org.csi.yucca.storage.datamanagementapi.model.streamOutput.VirtualEntityPositions VEPO = new org.csi.yucca.storage.datamanagementapi.model.streamOutput.VirtualEntityPositions();
+		if(stream.getVirtualEntityPositions()!=null){
+			
+			VEPO.setPosition(new ArrayList<org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position>());
+			
+			org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position position =new org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position();
+			for(Position p : stream.getVirtualEntityPositions().getPosition()){
+				position.setRoom(p.getRoom());
+				position.setBuilding(p.getBuilding());
+				position.setElevation(p.getElevation());
+				position.setFloor(p.getFloor());
+				position.setLat(p.getLat());
+				position.setLon(p.getLon());
+				
+				VEPO.getPosition().add(position);
+			}
+			sti.setVirtualEntityPositions(VEPO);
+		}
+
 		if(stream.getStreamInternalChildren()!=null && stream.getStreamInternalChildren().getStreamChildren()!=null){
 			List<Streamchild> scl = new ArrayList<Streamchild>();
 			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Streamchild> lista = stream.getStreamInternalChildren().getStreamChildren();
@@ -87,7 +109,7 @@ public class StreamFiller {
 				sc.setAliasChildStream(child.getAliasChildStream());
 				sc.setIdChildStream(child.getIdChildStream());
 				sc.setIdStream(child.getIdStream());
-//				sc.setIdTenant(child.getCodiceTenant());
+				//				sc.setIdTenant(child.getCodiceTenant());
 				sc.setInternalQuery(child.getInternalQuery());
 				sc.setStreamCode(child.getCodiceStream());
 				sc.setStreamName(child.getNomeStream());
@@ -96,16 +118,16 @@ public class StreamFiller {
 				sc.setVirtualEntityCode(child.getCodiceVirtualEntity());
 				sc.setVirtualEntityDescription(child.getVirtualEntityDescription());
 				sc.setVirtualEntityName(child.getVirtualEntityName());
-				
+
 				scl.add(sc);
 			}
 			streamInternalChildren.setStreamChildren(scl );
-			
+
 		}
-		
+
 		StreamTags streamTags = new StreamTags();
 		List<Tag> tags = new ArrayList<Tag>();
-		
+
 		if(stream.getStreamTags()!=null && stream.getStreamTags().getTag()!=null){
 			for(  org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag t : stream.getStreamTags().getTag()){
 				Tag tag = new Tag();
@@ -113,10 +135,10 @@ public class StreamFiller {
 				tags.add(tag);
 			}
 		}
-		
+
 		streamTags.setTags(tags );
 		sti.setStreamTags(streamTags );
-		
+
 		Componenti comp = stream.getComponenti();
 		if(comp!=null){
 			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Element> elem = comp.getElement();
