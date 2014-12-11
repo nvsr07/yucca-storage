@@ -84,6 +84,9 @@ public class Stream {
     private StreamTags streamTags;
     @Expose
     private StreamInternalChildren streamInternalChildren;
+    @Expose 
+    private VirtualEntityPositions virtualEntityPositions;
+
 
     /**
      * 

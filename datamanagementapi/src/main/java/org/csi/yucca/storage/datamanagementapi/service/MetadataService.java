@@ -144,13 +144,14 @@ public class MetadataService {
 			headerFixedColumn.add("Sensor.Category");
 			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityCategory()));
 
-			if (stream.getStreams().getStream().getVirtualEntityPositions() != null) {
+			if (stream.getStreams().getStream().getVirtualEntityPositions() != null &&stream.getStreams().getStream().getVirtualEntityPositions().getPosition()!=null
+					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition().size()>0) {
 				headerFixedColumn.add("Sensor.Latitude");
-				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().getLat()));
+				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().get(0).getLat()));
 				headerFixedColumn.add("Sensor.Longitude");
-				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().getLon()));
+				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().get(0).getLon()));
 				headerFixedColumn.add("Sensor.Elevation");
-				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().getElevation()));
+				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().get(0).getElevation()));
 			}
 
 			headerFixedColumn.add("Stream.StreamCode");

@@ -1,4 +1,4 @@
-package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
+package org.csi.yucca.storage.datamanagementapi.model.streaminput;
 
 import java.util.List;
 
