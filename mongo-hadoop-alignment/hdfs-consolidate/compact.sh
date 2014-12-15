@@ -92,13 +92,10 @@ function compactDataset(){
 ERR="ERROR: environment to deploy not found (prod | preprod)"
 if [ -z $1 ]; then
     echo $ERR
+    exit
 elif [ $1 = "prod" ]; then
-    USER_PREF="prod-"
-    GROUP_PREF="tnt-"
     HEAD_FOLDER="/tenant"
 elif [ $1 = "preprod" ]; then
-    USER_PREF="preprod-"
-    GROUP_PREF="pretnt-"
     HEAD_FOLDER="/pre-tenant"
 else
    echo $ERR
