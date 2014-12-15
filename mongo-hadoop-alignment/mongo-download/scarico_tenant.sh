@@ -54,7 +54,7 @@ then
   exit 1
 fi
 
-# eseguo mongoexport per ogni dataSet
+# crea file per ogni dataSet 
 for riga in `cat $nomeDir/lista_dataset.$myPid.txt`
 do
  datasetCode=`echo $riga | awk -F\; '{print $1}'`
@@ -67,15 +67,51 @@ do
  tenant=`echo $riga | awk -F\; '{print $6}'`
  visibility=`echo $riga | awk -F\; '{print $7}'`
  campi=`echo $riga | awk -F\; '{print $8}'`
- echo Exporting dataset $datasetCode - version $datasetVersion from collection $collection
-#echo mongoexport -h $MONGO_HOST --port $MONGO_PORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin -d $database -c $collection -q \'{ \$and: [ {idDataset: $idDataset}, {datasetVersion: $datasetVersion}, {time: { \$gte: new Date\($precTS\) } }, {time: { \$lt: new Date\($newTS\) } } ] }\' --csv -o $nomeDir/${newTS}.${tenantCode}.${collection}.${datasetCode}.${datasetVersion}.${visibility}.csv -f $campi
-mongoexport -h $MONGO_HOST --port $MONGO_PORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin -d $database -c $collection -q "{ \$and: [ {idDataset: $idDataset}, {datasetVersion: $datasetVersion}, {time: { \$gte: new Date($precTS) } }, {time: { \$lt: new Date($newTS) } } ] }" --csv -o $nomeDir/${newTS}.${tenantCode}.${collection}.${datasetCode}.${datasetVersion}.${visibility}.csv -f $campi
-if [ $? -ne 0 ]
-then
+ echo Exporting dataset $datasetCode - version $datasetVersion from collection $collection in temporary file
+ mongoexport -h $MONGO_HOST --port $MONGO_PORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin -d $database -c $collection -q "{ \$and: [ {idDataset: $idDataset}, {datasetVersion: $datasetVersion}, {time: { \$gte: new Date($precTS) } }, {time: { \$lt: new Date($newTS) } } ] }" --csv -o $nomeDir/export_dataset.$myPid.txt -f $campi
+ if [ $? -ne 0 ]
+ then
   echo "FATAL ERROR during dataset $datasetCode export"
+  rm $nomeDir/export_dataset.$myPid.txt
+  exit 1
+ fi
+#
+#echo faccio ls del file
+#ls -l $nomeDir/export_dataset.$myPid.txt
+#echo cat del file
+#cat $nomeDir/export_dataset.$myPid.txt
+#echo "**********************************"
+ echo enriches the file with metadata
+ metadata=`mongo DB_SUPPORT --host $MONGO_HOST --port $MONGO_PORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1='$tenantCode'; var param2=$idDataset; var param3=$datasetVersion" metadati_dataset.js`
+ if [ $? -ne 0 ]
+ then
+  echo "FATAL ERROR reading dataset $datasetCode / $datasetVersion metadata"
+  echo $metadata
+  rm $nomeDir/export_dataset.$myPid.txt
+  exit 1
+ fi
+ meta_titles=`echo $metadata | awk -F\; '{print $1}'`
+ meta_data=`echo $metadata | awk -F\; '{print $2}'`
+ head -1 $nomeDir/export_dataset.$myPid.txt | sed "s|$|,${meta_titles}|" > $nomeDir/${newTS}.${tenantCode}.${collection}.${datasetCode}.${datasetVersion}.${visibility}.csv
+ if [ $? -ne 0 ]
+ then
+  echo "FATAL ERROR during dataset $datasetCode titles enriching"
+  #echo "meta_titles: $meta_titles - meta_data: $meta_data"
+  rm $nomeDir/export_dataset.$myPid.txt
   rm $nomeDir/${newTS}.${tenantCode}.${collection}.${datasetCode}.${datasetVersion}.${visibility}.csv
   exit 1
-fi
+ fi
+ tail -n +2 $nomeDir/export_dataset.$myPid.txt | sed "s|$|,${meta_data}|" >> $nomeDir/${newTS}.${tenantCode}.${collection}.${datasetCode}.${datasetVersion}.${visibility}.csv
+ if [ $? -ne 0 ]
+ then
+  echo "FATAL ERROR during dataset $datasetCode metadata enriching"
+  echo "meta_titles: $meta_titles - meta_data: $meta_data"
+  rm $nomeDir/export_dataset.$myPid.txt
+  rm $nomeDir/${newTS}.${tenantCode}.${collection}.${datasetCode}.${datasetVersion}.${visibility}.csv
+  exit 1
+ fi
+
+ rm $nomeDir/export_dataset.$myPid.txt
 
 done
 
