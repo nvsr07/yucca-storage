@@ -363,7 +363,7 @@ public class MetadataService {
 
 			metadata.getConfigData().setIdTenant(idTenant);
 
-			Metadata metadataCreated = metadataDAO.createMetadata(metadata);
+			Metadata metadataCreated = metadataDAO.createMetadata(metadata,null);
 
 			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
 			api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);

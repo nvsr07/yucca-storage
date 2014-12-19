@@ -24,20 +24,30 @@ public class MongoDBMetadataDAO {
 		this.collection = mongo.getDB(db).getCollection(collection);
 	}
 
-	public Metadata createMetadata(Metadata metadata) {
+	public Metadata createMetadata(Metadata metadata,Long idDataset) {
 
+		
 		for (int i = 0; i < 5; i++) {
 			try {
+				if(idDataset==null){
 				metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
+				}else{
+					metadata.setIdDataset(idDataset);
+				}
 				metadata.generateCode();
 				metadata.generateNameSpace();
 
 				String json = metadata.toJson();
 				DBObject dbObject = (DBObject) JSON.parse(json);
-
-				this.collection.insert(dbObject);
-				ObjectId id = (ObjectId) dbObject.get("_id");
-				metadata.setId(id.toString());
+				
+				DBObject uniqueMetadata = new BasicDBObject("idDataset",metadata.getIdDataset());
+				uniqueMetadata.put("datasetVersion",metadata.getDatasetVersion());
+				
+				// if the metadata with that id and version exists .. update it, otherwise insert the new one.
+				//upsert:true  multi:false
+				this.collection.update(uniqueMetadata,dbObject,true,false);
+//				ObjectId id = (ObjectId) dbObject.get("_id");
+//				metadata.setId(id.toString());
 				break;
 			} catch (Exception e) {
 				log.error("[] - ERROR in insert. Attempt " + i + " - message: " + e.getMessage());
