@@ -52,12 +52,12 @@ public class Config {
 		return instance;
 	}
 
-	public String getMongoHost() {
-		return params.get(MONGO_HOST);
+	public String[] getMongoHost() {
+		return params.get(MONGO_HOST).split(";");
 	}
 
-	public String getMongoPort() {
-		return params.get(MONGO_PORT);
+	public String[] getMongoPort() {
+		return params.get(MONGO_PORT).split(";");
 	}
 
 	public String getDbSupport() {
