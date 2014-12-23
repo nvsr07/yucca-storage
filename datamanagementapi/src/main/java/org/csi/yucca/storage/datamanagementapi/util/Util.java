@@ -2,10 +2,6 @@ package org.csi.yucca.storage.datamanagementapi.util;
 
 import java.util.List;
 
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
-
 public class Util {
 	public static String nvl(Object o) {
 		return o == null ? "" : o.toString();
@@ -42,6 +38,7 @@ public class Util {
 	public static String cleanStringCamelCase(String in) {
 		String out = "";
 		if (in != null) {
+			in = in.replaceAll("[-]", " ").replaceAll("[.]", " ").replaceAll("[/]", " ");
 			String[] words = in.split(" ");
 			for (String word : words) {
 				out += toProperCase(cleanString(word));
@@ -76,13 +73,15 @@ public class Util {
 		// "{\"dataset\":{\"id\":\"5459050d73456b346624b067\",\"configData\":{\"idDataset\":\"quarto\",\"tenant\":\"sandbox\",\"type\":\"dataset\",\"subtype\":\"bulkDataset\",\"datasetversion\":\"1\",\"current\":\"1\"},\"metadata\":{\"name\":\"aaa\",\"registrationDate\":\"Nov 4, 2014 5:55:41 PM\",\"requestorName\":\"aa\",\"requestorSurname\":\"aa\",\"dataDomain\":\"AGRICULTURE\",\"requestornEmail\":\"aa\",\"tags\":[{}],\"visibility\":\"public\",\"license\":\"lll\"}}}";
 		// Metadata d3 = Metadata.fromJson(json3);
 		// System.out.println("3ok" + gson.toJson(d3));
-		Metadata m = new Metadata();
-		
-		Info info = new Info();
-		Field[] fields = new Field[1];
-		info.setFields(fields);
-		m.setInfo(info);;
-		
+//		Metadata m = new Metadata();
+//		
+//		Info info = new Info();
+//		Field[] fields = new Field[1];
+//		info.setFields(fields);
+//		m.setInfo(info);;
+
+		String out = Util.cleanStringCamelCase("asd-sfd.t/12",12);
+		System.out.println(out);
 	}
 
 	public static String join(String[] strings, String glue) {

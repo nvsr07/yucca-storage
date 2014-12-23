@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.model.types.GeoPoint;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 
@@ -96,7 +97,7 @@ public class MongoDBDataUpload {
 		while ((nextRow = reader.readNext()) != null) {
 			lineNumber++;
 			System.out.println("Line # " + lineNumber);
-
+			GeoPoint geoPoint = new GeoPoint();
 			String[] fieldValues = nextRow;
 			String row = Util.join(nextRow, ",");
 			// for (int i = 0; i < dataIn.size(); i++) {
@@ -130,7 +131,7 @@ public class MongoDBDataUpload {
 					if (datasetMetadata.getInfo().getFields()[j].getSourceColumn() == (numColumn + 1)) {
 						found = true;
 						typeCode = datasetMetadata.getInfo().getFields()[j].getDataType();
-						fieldName = datasetMetadata.getInfo().getFields()[j].getFieldName();
+						fieldName = Util.cleanStringCamelCase(datasetMetadata.getInfo().getFields()[j].getFieldName());
 
 						if (datasetMetadata.getInfo().getFields()[j].getDateTimeFormat() != null) {
 							try {
@@ -163,6 +164,14 @@ public class MongoDBDataUpload {
 									builder.add(fieldName, new Boolean(Boolean.parseBoolean(curValue)));
 								} else if ("dateTime".equals(typeCode)) {
 									builder.add(fieldName, formatter.parse(curValue));
+								} else if ("longitude".equals(typeCode)) {
+									Double longitude = new Double(curValue);
+									builder.add(fieldName, longitude);
+									geoPoint.setLongitude(longitude);
+								} else if ("latitude".equals(typeCode)) {
+									Double latitude = new Double(curValue);
+									builder.add(fieldName, latitude);
+									geoPoint.setLatitude(latitude);
 								} else {
 									builder.add(fieldName, new String(curValue));
 								}
@@ -184,6 +193,10 @@ public class MongoDBDataUpload {
 					errorCurrentRow.add(curRowErr);
 				}
 
+			}
+			
+			if(geoPoint.isValid()){
+				builder.add("idxLocation", geoPoint.getIdxLocation());
 			}
 
 			if (errorCurrentRow != null && errorCurrentRow.size() > 0) {
