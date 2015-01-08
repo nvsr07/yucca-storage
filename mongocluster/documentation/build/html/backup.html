@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cluster Backup Strategy &mdash; CSI MongoDB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CSI MongoDB 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Collections Shard Keys" href="shardkeys.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="shardkeys.html" title="Collections Shard Keys"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cluster-backup-strategy">
+<h1>Cluster Backup Strategy<a class="headerlink" href="#cluster-backup-strategy" title="Permalink to this headline">¶</a></h1>
+<p>Il seguente documento riporta alcuni possibili strategie per la gestione dei backup
+in un ambiente MongoDB con Sharding e Repliche attivate.</p>
+<p>Lo scopo è definire la migliore politica di backup a caldo per il sistema che sostiene
+lo Speed Layer anche sul lungo termine.</p>
+<div class="section" id="oplog-size">
+<span id="id1"></span><h2>OpLog Size<a class="headerlink" href="#oplog-size" title="Permalink to this headline">¶</a></h2>
+<p>Una componente fondamentale nella politica di Backup è la definizione della dimensione
+dell&#8217;oplog. Una volta creato il cluster MongoDB la dimensione dell&#8217;oplog non può più
+essere cambiata senza sganciare i nodi del replica set.</p>
+<p>La stima dell&#8217;oplog influisce sul tempo massimo che può essere speso per effettuare il backup,
+superato quel tempo i nodi che sono backuppati non potranno più riagganciarsi al replica set
+ed andranno riallineati.</p>
+<p>In base alla mail del <em>2014-12-22</em> in cui si stimavano 500 FPS per 30 progetti si può dedurre
+un throughput di dati pari a 15.000 documenti al secondo. Stimando ogni documento di dimensione
+~256 bytes (La stima è fatta sulla base del dump fornito che ha <tt class="docutils literal"><span class="pre">&quot;avgObjSize&quot;</span> <span class="pre">:</span> <span class="pre">240</span></tt>) si
+può evincere che in questo scenario l&#8217;oplog deve avere dimensione pari a <strong>225MB al minuto</strong>.</p>
+</div>
+<div class="section" id="replica-per-backup">
+<span id="backup-replica"></span><h2>Replica per Backup<a class="headerlink" href="#replica-per-backup" title="Permalink to this headline">¶</a></h2>
+<p>Al fine di poter effettuare interventi di backup con il minimo disservizio è opportuno
+predisporre all&#8217;interno di tutti i <strong>replica set che fanno parte del cluster</strong>, un nodo
+atto solo allo scopo di effettuare i backup.</p>
+<p>Se ad esempio il nostro cluster ha due shard, e quindi due replica set ci saranno due nodi
+di backup. Uno per ogni replica set.</p>
+<p>Questo nodo va impostato a <tt class="docutils literal"><span class="pre">priority:</span> <span class="pre">0</span></tt> in modo che non sia eletto come Primary Node
+all&#8217;interno del replicat set e <tt class="docutils literal"><span class="pre">hidden:</span> <span class="pre">true</span></tt> in modo che i client non lo usino per
+effettuare queries.</p>
+<p>Il fatto che non sia mai toccato dai client né usato dal replica set come primario permette
+di spegnere il nodo in qualsiasi momento per poterne effettuare il backup senza alcun
+impatto sul cluster che continuerà a funzionare come prima.</p>
+<p>Al fine di impostare un nodo come replica per il backup bisogna <em>connettersi al primary</em>
+del replica set (in caso ci sia più replica set va fatto per ognuno) e lanciato il comando:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rs</span><span class="o">.</span><span class="n">conf</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Il comando stamperà l&#8217;array con l&#8217;elenco dei nodi membri del replica set. Una volta identificato
+l&#8217;indice all&#8217;interno dell&#8217;array del nodo che si vuole rendere di backup lo si può impostare come
+modo di backup tramite:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cfg</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">conf</span><span class="p">()</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">priority</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">rs</span><span class="o">.</span><span class="n">reconfig</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Al posto di <strong>2</strong> è necessario usare l&#8217;indice effettivo del nodo identificato precedentemente.</p>
+</div>
+</div>
+<div class="section" id="processo-di-backup">
+<h2>Processo di Backup<a class="headerlink" href="#processo-di-backup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="stop-balancer">
+<h3>Stop Balancer<a class="headerlink" href="#stop-balancer" title="Permalink to this headline">¶</a></h3>
+<p>Indipendentemente dalla tecnica di backup che si decide di usare (snapshot LVM, mongodump,
+copia delle macchine Virtuali, etc...) è sempre necessario procedere allo stop del balancer
+prima di effettuare il backup.</p>
+<p>Il balancer può essere fermato connettendosi al cluster tramite mongos:</p>
+<div class="highlight-python"><div class="highlight"><pre>use config
+sh.setBalancerState(false)
+sh.stopBalancer()
+</pre></div>
+</div>
+<p>Prima di procedere al backup è necessario verificare che il balancer sia effettivamente
+fermo con:</p>
+<div class="highlight-python"><div class="highlight"><pre>!sh.getBalancerState() &amp;&amp; !sh.isBalancerRunning()
+</pre></div>
+</div>
+<p><strong>Fermare il balancer è obbligatorio</strong> per poter ottenere un backup corretto, se il balancer
+non è stato fermato c&#8217;è la possibilità di salvare dei dati duplicati e quindi non riuscire
+poi a ripristinare il backup.</p>
+</div>
+<div class="section" id="backup-config-server">
+<h3>Backup Config Server<a class="headerlink" href="#backup-config-server" title="Permalink to this headline">¶</a></h3>
+<p>Prima di procedere all&#8217;effetivo backup dei nodi è necessario effettuare il backup di un config
+server. Dato che i config server replicano tutti gli stessi dati è sufficiente backupparne
+uno qualsiasi di quelli disponibili.</p>
+<p>Per procedere al backup del config server il metodo più sicuro è lanciare <tt class="docutils literal"><span class="pre">mongodump</span></tt>
+direttamente sul config server con l&#8217;opzione <tt class="docutils literal"><span class="pre">--oplog</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongodump --oplog
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">E` importante specificare l&#8217;opzione <tt class="docutils literal"><span class="pre">--oplog</span></tt> al fine di essere certi che anche eventuali
+modifiche che avvengono durante il backup stesso non possano portare ad un backup in stato
+corrotto.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Durante l&#8217;esecuzione di <tt class="docutils literal"><span class="pre">mongodump</span></tt> non deve essere stata lanciato il comando
+<tt class="docutils literal"><span class="pre">db.fsyncLock()</span></tt> che viene invece usato per il backup delle repliche di backup.
+Altrimenti impedirà a mongodump di leggere il database e procedere con il dump.</p>
+</div>
+</div>
+<div class="section" id="backup-shard-members">
+<h3>Backup Shard Members<a class="headerlink" href="#backup-shard-members" title="Permalink to this headline">¶</a></h3>
+<p>Questa procedura va effetuata <em>per ognuno dei nodi di</em> <a class="reference internal" href="#backup-replica"><em>Replica per Backup</em></a>.</p>
+<p>Collegandosi ad ogni nodo di <a class="reference internal" href="#backup-replica"><em>Replica per Backup</em></a> è necessario procedere
+allo stop dei nodi con:</p>
+<div class="highlight-python"><div class="highlight"><pre>use admin
+db.shutdownServer({timeoutSecs: 60})
+</pre></div>
+</div>
+<p>A questo punto una volta terminato lo shutdown si può procedere al backup dei dati stessi
+lanciando sul server il comando:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongodump --journal --dbpath /data/db/ --out /data/backup/
+</pre></div>
+</div>
+<p>Dove <tt class="docutils literal"><span class="pre">/data/db</span></tt> è la directory ove il nodo salva i dati effettivi e <tt class="docutils literal"><span class="pre">/data/backup</span></tt> è
+la directory ove si vuole venga generato il backup.</p>
+<p>Una volta terminato il backup si può procedere semplicemente al riavvio del processo
+mongodb sul nodo.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">E` importante che il tempo speso per il backup sia inferiore del tempo massimo reso
+disponibile dalla <a class="reference internal" href="#oplog-size"><em>OpLog Size</em></a> altrimenti il nodo non sarà più in grado
+di riagganciarsi al replica set una volta terminato il backup.</p>
+</div>
+</div>
+<div class="section" id="start-balancer">
+<h3>Start Balancer<a class="headerlink" href="#start-balancer" title="Permalink to this headline">¶</a></h3>
+<p>Al termine del backup è necessario ricordarsi di riavviare il balancer con:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sh</span><span class="o">.</span><span class="n">setBalancerState</span><span class="p">(</span><span class="n">true</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">startBalancer</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Se il balancer non viene riavviato il sistema continuerà a funzionare, ma lo sharding
+sarà di fatto disattivato.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cluster Backup Strategy</a><ul>
+<li><a class="reference internal" href="#oplog-size">OpLog Size</a></li>
+<li><a class="reference internal" href="#replica-per-backup">Replica per Backup</a></li>
+<li><a class="reference internal" href="#processo-di-backup">Processo di Backup</a><ul>
+<li><a class="reference internal" href="#stop-balancer">Stop Balancer</a></li>
+<li><a class="reference internal" href="#backup-config-server">Backup Config Server</a></li>
+<li><a class="reference internal" href="#backup-shard-members">Backup Shard Members</a></li>
+<li><a class="reference internal" href="#start-balancer">Start Balancer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="shardkeys.html"
+                        title="previous chapter">Collections Shard Keys</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/backup.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="shardkeys.html" title="Collections Shard Keys"
+             >previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, AXANT.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

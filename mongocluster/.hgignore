@@ -1,0 +1,15 @@
+syntax: glob
+
+.vagrant/
+*.log
+.DS_Store
+venv
+venv3
+vagrant/supporting_files/dbs/*
+iotimporter/build/
+*.pyc
+*.egg-info
+.idea
+*.orig
+.coverage
+*.swp

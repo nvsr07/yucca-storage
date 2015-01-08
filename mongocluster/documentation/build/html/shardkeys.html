@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Collections Shard Keys &mdash; CSI MongoDB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CSI MongoDB 1.0 documentation" href="index.html" />
+    <link rel="next" title="Cluster Backup Strategy" href="backup.html" />
+    <link rel="prev" title="Welcome to CSI MongoDB’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="backup.html" title="Cluster Backup Strategy"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to CSI MongoDB’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="collections-shard-keys">
+<h1>Collections Shard Keys<a class="headerlink" href="#collections-shard-keys" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h2>
+<p>Nel seguente documento si riportano i risultati delle analisi, simulazioni e
+benchmarking dell&#8217;infratruttua mongoDB del SDP per fare una scelta ponderata
+sulle Shard Key.</p>
+</div>
+<div class="section" id="introduzione">
+<h2>Introduzione<a class="headerlink" href="#introduzione" title="Permalink to this headline">¶</a></h2>
+<p>Per prendere in considerazione le giuste Shard Key del sistema, in modo da
+avere una sistuazione ottimale rispetto ai casi d&#8217;uso presunti, si sono eseguiti
+dei  benchmark e delle simulazioni sull&#8217;ambiente vagrant che rispecchia in toto
+l&#8217;attuale configurazione dell&#8217;ambiente dello SmartDataPlatform.</p>
+<p>L&#8217;incertezza dello scenario di utilizzo rende difficile una sola e definitiva
+scelta, ma vengono riportate di seguito quattro soluzioni di cui 2  consigliate,
+con pro e contro di ogni soluzione.</p>
+<p>L&#8217;analisi viene eseguita sull&#8217;attuale collection <cite>Measures</cite> e l&#8217;attuale
+collection <cite>Data</cite>.</p>
+</div>
+<div class="section" id="shard-keys-collection-measures">
+<h2>Shard Keys Collection Measures<a class="headerlink" href="#shard-keys-collection-measures" title="Permalink to this headline">¶</a></h2>
+<p>Per fare in modo che il router mongos divida i chunk di dati in modo efficente
+tra le varie shard, le 4 Shard Keys possibili sono:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> + <tt class="docutils literal"><span class="pre">time</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">sensor</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">sensor</span></tt> + <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt></li>
+</ul>
+<p>Per quanto riguarda il campo <tt class="docutils literal"><span class="pre">streamCode</span></tt> non possiede abbastanza cardinalità
+ed unicità per poter essere scelto come Shard Key</p>
+</div>
+<div class="section" id="iddataset-datasetversion">
+<h2><tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt><a class="headerlink" href="#iddataset-datasetversion" title="Permalink to this headline">¶</a></h2>
+<p>Allo stato attuale delle cose, viste le query fornite o comunque utilizzando
+query basate su <tt class="docutils literal"><span class="pre">idDataset</span></tt>, questa è sicuramente la Shard Key che permette di
+raggiungere le performance più elevate in lettura.</p>
+<p>La chiave è composta con <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> semplicemente per facilitare le query di
+lettura</p>
+<p>Per quanto riguarda la scritturà invece, avere <tt class="docutils literal"><span class="pre">idDataset</span></tt> incrementale potrebbe
+portare al sovraccarico della shard contenente la maxKey ogniqualvolta viene
+aggiunto un nuovo stream;
+Inoltre se il numero di stream non è abbastanza elevato si potrebbero presentare
+dei jumbo chunks per la bassa cardinalità di <tt class="docutils literal"><span class="pre">idDataset</span></tt></p>
+<p>pros:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Best Throughput in lettura (query attuali o query basate su <tt class="docutils literal"><span class="pre">idDataset</span></tt>)</li>
+<li>Best Throughput in scrittura se 1 sensore -&gt; 1 stream</li>
+</ul>
+</div></blockquote>
+<p>cons:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Worst Throughput in lettura per sensore</li>
+<li>jumbo chunks per indivisibilità dell&#8217;insieme</li>
+<li>sovraccarico shard maxKey in aggiunta nuovo stream</li>
+</ul>
+</div></blockquote>
+<img alt="_images/idDataset+datasetVersion_shard_schema.png" src="_images/idDataset+datasetVersion_shard_schema.png" />
+<p>Nello schema <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> è ignorato per chiarezza dello stesso.</p>
+</div>
+<div class="section" id="iddataset-datasetversion-time">
+<h2><tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> + <tt class="docutils literal"><span class="pre">time</span></tt><a class="headerlink" href="#iddataset-datasetversion-time" title="Permalink to this headline">¶</a></h2>
+<p>Le considerazioni sono esattamente le stesse di <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt>,
+<tt class="docutils literal"><span class="pre">time</span></tt> serve per aiutare la shard a dividere in più chunk i dati ed avere più
+granularità, inoltre agevola le query su un range di tempo o che includono <tt class="docutils literal"><span class="pre">time</span></tt></p>
+<p>pros:</p>
+<blockquote>
+<div><ul class="simple">
+<li>vedi <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt></li>
+<li>granularità massima data dalla Shard Key composta con <tt class="docutils literal"><span class="pre">time</span></tt></li>
+<li>query su campo <tt class="docutils literal"><span class="pre">time</span></tt> agevolate</li>
+<li>maggior randomicità della shard se <tt class="docutils literal"><span class="pre">idDataset</span></tt> random</li>
+</ul>
+</div></blockquote>
+<p>cons:</p>
+<blockquote>
+<div><ul class="simple">
+<li>vedi <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="sensor">
+<h2><tt class="docutils literal"><span class="pre">sensor</span></tt><a class="headerlink" href="#sensor" title="Permalink to this headline">¶</a></h2>
+<p>Attualmente questa è la Shard Key peggiore in lettura basandosi sulle query
+fornite o comunque su query basate su <tt class="docutils literal"><span class="pre">idDataset</span></tt>, in quanto, non si avrà mai
+idea  del chunk in cui si trovano i dati e dovrà essere interrogato tutto il
+cluster, è invece la Shard Key migliore per le query su <tt class="docutils literal"><span class="pre">sensor</span></tt>.</p>
+<p>Per quanto riguarda la scrittura invece, questa sarebbe la shard key ottimale
+nel caso in cui ci siano molti stream alimentati da molti sensori, evitando il
+sovraccarico di alcuni chunk (come nel caso in cui si utilizzi <tt class="docutils literal"><span class="pre">idDataset</span></tt> come
+Shard Key);</p>
+<p>d&#8217;altra parte, nel caso in cui la differenza della frequenza di invio dei dati
+tra vari sensori sia molto elevata, si verificherà comunque il sovraccarico.</p>
+<p>pros:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Best Throughput in scrittura se si verifica spesso N sensori - &gt; 1 stream</li>
+<li>Best Throughput in lettura per query basate su <tt class="docutils literal"><span class="pre">sensor</span></tt></li>
+</ul>
+</div></blockquote>
+<p>cons:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Sovraccarico della shard per i sensori con frequenza maggiore</li>
+<li>Worst Throughput in lettura per query attuali (isDataset)</li>
+<li>jumbo chunks per indivisibilità dell&#8217;insieme</li>
+</ul>
+</div></blockquote>
+<img alt="_images/sensor_shard_schema.png" src="_images/sensor_shard_schema.png" />
+</div>
+<div class="section" id="sensor-iddataset-datasetversion">
+<h2><tt class="docutils literal"><span class="pre">sensor</span></tt> + <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt><a class="headerlink" href="#sensor-iddataset-datasetversion" title="Permalink to this headline">¶</a></h2>
+<p>In lettura le considerazioni sono uguali a quelle di <tt class="docutils literal"><span class="pre">sensor</span></tt> come Shard Key,
+aggiungendo <tt class="docutils literal"><span class="pre">idDataset</span></tt> si garantiscono prestazioni migliori nel caso in cui alle
+query fornite si possa aggiungere il sensore; d&#8217;altra parte per quanto riguarda
+gli stream alimentati da più sensori bisognerà  in ogni caso accedere a più
+chunks per leggere tutti i dati.</p>
+<p>Avendo più cardinalità e granularità data dalla Shard Key composta la divisione
+dei chunks è facilitata.</p>
+<p>Per quanto riguarda la scrittura le considerazioni sono le stesse dell&#8217;utilizzo
+di <tt class="docutils literal"><span class="pre">sensor</span></tt> come Shard Key.</p>
+<p>pros:</p>
+<blockquote>
+<div><ul class="simple">
+<li>vedi <tt class="docutils literal"><span class="pre">sensor</span></tt></li>
+<li>Throughput migliorato per query basate su <tt class="docutils literal"><span class="pre">idDataset</span></tt> se sensore nella query</li>
+<li>Maggiore unicità della Shard Key</li>
+</ul>
+</div></blockquote>
+<p>cons:</p>
+<blockquote>
+<div><ul class="simple">
+<li>vedi <tt class="docutils literal"><span class="pre">sensor</span></tt></li>
+</ul>
+</div></blockquote>
+<img alt="_images/sensor+idDataset+datasetVersion_shard_schema.png" src="_images/sensor+idDataset+datasetVersion_shard_schema.png" />
+</div>
+<div class="section" id="conclusioni">
+<h2>Conclusioni<a class="headerlink" href="#conclusioni" title="Permalink to this headline">¶</a></h2>
+<p>La scelta della Shard Key ricade su <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> + <tt class="docutils literal"><span class="pre">time</span></tt>, in
+quanto  <tt class="docutils literal"><span class="pre">idDataset</span></tt> è utilizzato in tutte le query fornite e fornisce abbastanza
+cardinalità.</p>
+<p>Un effetto collaterale dato dall&#8217; utilizzo di questa chiave, essendo <tt class="docutils literal"><span class="pre">idDataset</span></tt>
+incrementale, è il sovraccarico della shard dove risiede la maxKey nel momento
+in cui viene aggiunto un nuovo stream; si può ovviare a questo rendendo
+randomico  <tt class="docutils literal"><span class="pre">idDataset</span></tt>.</p>
+<p>Invece, se la cardinalità dei sensori superasse quella di <tt class="docutils literal"><span class="pre">idDataset</span></tt> o comunque
+fossero parecchi i casi di N sensori -&gt; 1 stream si potrebbe considerare
+l&#8217;utilizzo di <tt class="docutils literal"><span class="pre">sensor</span></tt> + <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> come Shard Key, ma solo nel
+caso in cui sia possibile inserire il <tt class="docutils literal"><span class="pre">sensor</span></tt> all&#8217;interno delle varie query.</p>
+</div>
+<div class="section" id="risultati-benchmark">
+<h2>Risultati benchmark<a class="headerlink" href="#risultati-benchmark" title="Permalink to this headline">¶</a></h2>
+<p>Shard Key: <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> + <tt class="docutils literal"><span class="pre">time</span></tt>
+inserimento di dati con:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">idDataset</span></tt> 0 - 100</li>
+<li><tt class="docutils literal"><span class="pre">sensor</span></tt> 1 letter random</li>
+<li><tt class="docutils literal"><span class="pre">datasetVersion</span></tt> 0 - 2</li>
+</ul>
+<p>Il benchmark prevede circa 8000 inserimenti alla volta, purtroppo non è
+possibile fare benchmark sui tempi di lettura/scrittura in quanto l&#8217;ambiente di
+sviluppo darebbe dei dati non validi e verosimili. Sono mostrate le posizioni
+dei chunk e i chunk impattati in fase di inserimento nei casi in cui <tt class="docutils literal"><span class="pre">idDataset</span></tt>
+sia random o sequenziale.</p>
+<p>Per quanto riguarda la lettura, vista la presenza di <tt class="docutils literal"><span class="pre">idDataset</span></tt> e <tt class="docutils literal"><span class="pre">datasetVersion</span></tt>
+in ogni query, questa è sicuramente la situzione ottimale, aumenta il throughput
+nel caso in cui vengano fatte query su <tt class="docutils literal"><span class="pre">time</span></tt></p>
+</div>
+<div class="section" id="shard-keys-collection-data">
+<h2>Shard Keys Collection Data<a class="headerlink" href="#shard-keys-collection-data" title="Permalink to this headline">¶</a></h2>
+<p>Per quanto riguarda la collection data visto lo schema e le query identiche alle
+measures si considera lo stesso discorso fatto per la collection measures.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Collections Shard Keys</a><ul>
+<li><a class="reference internal" href="#abstract">Abstract</a></li>
+<li><a class="reference internal" href="#introduzione">Introduzione</a></li>
+<li><a class="reference internal" href="#shard-keys-collection-measures">Shard Keys Collection Measures</a></li>
+<li><a class="reference internal" href="#iddataset-datasetversion"><tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt></a></li>
+<li><a class="reference internal" href="#iddataset-datasetversion-time"><tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt> + <tt class="docutils literal"><span class="pre">time</span></tt></a></li>
+<li><a class="reference internal" href="#sensor"><tt class="docutils literal"><span class="pre">sensor</span></tt></a></li>
+<li><a class="reference internal" href="#sensor-iddataset-datasetversion"><tt class="docutils literal"><span class="pre">sensor</span></tt> + <tt class="docutils literal"><span class="pre">idDataset</span></tt> + <tt class="docutils literal"><span class="pre">datasetVersion</span></tt></a></li>
+<li><a class="reference internal" href="#conclusioni">Conclusioni</a></li>
+<li><a class="reference internal" href="#risultati-benchmark">Risultati benchmark</a></li>
+<li><a class="reference internal" href="#shard-keys-collection-data">Shard Keys Collection Data</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to CSI MongoDB&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="backup.html"
+                        title="next chapter">Cluster Backup Strategy</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/shardkeys.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="backup.html" title="Cluster Backup Strategy"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to CSI MongoDB’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, AXANT.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
