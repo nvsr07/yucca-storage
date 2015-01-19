@@ -1,9 +1,9 @@
-from itertools import islice
+from itertools import islice, chain
 from pymongo.errors import BulkWriteError
-from .mongodb import get_tenant_db
+from .mongodb import get_measures_collection
 
 
-def insert_dataset(entries, conversion, bulk_size=1, _limit=None):
+def insert_dataset(entries, conversion, bulk_size=1, limit=None):
     """Inserts a entries into the tenant measures DB
 
     Inserted entries are converted using ``conversion``
@@ -15,8 +15,16 @@ def insert_dataset(entries, conversion, bulk_size=1, _limit=None):
     ``_limit`` parameter is mostly for testing and should not
     be relied on.
     """
-    tenant_db = get_tenant_db()
-    measures_col = tenant_db.measures
+    if limit and bulk_size > 1:
+        raise ValueError('limit cannot be used with bulks bigger than 1 item')
+
+    entries, measures_col = lookup_measures_col(entries, conversion)
+    if entries is None:
+        return
+
+    if measures_col is None:  # pragma: nocover
+        # Should never happen as lookup_measures_col raises exceptions
+        raise LookupError('Unable to lookup measures collection from data entries')
 
     total = 0
     print('Inserting on %s' % measures_col)
@@ -34,7 +42,7 @@ def insert_dataset(entries, conversion, bulk_size=1, _limit=None):
             raise InsertError(total,
                               e.details.get('writeErrors', ({},))[0].get('errmsg'))
 
-        if _limit is not None and total >= _limit:
+        if limit and total >= limit:
             # Not reliable test in case bulk_size > 1,
             # only used in test suite.
             break
@@ -49,6 +57,26 @@ def islicegroups(iterable, n):
     while piece:
         yield piece
         piece = list(islice(i, n))
+
+
+def lookup_measures_col(entries, conversion):
+    """Looks up where a set of entries should be inserted.
+
+    Given the entries and conversion function will try to lookup the database
+    and collection where they should be written to from the ``idDataset`` in
+    the first entry.
+    """
+    entries = iter(entries)
+
+    try:
+        first_entry = next(entries)
+    except StopIteration:
+        return None, None
+
+    entry_with_dataset = conversion(first_entry)
+
+    return (chain((first_entry,), entries),
+            get_measures_collection(entry_with_dataset.get('idDataset')))
 
 
 class InsertError(Exception):

@@ -43,7 +43,7 @@ EXAMPLE::
 For a complete list of valid options run::
 
     $ iotimport --help
-    usage: iotimport [-h] [-s SKIP] [-b BULK] [-m] file mongourl tenantid
+    usage: iotimport [-h] [-s SKIP] [-b BULK] [-m] [-l LIMIT] file mongourl tenantid
 
     import data from CSP Internet Of Things to CSI MongoDB based Internet Of
     Things.
@@ -67,6 +67,9 @@ For a complete list of valid options run::
                             memory as the whole dataset.
       --sensordata          Instead of performing data insertion just print
                             sensors data to configure the sensor before insertion.
+      -l LIMIT, --limit LIMIT
+                            Limit the inserted entries to the specified amount. (0
+                            means no limit)
 
 .. note::
 
@@ -79,6 +82,28 @@ For a complete list of valid options run::
     parser the reads the whole dataset in memory before parsing it.
     This will usually result in a 3x speed boost at the cost of
     as much memory as the whole dataset used.
+
+Destination DB and Collection Detection
+---------------------------------------
+
+Both for destination DATABASE and COLLECTION when writing data,
+the iotimporter detects them from the ``tenant_code`` argument and
+from the ``idDataset`` specified in data itself.
+
+Collection is looked up according to this chain:
+
+    1) ``metadata.configData.collection`` for the ``tenant_code`` and ``idDataset``
+       provided by *first entry* to insert.
+    2) ``tenant.measuresCollectionName`` for the ``tenant_code``
+    3) Fallback on ``measures``
+
+Database is looked up according to this chain:
+
+    1) ``metadata.configData.database`` for the ``tenant_code`` and ``idDataset``
+       provided by *first entry* to insert.
+    2) ``tenant.measuresCollectionDb`` for the ``tenant_code``
+    3) Fallback on ``DB_[tenant_code]``
+
 
 Recover In Case Of Errors
 -------------------------
@@ -130,7 +155,7 @@ the sensor and stream metadata as dictionaries::
      'id': 'Light',
      'license': 'CC BY 4.0',
      'sensor': 'b42e342f-d87b-56bf-96ef-c52b313ba61e',
-     'tags': ['tag1', 'tag2'],
+     'tags': [],
      'visibility': 'public'}
 
 Running Test Suite

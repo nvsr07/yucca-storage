@@ -6,7 +6,7 @@ Abstract
 ========
 
 Nel seguente documento si riportano i risultati delle analisi, simulazioni e
-benchmarking dell'infratruttua mongoDB del SDP per fare una scelta ponderata
+benchmarking dell'infrastruttura mongoDB del SDP per fare una scelta ponderata
 sulle Shard Key.
 
 Introduzione
@@ -41,7 +41,7 @@ ed unicità per poter essere scelto come Shard Key
 
 
 ``idDataset`` + ``datasetVersion``
-==========================
+==================================
 
 Allo stato attuale delle cose, viste le query fornite o comunque utilizzando
 query basate su ``idDataset``, questa è sicuramente la Shard Key che permette di
@@ -73,7 +73,7 @@ Nello schema ``datasetVersion`` è ignorato per chiarezza dello stesso.
 
 
 ``idDataset`` + ``datasetVersion`` + ``time``
-=================================
+=============================================
 
 Le considerazioni sono esattamente le stesse di ``idDataset`` + ``datasetVersion``,
 ``time`` serve per aiutare la shard a dividere in più chunk i dati ed avere più
@@ -92,7 +92,7 @@ cons:
 
 
 ``sensor``
-======
+==========
 
 Attualmente questa è la Shard Key peggiore in lettura basandosi sulle query
 fornite o comunque su query basate su ``idDataset``, in quanto, non si avrà mai
@@ -122,7 +122,7 @@ cons:
 
 
 ``sensor`` + ``idDataset`` + ``datasetVersion``
-===================================
+===============================================
 
 In lettura le considerazioni sono uguali a quelle di ``sensor`` come Shard Key,
 aggiungendo ``idDataset`` si garantiscono prestazioni migliori nel caso in cui alle
@@ -166,7 +166,7 @@ l'utilizzo di ``sensor`` + ``idDataset`` + ``datasetVersion`` come Shard Key, ma
 caso in cui sia possibile inserire il ``sensor`` all'interno delle varie query.
 
 Risultati benchmark
-======================
+===================
 
 Shard Key: ``idDataset`` + ``datasetVersion`` + ``time``
 inserimento di dati con:
@@ -186,7 +186,7 @@ in ogni query, questa è sicuramente la situzione ottimale, aumenta il throughpu
 nel caso in cui vengano fatte query su ``time``
 
 +------------------------------+-----------------------------------+-----------------------------------+
-|                              | ``idDataset`` random                  | ``idDataset`` sequenziale             |
+|                              | ``idDataset`` random              | ``idDataset`` sequenziale         |
 +==============================+===================================+===================================+
 | creazione shard + 1 insert   | replshard1 **2** replshard2 **2** | replshard1 **2** replshard2 **2** |
 +------------------------------+-----------------------------------+-----------------------------------+
@@ -199,4 +199,6 @@ Shard Keys Collection Data
 ==========================
 
 Per quanto riguarda la collection data visto lo schema e le query identiche alle
-measures si considera lo stesso discorso fatto per la collection measures.
+measures si considera lo stesso discorso fatto per la collection measures, non
+avendo a disposizione il campo time per rendere più granulari i dati si può
+utilizzare direttamente l'id.

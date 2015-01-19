@@ -36,6 +36,11 @@ def main():
                         action='store_true',
                         help='Instead of performing data insertion just print sensors data to '
                              'configure the sensor before insertion.')
+    parser.add_argument('-l', '--limit',
+                        default=0,
+                        type=int,
+                        help='Limit the inserted entries to the specified amount. '
+                             '(0 means no limit)')
 
     opts = parser.parse_args()
 
@@ -45,15 +50,16 @@ def main():
     if opts.sensordata:
         run_sensordata(reader)
     else:
-        run_insertion(reader, opts.skip, opts.bulk)
+        run_insertion(reader, opts.skip, opts.bulk, opts.limit)
 
 
-def run_insertion(reader, skip, bulk_size):
+def run_insertion(reader, skip, bulk_size, limit):
     try:
         insert_dataset(
             reader.read_entries(skip=skip),
             convert,
-            bulk_size=bulk_size
+            bulk_size=bulk_size,
+            limit=limit
         )
     except InsertError as e:
         offset = e.index
@@ -104,7 +110,7 @@ def run_sensordata(reader):
             'type': 'float',
             'event': measure['ObservedProperty'],
         }],
-        'tags': ['tag1', 'tag2']
+        'tags': []
     }
 
     print_red('SENSOR DATA')

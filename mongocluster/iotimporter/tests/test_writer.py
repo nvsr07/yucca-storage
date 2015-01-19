@@ -1,8 +1,9 @@
 import json
 import os
+from nose.tools import raises
 import pymongo
 from iotimporter.converter import convert
-from iotimporter.mongodb import setup_connection, get_tenant_db, get_support_db
+from iotimporter.mongodb import setup_connection, _get_tenant_default_db, get_support_db
 from iotimporter.writer import insert_dataset, InsertError
 
 
@@ -10,13 +11,19 @@ class TestWriter(object):
     @classmethod
     def setupClass(cls):
         setup_connection('mongodb://localhost', 'test_tenant')
-        get_tenant_db().drop_collection('measures')
+        _get_tenant_default_db().drop_collection('measures')
+        get_support_db().tenant.remove({'tenantCode': 'test_tenant'})
+        get_support_db().metadata.remove({'configData.tenantCode': 'test_tenant'})
         get_support_db().stream.remove({'configData.tenantCode': 'test_tenant'})
 
         testdir = os.path.dirname(__file__)
         sample_file = os.path.join(testdir, 'example.json')
         with open(sample_file) as samples:
             cls.samples = json.loads(samples.read())
+
+        get_support_db().tenant.save({'tenantCode': 'test_tenant'})
+        get_support_db().metadata.save({'idDataset': -99,
+                                        'configData': {'tenantCode': 'test_tenant'}})
 
         dataset_info = {
             'idStream': -1,
@@ -82,21 +89,47 @@ class TestWriter(object):
     @classmethod
     def teardownClass(cls):
         get_support_db().stream.remove({'configData.tenantCode': 'test_tenant'})
+        get_support_db().tenant.remove({'tenantCode': 'test_tenant'})
+        get_support_db().metadata.remove({'configData.tenantCode': 'test_tenant'})
 
     def teardown(self):
-        get_tenant_db().drop_collection('measures')
+        _get_tenant_default_db().drop_collection('measures')
+
+    def test_writer_empty_dataset_list(self):
+        entries = []
+        insert_dataset(entries, conversion=lambda x: x)
+
+    def test_writer_empty_dataset_generator(self):
+        entries = (x for x in range(0))
+        insert_dataset(entries, conversion=lambda x: x)
 
     def test_writer_inserts_all(self):
-        entries = ({'count': c} for c in range(1000))
+        entries = ({'count': c, 'idDataset': -99} for c in range(1000))
         insert_dataset(entries, conversion=lambda x: x)
-        assert get_tenant_db().measures.find({}).count() == 1000
+        assert _get_tenant_default_db().measures.find({}).count() == 1000
+
+    def test_writer_can_limit_entries(self):
+        entries = ({'count': c, 'idDataset': -99} for c in range(1000))
+        insert_dataset(entries, conversion=lambda x: x, limit=100)
+        assert _get_tenant_default_db().measures.find({}).count() == 100
+
+    def test_limit_zero_means_no_limit(self):
+        entries = ({'count': c, 'idDataset': -99} for c in range(1000))
+        insert_dataset(entries, conversion=lambda x: x, limit=0)
+        assert _get_tenant_default_db().measures.find({}).count() == 1000
+
+    @raises(ValueError)
+    def test_limit_prevents_bulks(self):
+        entries = ({'count': c, 'idDataset': -99} for c in range(1000))
+        insert_dataset(entries, conversion=lambda x: x, limit=100, bulk_size=10)
 
     def test_writer_matches_data(self):
         converted_samples = list(sorted((convert(s) for s in self.samples.values()),
                                         key=lambda e: e['time']))
 
         insert_dataset(self.samples.values(), conversion=convert)
-        inserted_data = list(get_tenant_db().measures.find({}).sort('time', pymongo.ASCENDING))
+        inserted_data = list(_get_tenant_default_db().measures.find({}).sort('time',
+                                                                             pymongo.ASCENDING))
 
         assert len(inserted_data) == len(converted_samples)
         for x, y in zip(converted_samples, inserted_data):
@@ -104,8 +137,8 @@ class TestWriter(object):
             assert x == y, (x, y)
 
     def test_bulkinsertion_error(self):
-        entries = [{'count': c} for c in range(20)]
-        get_tenant_db().measures.ensure_index('count', unique=True)
+        entries = [{'count': c, 'idDataset': -99} for c in range(20)]
+        _get_tenant_default_db().measures.ensure_index('count', unique=True)
 
         insert_dataset(entries[10:], conversion=lambda x: x)
 

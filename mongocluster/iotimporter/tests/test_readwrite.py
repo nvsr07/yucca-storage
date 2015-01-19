@@ -2,7 +2,7 @@ import json
 import os
 import pymongo
 from iotimporter.converter import convert
-from iotimporter.mongodb import setup_connection, get_tenant_db, get_support_db
+from iotimporter.mongodb import setup_connection, _get_tenant_default_db, get_support_db
 from iotimporter.reader import FileReader
 from iotimporter.writer import insert_dataset, InsertError
 
@@ -11,13 +11,19 @@ class TestReadWrite(object):
     @classmethod
     def setupClass(cls):
         setup_connection('mongodb://localhost', 'test_tenant')
-        get_tenant_db().drop_collection('measures')
+        _get_tenant_default_db().drop_collection('measures')
+        get_support_db().tenant.remove({'tenantCode': 'test_tenant'})
+        get_support_db().metadata.remove({'configData.tenantCode': 'test_tenant'})
         get_support_db().stream.remove({'configData.tenantCode': 'test_tenant'})
 
         testdir = os.path.dirname(__file__)
         cls.sample_file = os.path.join(testdir, 'example.json')
         with open(cls.sample_file) as samples:
             cls.samples = json.loads(samples.read())
+
+        get_support_db().tenant.save({'tenantCode': 'test_tenant'})
+        get_support_db().metadata.save({'idDataset': -99,
+                                        'configData': {'tenantCode': 'test_tenant'}})
 
         dataset_info = {
             'idStream': -1,
@@ -83,16 +89,18 @@ class TestReadWrite(object):
     @classmethod
     def teardownClass(cls):
         get_support_db().stream.remove({'configData.tenantCode': 'test_tenant'})
+        get_support_db().tenant.remove({'tenantCode': 'test_tenant'})
+        get_support_db().metadata.remove({'configData.tenantCode': 'test_tenant'})
 
     def setup(self):
-        get_tenant_db().measures.ensure_index((('sensor', pymongo.ASCENDING),
-                                               ('idDataset', pymongo.ASCENDING),
-                                               ('datasetVersion', pymongo.ASCENDING),
-                                               ('time', pymongo.DESCENDING)),
-                                              unique=True)
+        _get_tenant_default_db().measures.ensure_index((('sensor', pymongo.ASCENDING),
+                                                        ('idDataset', pymongo.ASCENDING),
+                                                        ('datasetVersion', pymongo.ASCENDING),
+                                                        ('time', pymongo.DESCENDING)),
+                                                       unique=True)
 
     def teardown(self):
-        get_tenant_db().drop_collection('measures')
+        _get_tenant_default_db().drop_collection('measures')
 
     def test_insert_samples_twice(self):
         reader = FileReader(self.sample_file, generate=True)
@@ -102,7 +110,7 @@ class TestReadWrite(object):
             bulk_size=1
         )
 
-        assert get_tenant_db().measures.find().count() == len(self.samples)
+        assert _get_tenant_default_db().measures.find().count() == len(self.samples)
 
     def test_insert_correctly_detects_last_inserted(self):
         reader = FileReader(self.sample_file, generate=True)
@@ -129,9 +137,9 @@ class TestReadWrite(object):
             reader.read_entries(skip=10),
             convert,
             bulk_size=1,
-            _limit=1
+            limit=1
         )
-        total_inserted = get_tenant_db().measures.find().count()
+        total_inserted = _get_tenant_default_db().measures.find().count()
         assert total_inserted == 1
 
         skip = 0
@@ -151,6 +159,6 @@ class TestReadWrite(object):
             bulk_size=100
         )
 
-        total_inserted = get_tenant_db().measures.find().count()
+        total_inserted = _get_tenant_default_db().measures.find().count()
         expected = len(self.samples)
         assert total_inserted == expected
