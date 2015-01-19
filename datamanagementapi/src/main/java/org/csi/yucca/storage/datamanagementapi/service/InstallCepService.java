@@ -1,6 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 
 import javax.servlet.ServletContext;
@@ -10,7 +11,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.log4j.Logger;
+import org.csi.yucca.storage.datamanagementapi.apimanager.store.LoginOut;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
@@ -61,6 +64,8 @@ public class InstallCepService {
 		//		if("true".equals(mongoParams.get("MONGO_DB_AUTH_FLAG")))
 		//			mongo = new MongoClient(serverAdd,Arrays.asList(credential));
 		//		else
+
+		
 		mongo = MongoSingleton.getMongoClient();
 
 
@@ -144,12 +149,21 @@ public class InstallCepService {
 				//upsert:true  multi:false 
 				col.update(uniqueStream,dbObject,true,false);
 			}
+			
+			/*
+			 * Aggiungi Stream allo store
+			 */
+			LoginOut logout = new LoginOut();
+			logout.test();
+			
+			
 		}catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
 			return JSON.parse("{KO:1}").toString();
 		}
 
+		
 		return JSON.parse("{OK:1}").toString();
 	}
 
