@@ -13,10 +13,12 @@ public class PublishApi extends TestBase {
 		System.out.println("beforeClass:PublishApi");
 	}
 	
-	public void test() throws ClientProtocolException, IOException {
-		loadTest("properties/base/publishApi.properties",getPropertiesVars());
+	public PublishApi(){
+		loadTest("conf/properties/base/publishApi.properties",getPropertiesVars());
 		setjks();
+	}
+	
+	public void run() throws ClientProtocolException, IOException {
 		exec();
 	}
-
 }

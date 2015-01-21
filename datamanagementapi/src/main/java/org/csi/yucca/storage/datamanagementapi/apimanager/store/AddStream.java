@@ -14,23 +14,19 @@ public class AddStream extends TestBase {
 		System.out.println("beforeClass:AddStream");
 	}
 	
-	public void test() throws ClientProtocolException, IOException {
+	public AddStream(){
 		loadTest("conf/properties/addStream.properties",getPropertiesVars());
 		setjks();
+	}
+	
+	public void run() throws ClientProtocolException, IOException {
+		
 /*
 		setVar("icon","${iconspath}/speed.jpg");
 		setVar("apiVersion","1.0");
 		setVar("apiName","TTTTTT");
 		setVar("P","Prefix-");
 */
-		setVar("icon","${iconspath}/smart.png");
-		setVar("apiVersion","1.0");
-		setVar("apiName","ds_voc_28");
-		setVar("P","");
-		setVar("endpoint","http://api.smartdatanet.it/odata/SmartDataOdataService.svc/ds_Voc_28");
-		setVar("desc","HALADINs at Ist. Fauser");
-		setVar("copiright","Copyright (C) 2014, CSP Innovazione nelle ICT");
-		
 		exec();
 	}
 
