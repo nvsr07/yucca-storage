@@ -15,7 +15,7 @@ public class AddStream extends TestBase {
 	}
 	
 	public AddStream(){
-		loadTest("conf/properties/addStream.properties",getPropertiesVars());
+		loadTest("conf/properties/apiman-1.6/addStream.properties",getPropertiesVars());
 		setjks();
 	}
 	

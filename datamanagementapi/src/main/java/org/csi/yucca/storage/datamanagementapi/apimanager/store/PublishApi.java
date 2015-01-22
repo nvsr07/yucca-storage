@@ -4,8 +4,6 @@ package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 import java.io.IOException;
 
 import org.apache.http.client.ClientProtocolException;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class PublishApi extends TestBase {
 	
