@@ -62,6 +62,8 @@ public class Stream {
     @Expose
     private String requesterMail;
     @Expose
+    private String streamIcon;
+    @Expose
     private String internalQuery;
     @Expose
     private StreamInternalChildren streamInternalChildren;
@@ -654,6 +656,14 @@ public class Stream {
 
 	public void setVirtualEntityPositions(VirtualEntityPositions virtualEntityPositions) {
 		this.virtualEntityPositions = virtualEntityPositions;
+	}
+
+	public String getStreamIcon() {
+		return streamIcon;
+	}
+
+	public void setStreamIcon(String streamIcon) {
+		this.streamIcon = streamIcon;
 	}
 
 }

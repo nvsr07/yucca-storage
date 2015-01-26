@@ -38,8 +38,6 @@ public class InstallCepService {
 
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
-	//	Map<String,String> mongoParams = null;
-	//	MongoCredential credential=null;
 
 	@Context
 	ServletContext context;
@@ -127,11 +125,18 @@ public class InstallCepService {
 				// if the stream with that id and version exists .. update it, otherwise insert the new one.
 				//upsert:true  multi:false 
 				col.update(uniqueStream,dbObject,true,false);
-			
+
 				/*
 				 * Create api in the store
 				 */
-				StoreService.createApiforStream(newStream,myMeta.getDatasetCode());
+
+				try{
+					StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),false);
+				}catch(Exception duplicate){
+					if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+						StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),true);
+					}else throw duplicate;
+				}
 			}
 
 		}catch (Exception e) {
@@ -166,5 +171,5 @@ public class InstallCepService {
 		}
 		return id;
 	}
-	
+
 }

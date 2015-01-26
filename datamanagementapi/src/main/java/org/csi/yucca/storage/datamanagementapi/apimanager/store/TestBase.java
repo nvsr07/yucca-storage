@@ -3,7 +3,6 @@ package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -202,7 +201,7 @@ public class TestBase {
 		
 	enum Type {Continue,Break};
 	
-	private Type dispatch(String key,String val) {
+	private Type dispatch(String key,String val) throws Exception {
 //		System.out.println("dispatch key " + key + " val " + val);
 		if (val == null) return Type.Break;
 		else if ("close".equals(val)) return Type.Break;
@@ -246,7 +245,7 @@ public class TestBase {
 		}		
 	}
 
-	private void execHttp(String key,String val) {
+	private void execHttp(String key,String val) throws Exception {
 		String names = testCase.getProperty(key + ".params.names");
 		String values = testCase.getProperty(key + ".params.values");
 		String outVar = testCase.getProperty(key + ".out");
@@ -260,21 +259,17 @@ public class TestBase {
 			" names: "+ names + " values " + values + " httpExpect " + httpExpect + 
 			" respExpect " + respExpect);
 		String resp;
-		try {
 			resp = exec(step,names,values,httpExpect);
 			out(resp);
 //			out("expect " + respExpect);
             int p = resp.indexOf(respExpect);
-            if (p < 0)
+            if (p < 0){
             	out("response don't match with expected value: " + respExpect);
+            	throw new Exception(resp);
+            }
 			Assert.assertTrue(p >= 0);
 			if (outVar != null)
 				testCase.setVar(outVar, resp);
-		} catch (Exception e) {
-			e.printStackTrace();
-			out("unexpected exception " + e);
-			Assert.fail(e.getMessage());
-		}		
 	}
 
 	private void execClass(String key,String val) {
@@ -323,7 +318,7 @@ public class TestBase {
 	int step;
 	String oper = "operation.";
 	
-	public void exec() throws ClientProtocolException, IOException {
+	public void exec() throws Exception {
 //		String oper = "operation.";
 		for (step = 1; ; step++) {
 			String key = oper + step;

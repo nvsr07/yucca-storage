@@ -6,8 +6,6 @@ package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 
 import java.io.IOException;
 
-import org.apache.http.client.ClientProtocolException;
-
 public class AddStream extends TestBase {
 	
 	public static void beforeClass() throws IOException {
@@ -19,7 +17,7 @@ public class AddStream extends TestBase {
 		setjks();
 	}
 	
-	public void run() throws ClientProtocolException, IOException {
+	public void run() throws Exception {
 		
 /*
 		setVar("icon","${iconspath}/speed.jpg");

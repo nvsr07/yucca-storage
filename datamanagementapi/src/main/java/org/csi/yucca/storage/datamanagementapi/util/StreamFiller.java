@@ -55,6 +55,7 @@ public class StreamFiller {
 		sti.setIdCategoriaVe(stream.getIdCategoriaVe());
 		sti.setIdTipoVe(stream.getIdTipoVe());
 		sti.setIdVirtualEntity(stream.getIdVirtualEntity());
+		sti.setStreamIcon(stream.getStreamIcon());
 		sti.setInternalQuery(stream.getInternalQuery());
 		sti.setLastMessage(stream.getLastMessage());
 		sti.setLastUpdate(stream.getLastUpdate());

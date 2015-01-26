@@ -58,7 +58,6 @@ public class InstallTenantService {
 
 				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(myTenant, TenantOut.class));
 				col.insert(dbObject);
-//				insertDocumentWithKey(col,dbObject,"idTenant",MAX_RETRY);
 
 
 			}

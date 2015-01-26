@@ -1,7 +1,6 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 
 import javax.servlet.ServletContext;
@@ -11,10 +10,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.http.client.ClientProtocolException;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
-import org.csi.yucca.storage.datamanagementapi.apimanager.store.LoginOut;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
@@ -55,7 +52,18 @@ public class StoreService {
 				String stream = newStream.getCodiceStream();
 
 				String apiName= tenant+"."+sensor+"_"+stream;
-				createApiforStream(newStream,apiName);
+				try{
+					createApiforStream(newStream,apiName,false);
+				}catch(Exception duplicate){
+					if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+						createApiforStream(newStream,apiName,true);
+					}
+					else throw duplicate;
+				}
+
+				if(newStream.getPublishStream()!=0){
+					publishStore("1.0", apiName, "admin");
+				}
 			}
 
 		}catch (Exception e) {
@@ -83,7 +91,23 @@ public class StoreService {
 				/*
 				 * Aggiungi Stream allo store
 				 */
-				createStream(newStream);
+
+				String tenant = newStream.getCodiceTenant();
+				String sensor = newStream.getCodiceVirtualEntity();
+				String stream = newStream.getCodiceStream();
+
+				try{
+					createStream(newStream,false);
+				}catch(Exception duplicate){
+					if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+						createStream(newStream,true);
+					}
+					else throw duplicate; 
+				}
+
+				if(newStream.getPublishStream()!=0){
+					publishStore("1.0", tenant+"."+sensor+"_"+stream+"_stream", "admin");
+				}
 			}
 
 		}catch (Exception e) {
@@ -91,18 +115,20 @@ public class StoreService {
 			System.err.println(e);
 			return JSON.parse("{KO:1}").toString();
 		}
-
 		return JSON.parse("{OK:1}").toString();
 	}
 
-	public static boolean createApiforStream(Stream newStream,String apiName) throws ClientProtocolException, IOException{
+	public static boolean createApiforStream(Stream newStream,String apiName,boolean update) throws Exception{
+
+		String apiFinalName= apiName+"_odata";
 
 		AddStream addStream = new AddStream();
 
 		ImageProcessor processor = new ImageProcessor();
 		String imageBase64 =newStream.getStreamIcon();
-		String path ="D:/";
-		String fileName =newStream.getCodiceStream();
+
+		String path ="images/";
+		String fileName =newStream.getCodiceStream()+".png";
 
 		processor.doProcessOdata(imageBase64, path,fileName);
 
@@ -110,25 +136,52 @@ public class StoreService {
 		if("public".equals(newStream.getVisibility())){
 			addStream.setVar("visibility","public");
 			addStream.setVar("roles","");
+			addStream.setVar("authType","None");
+
 		}else{
 			addStream.setVar("visibility","private");
 			addStream.setVar("roles",newStream.getCodiceTenant()+"_subscriber");
+			addStream.setVar("authType","Application & Application User");
 		}
 
-		addStream.setVar("icon",path+fileName+"-odata.png");
-		addStream.setVar("apiVersion",newStream.getDeploymentVersion()+"");
-		addStream.setVar("apiName",apiName+"_odata");
+		if(update){
+			addStream.setVar("actionAPI","updateAPI");
+		}else{
+			addStream.setVar("actionAPI","addAPI");
+		}
+
+		addStream.setVar("icon",path+fileName);
+		addStream.setVar("apiVersion","1.0");
+		addStream.setVar("apiName",apiFinalName);
 		addStream.setVar("context","/api/"+apiName);//ds_Voc_28;
 		addStream.setVar("P","");
 		addStream.setVar("endpoint","http://api.smartdatanet.it/odata/SmartDataOdataService.svc/"+apiName);
 		addStream.setVar("desc",newStream.getNomeStream()+"");
 		addStream.setVar("copiright",newStream.getCopyright()+"");
 
+		addStream.setVar("extra_isApi","true");
+		addStream.setVar("codiceTenant",newStream.getCodiceTenant()+"");
+		addStream.setVar("codiceStream",newStream.getCodiceStream()+"");
+		addStream.setVar("nomeStream",newStream.getNomeStream()+"");
+		addStream.setVar("nomeTenant",newStream.getNomeTenant()+"");
+		addStream.setVar("licence",newStream.getLicence()+"");
+		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()+"");
+		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()+"");
+		String tags = "";
+		if(newStream.getTags()!=null){
+			tags+=newStream.getTags();
+		}
+
+		if(newStream.getDomainStream()!=null){
+			tags+=newStream.getDomainStream();
+		}
+		addStream.setVar("tags",tags);
 		addStream.run();
+
 		return true;
 	}
 
-	public static boolean createStream(Stream newStream) throws ClientProtocolException, IOException{
+	public static boolean createStream(Stream newStream,boolean update) throws Exception{
 
 		String tenant = newStream.getCodiceTenant();
 		String sensor = newStream.getCodiceVirtualEntity();
@@ -136,11 +189,10 @@ public class StoreService {
 
 		AddStream addStream = new AddStream();
 
-
 		ImageProcessor processor = new ImageProcessor();
 		String imageBase64 =newStream.getStreamIcon();
-		String path ="D:/";
-		String fileName =newStream.getCodiceStream();
+		String path ="images/";
+		String fileName =newStream.getCodiceStream()+".png";
 		processor.doProcessStream(imageBase64, path,fileName);
 
 		//FIXME get the list of roles(tenants) from the stream info
@@ -152,14 +204,38 @@ public class StoreService {
 			addStream.setVar("roles",newStream.getCodiceTenant()+"_subscriber");
 		}
 
+		if(update){
+			addStream.setVar("actionAPI","updateAPI");
+		}else{
+			addStream.setVar("actionAPI","addAPI");
+		}
+
 		addStream.setVar("icon",path+fileName);
-		addStream.setVar("apiVersion",newStream.getDeploymentVersion()+"");
+		addStream.setVar("apiVersion","1.0");
 		addStream.setVar("apiName",tenant+"."+sensor+"_"+stream+"_stream");
 		addStream.setVar("context","/api/topic/output."+tenant+"."+sensor+"_"+stream);
 		addStream.setVar("P","");
 		addStream.setVar("endpoint","http://api.smartdatanet.it/dammiInfo");
 		addStream.setVar("desc",newStream.getNomeStream());
-		addStream.setVar("copiright",newStream.getCopyright());
+		addStream.setVar("copiright",newStream.getCopyright()+"");
+
+		addStream.setVar("extra_isApi","true");
+		addStream.setVar("codiceTenant",newStream.getCodiceTenant()+"");
+		addStream.setVar("codiceStream",newStream.getCodiceStream()+"");
+		addStream.setVar("nomeStream",newStream.getNomeStream()+"");
+		addStream.setVar("nomeTenant",newStream.getNomeTenant()+"");
+		addStream.setVar("licence",newStream.getLicence()+"");
+		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()+"");
+		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()+"");
+		String tags = "";
+		if(newStream.getTags()!=null){
+			tags+=newStream.getTags();
+		}
+
+		if(newStream.getDomainStream()!=null){
+			tags+=newStream.getDomainStream();
+		}
+		addStream.setVar("tags",tags);
 
 		addStream.run();
 		return true;
@@ -177,14 +253,8 @@ public class StoreService {
 			String apiVersion = rootObj.get("apiVersion").getAsString();
 			String apiName = rootObj.get("apiName").getAsString();
 			String provider = rootObj.get("provider").getAsString();
-			
-			PublishApi publish = new PublishApi();
-			publish.setVar("publishStatus", "PUBLISHED");
-			publish.setVar("apiVersion",apiVersion);
-			publish.setVar("apiName",apiName);
-			publish.setVar("provider",provider);
-			
-			publish.run();
+
+			publishStore(apiVersion, apiName,provider);
 
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -192,6 +262,31 @@ public class StoreService {
 			return JSON.parse("{KO:1}").toString();
 		}
 		return JSON.parse("{OK:1}").toString();
+	}
+
+	public static boolean publishStore(String apiVersion,String apiName,String provider) throws Exception  {
+
+		PublishApi publish = new PublishApi();
+		publish.setVar("publishStatus", "PUBLISHED");
+		publish.setVar("apiVersion",apiVersion);
+		publish.setVar("apiName",apiName);
+		publish.setVar("provider",provider);
+
+		publish.run();
+		return true;
+	}
+
+	public static boolean removeStore(String apiVersion,String apiName,String provider) throws Exception  {
+
+		PublishApi publish = new PublishApi();
+		publish.setVar("publishStatus", "BLOCKED");
+		publish.setVar("apiVersion",apiVersion);
+		publish.setVar("apiName",apiName);
+		publish.setVar("provider",provider);
+
+		publish.run();
+
+		return true;
 	}
 
 	@POST
@@ -204,14 +299,9 @@ public class StoreService {
 			String apiVersion = rootObj.get("apiVersion").getAsString();
 			String apiName = rootObj.get("apiName").getAsString();
 			String provider = rootObj.get("provider").getAsString();
-			
-			PublishApi publish = new PublishApi();
-			publish.setVar("publishStatus", "BLOCKED");
-			publish.setVar("apiVersion",apiVersion);
-			publish.setVar("apiName",apiName);
-			publish.setVar("provider",provider);
-			
-			publish.run();
+
+			removeStore(apiVersion, apiName, provider);
+
 		}catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
