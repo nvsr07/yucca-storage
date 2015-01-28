@@ -64,17 +64,18 @@ do
     version=${array[4]}
     flagpriv=${array[5]}
     fext=${array[6]}
-    huser=$USER_PREF$tnt
     hgroup=$GROUP_PREF$tnt
     
     if [ $flagpriv = "private" ]; then
 		dest_folder="$HEAD_FOLDER/$tenant/$RAWDATA_FOLDER/$collection/$dataset"
 		dirper=770
 		fileper=660
+		huser=$USER_PREF$tnt
 	elif [ $flagpriv = "public" ]; then
 		dest_folder="$HEAD_FOLDER/$tenant/$SHARE_FOLDER/$collection/$dataset"
 		dirper=776
 		fileper=664
+		huser=hive
 	fi
 	
 	
