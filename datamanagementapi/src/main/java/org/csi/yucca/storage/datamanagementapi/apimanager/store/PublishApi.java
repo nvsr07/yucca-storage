@@ -11,7 +11,7 @@ public class PublishApi extends TestBase {
 	
 	public PublishApi(){
 		loadTest("conf/properties/base/publishApi.properties",getPropertiesVars());
-		setjks();
+//		setjks();
 	}
 	
 	public void run() throws Exception {

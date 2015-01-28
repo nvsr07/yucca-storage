@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
+import org.csi.yucca.storage.datamanagementapi.apimanager.store.QSPStore;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
@@ -117,8 +118,22 @@ public class StoreService {
 		}
 		return JSON.parse("{OK:1}").toString();
 	}
+	
+	public static boolean addSubscriptionForTenant(String apiName,String appName) throws Exception {
 
-	public static boolean createApiforStream(Stream newStream,String apiName,boolean update) throws Exception{
+		QSPStore subscription = new QSPStore();
+		
+		subscription.setVar("apiVersion","1.0");
+		subscription.setVar("apiName",apiName);
+		subscription.setVar("appName",appName);
+		subscription.setVar("P","");
+		
+		subscription.run();
+
+		return true;
+	}
+
+	public static String createApiforStream(Stream newStream,String apiName,boolean update) throws Exception{
 
 		String apiFinalName= apiName+"_odata";
 
@@ -178,7 +193,7 @@ public class StoreService {
 		addStream.setVar("tags",tags);
 		addStream.run();
 
-		return true;
+		return apiFinalName;
 	}
 
 	public static boolean createStream(Stream newStream,boolean update) throws Exception{

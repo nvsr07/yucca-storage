@@ -14,17 +14,10 @@ public class AddStream extends TestBase {
 	
 	public AddStream(){
 		loadTest("conf/properties/apiman-1.6/addStream.properties",getPropertiesVars());
-		setjks();
+//		setjks();
 	}
 	
 	public void run() throws Exception {
-		
-/*
-		setVar("icon","${iconspath}/speed.jpg");
-		setVar("apiVersion","1.0");
-		setVar("apiName","TTTTTT");
-		setVar("P","Prefix-");
-*/
 		exec();
 	}
 

@@ -129,14 +129,22 @@ public class InstallCepService {
 				/*
 				 * Create api in the store
 				 */
-
+				String apiName = "";
 				try{
-					StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),false);
+					apiName = StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),false);
 				}catch(Exception duplicate){
 					if(duplicate.getMessage().toLowerCase().contains("duplicate")){
-						StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),true);
+						apiName = StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),true);
 					}else throw duplicate;
 				}
+				
+
+				if(newStream.getPublishStream()!=0){
+					StoreService.publishStore("1.0", apiName, "admin");
+				}
+				
+				String appName = "userportal_"+newStream.getCodiceTenant();
+				StoreService.addSubscriptionForTenant(apiName,appName);
 			}
 
 		}catch (Exception e) {

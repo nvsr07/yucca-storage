@@ -13,7 +13,7 @@ public class LoginOut extends TestBase {
 	public void test() throws Exception {
 		
 		loadTest("conf/properties/loginOut.properties",getPropertiesVars());
-		setjks();
+//		setjks();
 		exec();
 	}
 
