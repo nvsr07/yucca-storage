@@ -13,7 +13,7 @@ public class AddApplication extends TestBase {
 	
 	public AddApplication(){
 		loadTest("conf/properties/base/addApplication.properties",getPropertiesVars());
-		setjks();
+//		setjks();
 	}
 	
 	public void run() throws Exception {

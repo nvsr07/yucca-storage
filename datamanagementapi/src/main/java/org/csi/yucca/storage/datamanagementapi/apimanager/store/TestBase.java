@@ -57,38 +57,7 @@ public class TestBase {
 	private boolean addTimestamp = true;
 	
 	private VarProperties testCase;
-	private DefaultHttpClient client;
-	{
-        try {
-
-        	if (System.getProperty("forceSSL") != null) {
-        		System.out.println("*********************************************");
-        		System.out.println("***** SSL SOCKET OPENED IN FORCED MODE ******");
-        		System.out.println("*********************************************");
-	            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-	            trustStore.load(null, null);
-	
-	            SSLSocketFactory sf = new MySSLSocketFactory(trustStore);
-	            sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-	
-	            HttpParams params = new BasicHttpParams();
-	            HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-	            HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-	
-	            SchemeRegistry registry = new SchemeRegistry();
-	            registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-	            registry.register(new Scheme("https", sf, 443));
-	
-	            ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
-	
-	            client = new DefaultHttpClient(ccm, params);
-        	} else
-        		client = new DefaultHttpClient();
-        } catch (Exception e) {
-        	e.printStackTrace();
-            client = new DefaultHttpClient();
-        }       
-     }
+	private DefaultHttpClient client = new DefaultHttpClient();
 	
 	public static String getPropertiesVars() {
 		String vars = System.getProperty("vars");
