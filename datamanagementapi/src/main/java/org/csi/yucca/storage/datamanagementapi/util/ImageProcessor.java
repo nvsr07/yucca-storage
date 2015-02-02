@@ -59,7 +59,7 @@ public class ImageProcessor {
 			imag = ImageIO.read(new ByteArrayInputStream(bytearray));
 		}
 		if(imageBase64==null || imag==null){
-			imag = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream("conf/icons/smart.png"));
+			imag = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_IMAGE));
 		}
 		
 		ImageIO.write(imag, "png", new File(savePath, imageFileName));
@@ -70,7 +70,7 @@ public class ImageProcessor {
 
 		// load source images
 		BufferedImage image = ImageIO.read(new File(path, baseImageName));
-		BufferedImage overlay = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream("conf/icons/odataOverlay.png"));
+		BufferedImage overlay = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_ODATA_IMAGE));
 
 		// create the new image, canvas size is the max. of both image sizes
 		int w = Math.min(image.getWidth(), overlay.getWidth());

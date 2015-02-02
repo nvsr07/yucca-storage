@@ -3,15 +3,14 @@ package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 
 import java.io.IOException;
 
-public class PublishApi extends TestBase {
+public class PublishApi extends CallApiManagerUtil {
 	
 	public static void beforeClass() throws IOException {
 		System.out.println("beforeClass:PublishApi");
 	}
 	
 	public PublishApi(){
-		loadTest("conf/properties/base/publishApi.properties",getPropertiesVars());
-//		setjks();
+		loadProperties("publishApi.properties");
 	}
 	
 	public void run() throws Exception {

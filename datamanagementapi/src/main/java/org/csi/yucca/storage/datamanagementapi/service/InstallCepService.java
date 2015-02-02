@@ -51,7 +51,7 @@ public class InstallCepService {
 		mongo = MongoSingleton.getMongoClient();
 
 		Gson gson = JSonHelper.getInstance();
-
+		log.info("Json Mapping");
 		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
 		try{
 			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
@@ -77,6 +77,7 @@ public class InstallCepService {
 				Long idDataset = null;
 				DBObject oldStream =null;
 				if(cursor.hasNext()){
+					
 					oldStream = cursor.next();
 
 					col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
@@ -98,12 +99,14 @@ public class InstallCepService {
 				Metadata myMeta= 	MetadataFiller.fillMetadata(newStream);
 
 				//myMeta get persisted on db and returns the object with the id updated
+				log.info("Saving Metadata for Stream");
 				new MongoDBMetadataDAO(mongo,Config.getInstance().getDbSupport(),Config.getInstance().getCollectionSupportDataset()).createMetadata(myMeta,idDataset);
 
 				// Insert Api only for new streams not for updates
 				if(oldStream==null){
+					log.info("Saving Api for Stream");
 					MyApi api = APIFiller.fillApi(newStream,myMeta);
-					System.out.println(gson.toJson(api, MyApi.class));
+					log.info(gson.toJson(api, MyApi.class));
 					col = db.getCollection(Config.getInstance().getCollectionSupportApi());
 					DBObject apiObject = (DBObject)JSON.parse(gson.toJson(api, MyApi.class));
 					apiObject.removeField("id");
@@ -111,8 +114,8 @@ public class InstallCepService {
 				}
 
 				StreamOut strOut = StreamFiller.fillStream(newStream,myMeta.getIdDataset());
-				System.out.println(gson.toJson(strOut, StreamOut.class));
-				System.out.println(gson.toJson(myMeta, Metadata.class));
+				log.info(gson.toJson(strOut, StreamOut.class));
+				log.info(gson.toJson(myMeta, Metadata.class));
 
 				//stream gets the idStream from the Json
 				col = db.getCollection(Config.getInstance().getCollectionSupportStream());
@@ -137,14 +140,13 @@ public class InstallCepService {
 						apiName = StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),true);
 					}else throw duplicate;
 				}
-				
 
 				if(newStream.getPublishStream()!=0){
 					StoreService.publishStore("1.0", apiName, "admin");
-				}
 				
-				String appName = "userportal_"+newStream.getCodiceTenant();
-				StoreService.addSubscriptionForTenant(apiName,appName);
+					String appName = "userportal_"+newStream.getCodiceTenant();
+					StoreService.addSubscriptionForTenant(apiName,appName);
+				}
 			}
 
 		}catch (Exception e) {
@@ -162,7 +164,7 @@ public class InstallCepService {
 			BasicDBObject sortobj = new BasicDBObject();
 			sortobj.append(key, -1);			
 			DBObject doc = col.find().sort(sortobj).limit(1).one();
-			System.out.println(doc);
+			log.info(doc);
 			if(doc != null && doc.get(key)!=null)
 				id = ((Number)doc.get(key)).longValue() +1;
 			else{

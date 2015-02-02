@@ -6,24 +6,14 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class QSPStore extends TestBase implements CallBack {
+public class QSPStore extends CallApiManagerUtil implements CallBack {
 
 	static String confVars;
 	static SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss dd/M/yyyy");
 	
-//	public static void main(String ...args) throws Exception{
-//		QSPStore subscription = new QSPStore();
-//		subscription.setVar("apiVersion","9");
-//		subscription.setVar("appName","userportal_csp");
-//		subscription.setVar("apiName","ds_StoryPoints_17_odata");
-//		subscription.setVar("P","");
-//		
-//		subscription.run();
-//	}
 	public QSPStore(){
-		confVars = getPropertiesVars();
-		loadTest("conf/properties/apiman-1.6/QSPstore.properties",confVars);
-//		setjks();
+	
+		loadProperties("QSPstore.properties");
 	}
 		
 	@Test
@@ -32,7 +22,7 @@ public class QSPStore extends TestBase implements CallBack {
 	}
 
 	@Override
-	public void handler(TestBase test, String action) {
+	public void handler(CallApiManagerUtil test, String action) {
 		JsonMap jm = new JsonMap();
 	    String res =  test.getVar("result");
 	    Map<String,Object> m = jm.decode(res);

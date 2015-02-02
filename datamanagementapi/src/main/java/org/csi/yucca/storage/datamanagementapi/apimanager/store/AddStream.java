@@ -6,15 +6,14 @@ package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 
 import java.io.IOException;
 
-public class AddStream extends TestBase {
+public class AddStream extends CallApiManagerUtil {
 	
 	public static void beforeClass() throws IOException {
 		System.out.println("beforeClass:AddStream");
 	}
 	
 	public AddStream(){
-		loadTest("conf/properties/apiman-1.6/addStream.properties",getPropertiesVars());
-//		setjks();
+		loadProperties("addStream.properties");
 	}
 	
 	public void run() throws Exception {

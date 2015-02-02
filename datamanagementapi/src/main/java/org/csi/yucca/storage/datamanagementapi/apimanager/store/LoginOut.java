@@ -4,15 +4,19 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-public class LoginOut extends TestBase {
+public class LoginOut extends CallApiManagerUtil {
 	
 	public static void beforeClass() throws IOException, KeyManagementException, NoSuchAlgorithmException {
 		System.out.println("beforeClass:LoginOut");
 	}
 	
+	public static void main(String ...args) throws Exception{
+		new LoginOut().test();
+	}
+	
 	public void test() throws Exception {
 		
-		loadTest("conf/properties/loginOut.properties",getPropertiesVars());
+		loadProperties("loginOut.properties");
 //		setjks();
 		exec();
 	}

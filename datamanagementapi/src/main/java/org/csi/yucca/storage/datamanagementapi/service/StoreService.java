@@ -64,6 +64,8 @@ public class StoreService {
 
 				if(newStream.getPublishStream()!=0){
 					publishStore("1.0", apiName, "admin");
+					String appName = "userportal_"+newStream.getCodiceTenant();
+					StoreService.addSubscriptionForTenant(apiName,appName);
 				}
 			}
 
@@ -105,9 +107,11 @@ public class StoreService {
 					}
 					else throw duplicate; 
 				}
-
+				String apiName= tenant+"."+sensor+"_"+stream+"_stream";
 				if(newStream.getPublishStream()!=0){
-					publishStore("1.0", tenant+"."+sensor+"_"+stream+"_stream", "admin");
+					publishStore("1.0", apiName, "admin");
+					String appName = "userportal_"+newStream.getCodiceTenant();
+					StoreService.addSubscriptionForTenant(apiName,appName);
 				}
 			}
 
@@ -170,18 +174,18 @@ public class StoreService {
 		addStream.setVar("apiName",apiFinalName);
 		addStream.setVar("context","/api/"+apiName);//ds_Voc_28;
 		addStream.setVar("P","");
-		addStream.setVar("endpoint","http://api.smartdatanet.it/odata/SmartDataOdataService.svc/"+apiName);
-		addStream.setVar("desc",newStream.getNomeStream()+"");
-		addStream.setVar("copiright",newStream.getCopyright()+"");
+		addStream.setVar("endpoint","http://int-api.smartdatanet.it/odata/SmartDataOdataService.svc/"+apiName);
+		addStream.setVar("desc",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
+		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
 		addStream.setVar("extra_isApi","true");
-		addStream.setVar("codiceTenant",newStream.getCodiceTenant()+"");
-		addStream.setVar("codiceStream",newStream.getCodiceStream()+"");
-		addStream.setVar("nomeStream",newStream.getNomeStream()+"");
-		addStream.setVar("nomeTenant",newStream.getNomeTenant()+"");
-		addStream.setVar("licence",newStream.getLicence()+"");
-		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()+"");
-		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()+"");
+		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? newStream.getCodiceTenant() :"");
+		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? newStream.getCodiceStream() :"");
+		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
+		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? newStream.getNomeTenant() :"");
+		addStream.setVar("licence",newStream.getLicence()!=null ? newStream.getLicence() :"");
+		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
+		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
 		String tags = "";
 		if(newStream.getTags()!=null){
 			tags+=newStream.getTags();
@@ -230,18 +234,18 @@ public class StoreService {
 		addStream.setVar("apiName",tenant+"."+sensor+"_"+stream+"_stream");
 		addStream.setVar("context","/api/topic/output."+tenant+"."+sensor+"_"+stream);
 		addStream.setVar("P","");
-		addStream.setVar("endpoint","http://api.smartdatanet.it/dammiInfo");
+		addStream.setVar("endpoint","http://int-api.smartdatanet.it/dammiInfo");
 		addStream.setVar("desc",newStream.getNomeStream());
-		addStream.setVar("copiright",newStream.getCopyright()+"");
+		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
 		addStream.setVar("extra_isApi","true");
-		addStream.setVar("codiceTenant",newStream.getCodiceTenant()+"");
-		addStream.setVar("codiceStream",newStream.getCodiceStream()+"");
-		addStream.setVar("nomeStream",newStream.getNomeStream()+"");
-		addStream.setVar("nomeTenant",newStream.getNomeTenant()+"");
-		addStream.setVar("licence",newStream.getLicence()+"");
-		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()+"");
-		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()+"");
+		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? newStream.getCodiceTenant() :"");
+		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? newStream.getCodiceStream() :"");
+		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
+		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? newStream.getNomeTenant() :"");
+		addStream.setVar("licence",newStream.getLicence()!=null ? newStream.getLicence() :"");
+		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
+		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
 		String tags = "";
 		if(newStream.getTags()!=null){
 			tags+=newStream.getTags();
