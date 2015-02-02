@@ -4,88 +4,86 @@
 # Lo script è stato creatos SOLO a fini di test per avere un ambiente locale  #
 # su cui testare gli script di upload da mongoDB.                             #
 # Lo script esegue:													          #
-#	- creazione di tutte le cartelle del tenant sia in prod che in preprod	  #
+#	- creazione di tutte le cartelle del tenant                               #
 #	- assegnazione delle utenze corrette alle singole cartelle				  #
 #	- assegnazione dei permessi di accesso alle singole cartelle			  #
 #																			  #
-# ATTENZIONE: essendo stato creato per scopi di test LOCALE... lo script non  #
-#             esegue nessun controllo di coerenza dei tenant e, soprattutto,  #
-#			  quando esegue la creazione di un tenant, se questo esiste, ne   #
-#			  cancella tutti i contenuti.									  #
 #																			  #
 # Lo script suppone che esistano le cartelle /tenant e /pre-tenant su HDFS    #
+# e i relativi gruppi e permessi											  #
 #																			  #
 ###############################################################################
 #																			  #
-#	USO: ./creaTenant.sh <nometenant>										  #
-#	es.  ./craTenant csi												      #
+#	USO: ./creaTenant.sh <nometenant> prod|preprod							  #
+#	es.  ./creaTenant csi prod											      #
 #																			  #
 ###############################################################################
+
+ERR="ERROR: environment to deploy not found (prod | preprod)"
+
+# standard error redirection (only for this script)
+
+if [ -z $2 ]; then
+    echo $ERR
+    exit
+elif [ $2 = "prod" ]; then
+    TF="/tenant"
+    US="prod-$1"
+    GP="tnt-$1"
+elif [ $2 = "preprod" ]; then
+    TF="/pre-tenant"
+    US="preprod-$1"
+    GP="pretnt-$1"
+else
+   echo $ERR
+   exit
+fi
+
+
 
 # creazione delle cartelle su HDFS
 
-echo "Creazione del tenant tnt-$1"
-hdfs dfs -mkdir /tenant/tnt-$1
-hdfs dfs -mkdir /pre-tenant/tnt-$1
-echo "Creazione cartella RAWDATA"
-hdfs dfs -mkdir /tenant/tnt-$1/rawdata
-hdfs dfs -mkdir /pre-tenant/tnt-$1/rawdata
-echo "Creazione cartella SCRIPTS"
-hdfs dfs -mkdir /tenant/tnt-$1/scripts
-hdfs dfs -mkdir /pre-tenant/tnt-$1/scripts
-echo "Creazione cartella RAWDATA/DATA"
-hdfs dfs -mkdir /tenant/tnt-$1/rawdata/data
-hdfs dfs -mkdir /pre-tenant/tnt-$1/rawdata/data
-echo "Creazione cartella RAWDATA/MEASURES"
-hdfs dfs -mkdir /tenant/tnt-$1/rawdata/measures
-hdfs dfs -mkdir /pre-tenant/tnt-$1/rawdata/measures
-echo "Creazione cartella RAWDATA/MEDIA"
-hdfs dfs -mkdir /tenant/tnt-$1/rawdata/media
-hdfs dfs -mkdir /pre-tenant/tnt-$1/rawdata/media
-echo "Creazione cartella RAWDATA/SOCIAL"
-hdfs dfs -mkdir /tenant/tnt-$1/rawdata/social
-hdfs dfs -mkdir /pre-tenant/tnt-$1/rawdata/social
-echo "Creazione cartella DWH"
-hdfs dfs -mkdir /tenant/tnt-$1/dwh
-hdfs dfs -mkdir /pre-tenant/tnt-$1/dwh
-echo "Creazione cartella OUTPUT"
-hdfs dfs -mkdir /tenant/tnt-$1/output
-hdfs dfs -mkdir /pre-tenant/tnt-$1/output
-echo "Creazione cartella STAGING"
-hdfs dfs -mkdir /tenant/tnt-$1/staging
-hdfs dfs -mkdir /pre-tenant/tnt-$1/staging
-echo "Creazione cartella TEMP"
-hdfs dfs -mkdir /tenant/tnt-$1/temp
-hdfs dfs -mkdir /pre-tenant/tnt-$1/temp
-echo "Creazione cartella SHARE"
-hdfs dfs -mkdir /tenant/tnt-$1/share
-hdfs dfs -mkdir /pre-tenant/tnt-$1/share
-echo "Creazione cartella SHARE/DATA"
-hdfs dfs -mkdir /tenant/tnt-$1/share/data
-hdfs dfs -mkdir /pre-tenant/tnt-$1/share/data
-echo "Creazione cartella SHARE/MEASURES"
-hdfs dfs -mkdir /tenant/tnt-$1/share/measures
-hdfs dfs -mkdir /pre-tenant/tnt-$1/share/measures
-echo "Creazione cartella SHARE/MEDIA"
-hdfs dfs -mkdir /tenant/tnt-$1/share/media
-hdfs dfs -mkdir /pre-tenant/tnt-$1/share/media
-echo "Creazione cartella SHARE/SOCIAL"
-hdfs dfs -mkdir /tenant/tnt-$1/share/social
-hdfs dfs -mkdir /pre-tenant/tnt-$1/share/social
+echo "Create folder tenant tnt-$1 "
+hdfs dfs -mkdir $TF/tnt-$1
+echo "Create folder RAWDATA"
+hdfs dfs -mkdir $TF/tnt-$1/rawdata
+echo "Create folder SCRIPTS"
+hdfs dfs -mkdir $TF/tnt-$1/scripts
+echo "Create folder RAWDATA/DATA"
+hdfs dfs -mkdir $TF/tnt-$1/rawdata/data
+echo "Create folder RAWDATA/MEASURES"
+hdfs dfs -mkdir $TF/tnt-$1/rawdata/measures
+echo "Create folder RAWDATA/MEDIA"
+hdfs dfs -mkdir $TF/tnt-$1/rawdata/media
+echo "Create folder RAWDATA/SOCIAL"
+hdfs dfs -mkdir $TF/tnt-$1/rawdata/social
+echo "Create folder DWH"
+hdfs dfs -mkdir $TF/tnt-$1/dwh
+echo "Create folder OUTPUT"
+hdfs dfs -mkdir $TF/tnt-$1/output
+echo "Create folder STAGING"
+hdfs dfs -mkdir $TF/tnt-$1/staging
+echo "Create folder TEMP"
+hdfs dfs -mkdir $TF/tnt-$1/temp
+echo "Create folder SHARE"
+hdfs dfs -mkdir $TF/tnt-$1/share
+echo "Create folder SHARE/DATA"
+hdfs dfs -mkdir $TF/tnt-$1/share/data
+echo "Create folder SHARE/MEASURES"
+hdfs dfs -mkdir $TF/tnt-$1/share/measures
+echo "Create folder SHARE/MEDIA"
+hdfs dfs -mkdir $TF/tnt-$1/share/media
+echo "Create folder SHARE/SOCIAL"
+hdfs dfs -mkdir $TF/tnt-$1/share/social
 
 # assegnazione delle utenze in base alle specifiche
 
-echo "Assegnazione utenze alle cartelle"
-echo "assegno utenti alla cartella tnt-$1 e alle sue sottocartelle"
-hdfs dfs -chown -R "prod-$1:tnt-$1" /tenant/tnt-$1
-hdfs dfs -chown -R "preprod-$1:pretnt-$1" /pre-tenant/tnt-$1
-hdfs dfs -chown -R "hive:tnt-$1" /tenant/tnt-$1/share
-hdfs dfs -chown -R "hive:pretnt-$1" /pre-tenant/tnt-$1/share
+echo "Assiging user and role to folder"
+hdfs dfs -chown -R "$US:$GP" $TF/tnt-$1
+hdfs dfs -chown -R "hive:$GP" $TF/tnt-$1/share
+hdfs dfs -chown -R "hive:$GP" $TF/tnt-$1/temp
+hdfs dfs -chown -R "hive:$GP" $TF/tnt-$1/staging
+hdfs dfs -chmod -R 770 $TF/tnt-$1
+hdfs dfs -chmod -R 774 $TF/tnt-$1/share
 
-# assegnazione dei permessi in base alle specifiche
-
-echo "assegnazione dei permessi alla cartella tnt-$1 e alle sottocartelle"
-hdfs dfs -chmod -R 770 /tenant/tnt-$1
-hdfs dfs -chmod -R 770 /pre-tenant/tnt-$1
-hdfs dfs -chmod -R 774 /tenant/tnt-$1/share
-hdfs dfs -chmod -R 774 /pre-tenant/tnt-$1/share
+echo "Creation of tenant $1 in $2 completed"
