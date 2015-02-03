@@ -36,7 +36,6 @@ public class CallApiManagerUtil {
 	
 
 	public void loadProperties(String res) {
-//		System.out.println("loadTest " + res + " " + conf);
 		try {
 			properties = new VarProperties(res);
 		} catch (Exception e) {

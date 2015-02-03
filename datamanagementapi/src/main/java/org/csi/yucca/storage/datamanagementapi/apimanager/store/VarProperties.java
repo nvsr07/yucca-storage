@@ -19,16 +19,13 @@ public class VarProperties extends Properties {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		vars = new Properties();
 		System.out.println("Properties: try to load " + name);
-		//				in = VarProperties.class.getResourceAsStream(name);
 		in = classLoader.getResourceAsStream(name);
-		//				BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 		if (in != null) {
 			vars.load(in);
 			in.close();
 			System.out.println("Properties: loaded " + name + " count " + vars.size());
 		} else {
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-			//					BufferedReader br = new BufferedReader(new FileReader(name));
 			vars.load(br);
 			System.out.println("Properties: loaded " + name + " count " + vars.size());
 			br.close();
@@ -83,8 +80,7 @@ public class VarProperties extends Properties {
 						String val = vars.getProperty(key);
 						if (val != null) {
 							nv.append(expand(val));
-						} // else
-						//		nv.append("${" + key + "}");
+						} 
 					}
 					i = j;
 				}

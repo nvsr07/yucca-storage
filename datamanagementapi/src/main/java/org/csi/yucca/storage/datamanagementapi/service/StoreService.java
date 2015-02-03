@@ -214,13 +214,17 @@ public class StoreService {
 		String fileName =newStream.getCodiceStream()+".png";
 		processor.doProcessStream(imageBase64, path,fileName);
 
+
 		//FIXME get the list of roles(tenants) from the stream info
 		if("public".equals(newStream.getVisibility())){
 			addStream.setVar("visibility","public");
 			addStream.setVar("roles","");
+			addStream.setVar("authType","None");
+
 		}else{
 			addStream.setVar("visibility","private");
 			addStream.setVar("roles",newStream.getCodiceTenant()+"_subscriber");
+			addStream.setVar("authType","Application & Application User");
 		}
 
 		if(update){
