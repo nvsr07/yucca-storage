@@ -7,6 +7,7 @@ Vagrant.configure(2) do |config|
     shard1.vm.box_check_update = false
     shard1.vm.box = "ubuntu/trusty64"
     shard1.vm.network "public_network", ip: "10.0.1.10", bridge: "wlan0"
+    shard1.vm.network "forwarded_port", guest: 10000, host: 10000
     shard1.vm.synced_folder "./shard1/mongodb", "/etc/mongodb"
     shard1.vm.provision "file", source: "./supporting_files/mongo", destination: "~/"
     shard1.vm.provision :shell, path: "./shard1/bootstrap_shard1.sh"
@@ -16,6 +17,7 @@ Vagrant.configure(2) do |config|
     shard1rep1.vm.box_check_update = false
     shard1rep1.vm.box = "ubuntu/trusty64"
     shard1rep1.vm.network "public_network", ip: "10.0.1.11", bridge: "wlan0"
+    shard1rep1.vm.network "forwarded_port", guest: 11000, host: 11000
     shard1rep1.vm.synced_folder "./shard1rep1/mongodb", "/etc/mongodb"
     shard1rep1.vm.provision "file", source: "./supporting_files/mongo", destination: "~/"
     shard1rep1.vm.provision :shell, path: "./shard1rep1/bootstrap_shard1rep1.sh"
@@ -25,6 +27,7 @@ Vagrant.configure(2) do |config|
     shard1rep2.vm.box_check_update = false
     shard1rep2.vm.box = "ubuntu/trusty64"
     shard1rep2.vm.network "public_network", ip: "10.0.1.12", bridge: "wlan0"
+    shard1rep2.vm.network "forwarded_port", guest: 12000, host: 12000
     shard1rep2.vm.synced_folder "./shard1rep2/mongodb", "/etc/mongodb"
     shard1rep2.vm.provision "file", source: "./supporting_files/mongo", destination: "~/"
     shard1rep2.vm.provision "file", source: "./supporting_files/setup_shard1rep.js", destination: "~/setup_shard1rep.js"
@@ -35,6 +38,7 @@ Vagrant.configure(2) do |config|
     shard2.vm.box_check_update = false
     shard2.vm.box = "ubuntu/trusty64"
     shard2.vm.network "public_network", ip: "10.0.1.20", bridge: "wlan0"
+    shard2.vm.network "forwarded_port", guest: 20000, host: 20000
     shard2.vm.synced_folder "./shard2/mongodb", "/etc/mongodb"
     shard2.vm.provision "file", source: "./supporting_files/mongo", destination: "~/"
     shard2.vm.provision :shell, path: "./shard2/bootstrap_shard2.sh"
@@ -45,6 +49,7 @@ Vagrant.configure(2) do |config|
     shard2rep1.vm.box_check_update = false
     shard2rep1.vm.box = "ubuntu/trusty64"
     shard2rep1.vm.network "public_network", ip: "10.0.1.21", bridge: "wlan0"
+    shard2rep1.vm.network "forwarded_port", guest: 21000, host: 21000
     shard2rep1.vm.synced_folder "./shard2rep1/mongodb", "/etc/mongodb"
     shard2rep1.vm.provision "file", source: "./supporting_files/mongo", destination: "~/"
     shard2rep1.vm.provision :shell, path: "./shard2rep1/bootstrap_shard2rep1.sh"
@@ -54,6 +59,7 @@ Vagrant.configure(2) do |config|
     shard2rep2.vm.box_check_update = false
     shard2rep2.vm.box = "ubuntu/trusty64"
     shard2rep2.vm.network "public_network", ip: "10.0.1.22", bridge: "wlan0"
+    shard2rep2.vm.network "forwarded_port", guest: 22000, host: 22000
     shard2rep2.vm.synced_folder "./shard2rep2/mongodb", "/etc/mongodb"
     shard2rep2.vm.provision "file", source: "./supporting_files/mongo", destination: "~/"
     shard2rep2.vm.provision "file", source: "./supporting_files/setup_shard2rep.js", destination: "~/setup_shard2rep.js"
@@ -74,7 +80,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "conf2" do |conf2|
     conf2.vm.box_check_update = false
-    conf2.vm.box = "ubuntu/trusty64"   
+    conf2.vm.box = "ubuntu/trusty64"
     conf2.vm.network "public_network", ip: "10.0.1.4", bridge: "wlan0"
     conf2.vm.network "forwarded_port", guest: 40000, host: 40000
     conf2.vm.synced_folder "./conf2/mongodb", "/etc/mongodb"

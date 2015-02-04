@@ -18,6 +18,7 @@ Contenuto:
     shardkeys
     backup
     reviewMongoDBOutEventAdaptorType
+    aggregation
 
 Indices and tables
 ==================
