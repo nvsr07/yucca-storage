@@ -14,8 +14,10 @@ import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.QSPStore;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
+import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
 import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
@@ -158,7 +160,7 @@ public class StoreService {
 			addStream.setVar("authType","None");
 
 		}else{
-			addStream.setVar("visibility","private");
+			addStream.setVar("visibility","restricted");
 			addStream.setVar("roles",newStream.getCodiceTenant()+"_subscriber");
 			addStream.setVar("authType","Application & Application User");
 		}
@@ -178,7 +180,7 @@ public class StoreService {
 		addStream.setVar("desc",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
 		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
-		addStream.setVar("extra_isApi","true");
+		addStream.setVar("extra_isApi","false");
 		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? newStream.getCodiceTenant() :"");
 		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? newStream.getCodiceStream() :"");
 		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
@@ -200,6 +202,77 @@ public class StoreService {
 		return apiFinalName;
 	}
 
+	
+	
+	public static String createApiforBulk(Metadata metadata,boolean update) throws Exception{
+
+		String apiName= metadata.getDatasetCode();
+		String apiFinalName= metadata.getDatasetCode()+"_odata";
+
+		AddStream addStream = new AddStream();
+
+		ImageProcessor processor = new ImageProcessor();
+		String imageBase64 =metadata.getInfo().getDatasetIcon();
+
+		String path ="images/";
+		String fileName =metadata.getDatasetCode()+".png";
+
+		processor.doProcessOdata(imageBase64, path,fileName);
+
+		//FIXME get the list of roles(tenants) from the stream info
+		if("public".equals(metadata.getInfo().getVisibility())){
+			addStream.setVar("visibility","public");
+			addStream.setVar("roles","");
+			addStream.setVar("authType","None");
+
+		}else{
+			addStream.setVar("visibility","restricted");
+			addStream.setVar("roles",metadata.getConfigData().getTenantCode()+"_subscriber");
+			addStream.setVar("authType","Application & Application User");
+		}
+
+		if(update){
+			addStream.setVar("actionAPI","updateAPI");
+		}else{
+			addStream.setVar("actionAPI","addAPI");
+		}
+
+		addStream.setVar("icon",path+fileName);
+		addStream.setVar("apiVersion","1.0");
+		addStream.setVar("apiName",apiFinalName);
+		addStream.setVar("context","/api/"+apiName);//ds_Voc_28;
+		addStream.setVar("P","");
+		addStream.setVar("endpoint","http://int-api.smartdatanet.it/odata/SmartDataOdataService.svc/"+apiName);
+		addStream.setVar("desc",metadata.getInfo().getDescription()!=null ? metadata.getInfo().getDescription() :"");
+		addStream.setVar("copiright",metadata.getInfo().getCopyright()!=null ? metadata.getInfo().getCopyright() :"");
+
+		addStream.setVar("extra_isApi","false");
+		addStream.setVar("codiceTenant",metadata.getConfigData().getTenantCode()!=null ? metadata.getConfigData().getTenantCode() :"");
+		addStream.setVar("codiceStream","");
+		addStream.setVar("nomeStream","");
+		addStream.setVar("nomeTenant",metadata.getConfigData().getTenantCode()!=null ? metadata.getConfigData().getTenantCode() :"");
+		addStream.setVar("licence",metadata.getInfo().getLicense()!=null ? metadata.getInfo().getLicense() :"");
+		addStream.setVar("virtualEntityName","");
+		addStream.setVar("virtualEntityDescription","");
+		
+		String tags = "";
+		
+		if(metadata.getInfo().getTags()!=null){
+			for(org.csi.yucca.storage.datamanagementapi.model.metadata.Tag t : metadata.getInfo().getTags())
+				tags+=","+t.getTagCode();
+		}
+
+		if(metadata.getInfo().getDataDomain()!=null){
+			tags+=","+metadata.getInfo().getDataDomain();
+		}
+		addStream.setVar("tags",tags);
+		addStream.run();
+
+		return apiFinalName;
+	}
+	
+	
+	
 	public static boolean createStream(Stream newStream,boolean update) throws Exception{
 
 		String tenant = newStream.getCodiceTenant();
@@ -222,7 +295,7 @@ public class StoreService {
 			addStream.setVar("authType","None");
 
 		}else{
-			addStream.setVar("visibility","private");
+			addStream.setVar("visibility","restricted");
 			addStream.setVar("roles",newStream.getCodiceTenant()+"_subscriber");
 			addStream.setVar("authType","Application & Application User");
 		}
@@ -242,7 +315,7 @@ public class StoreService {
 		addStream.setVar("desc",newStream.getNomeStream());
 		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
-		addStream.setVar("extra_isApi","true");
+		addStream.setVar("extra_isApi","false");
 		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? newStream.getCodiceTenant() :"");
 		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? newStream.getCodiceStream() :"");
 		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
@@ -251,12 +324,13 @@ public class StoreService {
 		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
 		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
 		String tags = "";
-		if(newStream.getTags()!=null){
-			tags+=newStream.getTags();
+		if(newStream.getStreamTags()!=null && newStream.getStreamTags().getTag()!=null){
+			for(Tag t : newStream.getStreamTags().getTag())
+			tags+=","+t.getTagCode();
 		}
 
 		if(newStream.getDomainStream()!=null){
-			tags+=newStream.getDomainStream();
+			tags+=","+newStream.getDomainStream();
 		}
 		addStream.setVar("tags",tags);
 

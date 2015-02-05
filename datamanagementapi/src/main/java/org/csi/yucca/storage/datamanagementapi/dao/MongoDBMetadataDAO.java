@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.service.StoreService;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
@@ -26,11 +27,11 @@ public class MongoDBMetadataDAO {
 
 	public Metadata createMetadata(Metadata metadata,Long idDataset) {
 
-		
+
 		for (int i = 0; i < 5; i++) {
 			try {
 				if(idDataset==null){
-				metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
+					metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
 				}else{
 					metadata.setIdDataset(idDataset);
 				}
@@ -39,25 +40,55 @@ public class MongoDBMetadataDAO {
 
 				String json = metadata.toJson();
 				DBObject dbObject = (DBObject) JSON.parse(json);
-				
+
 				DBObject uniqueMetadata = new BasicDBObject("idDataset",metadata.getIdDataset());
 				uniqueMetadata.put("datasetVersion",metadata.getDatasetVersion());
-				
+
 				// if the metadata with that id and version exists .. update it, otherwise insert the new one.
 				//upsert:true  multi:false
 				this.collection.update(uniqueMetadata,dbObject,true,false);
-//				ObjectId id = (ObjectId) dbObject.get("_id");
-//				metadata.setId(id.toString());
+				//				ObjectId id = (ObjectId) dbObject.get("_id");
+				//				metadata.setId(id.toString());
 				break;
 			} catch (Exception e) {
 				log.error("[] - ERROR in insert. Attempt " + i + " - message: " + e.getMessage());
 			}
 		}
+
+		/*
+		 * Create api in the store
+		 */
+		String apiName = "";
+		try{
+			apiName = StoreService.createApiforBulk(metadata,false);
+		}catch(Exception duplicate){
+			if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+				try {
+					apiName = StoreService.createApiforBulk(metadata,true);
+				} catch (Exception e) {
+					log.error("[] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+				}
+			}else{
+				log.error("[] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
+			} 
+		}
+		try {
+			StoreService.publishStore("1.0", apiName, "admin");
+
+			String appName = "userportal_"+metadata.getConfigData().getTenantCode();
+			StoreService.addSubscriptionForTenant(apiName,appName);
+
+
+		} catch (Exception e) {
+			log.error("[] - ERROR in publish Api in store - message: " + e.getMessage());
+		}
+
+
 		return metadata;
 	}
 
 	public Metadata createNewVersion(Metadata metadata){
-		
+
 		metadata.setDatasetVersion(metadata.getDatasetVersion() + 1);
 		metadata.getConfigData().setCurrent(1);
 		metadata.getInfo().setRegistrationDate(new Date());
@@ -70,7 +101,7 @@ public class MongoDBMetadataDAO {
 		metadata.setId(id.toString());
 		return metadata;
 	}
-	
+
 	public void updateMetadata(Metadata metadata) {
 		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(metadata.getId())).get();
 		DBObject dbObject = (DBObject) JSON.parse(metadata.toJson());
@@ -78,7 +109,7 @@ public class MongoDBMetadataDAO {
 		this.collection.update(query, dbObject);
 	}
 
-	
+
 	public List<Metadata> readAllMetadata(String tenant, boolean onlyCurrent) {
 		List<Metadata> data = new ArrayList<Metadata>();
 		BasicDBObject searchQuery = new BasicDBObject();
