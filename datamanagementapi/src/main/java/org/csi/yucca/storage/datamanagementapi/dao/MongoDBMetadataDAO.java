@@ -55,33 +55,7 @@ public class MongoDBMetadataDAO {
 			}
 		}
 
-		/*
-		 * Create api in the store
-		 */
-		String apiName = "";
-		try{
-			apiName = StoreService.createApiforBulk(metadata,false);
-		}catch(Exception duplicate){
-			if(duplicate.getMessage().toLowerCase().contains("duplicate")){
-				try {
-					apiName = StoreService.createApiforBulk(metadata,true);
-				} catch (Exception e) {
-					log.error("[] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
-				}
-			}else{
-				log.error("[] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
-			} 
-		}
-		try {
-			StoreService.publishStore("1.0", apiName, "admin");
-
-			String appName = "userportal_"+metadata.getConfigData().getTenantCode();
-			StoreService.addSubscriptionForTenant(apiName,appName);
-
-
-		} catch (Exception e) {
-			log.error("[] - ERROR in publish Api in store - message: " + e.getMessage());
-		}
+	
 
 
 		return metadata;

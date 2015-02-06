@@ -189,21 +189,19 @@ public class StoreService {
 		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
 		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
 		String tags = "";
-		if(newStream.getTags()!=null){
-			tags+=newStream.getTags();
+		if(newStream.getStreamTags()!=null && newStream.getStreamTags().getTag()!=null){
+			for(Tag t : newStream.getStreamTags().getTag())
+			tags+=","+t.getTagCode();
 		}
 
 		if(newStream.getDomainStream()!=null){
-			tags+=newStream.getDomainStream();
+			tags+=","+newStream.getDomainStream();
 		}
 		addStream.setVar("tags",tags);
 		addStream.run();
 
 		return apiFinalName;
 	}
-
-	
-	
 	public static String createApiforBulk(Metadata metadata,boolean update) throws Exception{
 
 		String apiName= metadata.getDatasetCode();
@@ -224,7 +222,6 @@ public class StoreService {
 			addStream.setVar("visibility","public");
 			addStream.setVar("roles","");
 			addStream.setVar("authType","None");
-
 		}else{
 			addStream.setVar("visibility","restricted");
 			addStream.setVar("roles",metadata.getConfigData().getTenantCode()+"_subscriber");
@@ -271,8 +268,6 @@ public class StoreService {
 		return apiFinalName;
 	}
 	
-	
-	
 	public static boolean createStream(Stream newStream,boolean update) throws Exception{
 
 		String tenant = newStream.getCodiceTenant();
@@ -286,7 +281,6 @@ public class StoreService {
 		String path ="images/";
 		String fileName =newStream.getCodiceStream()+".png";
 		processor.doProcessStream(imageBase64, path,fileName);
-
 
 		//FIXME get the list of roles(tenants) from the stream info
 		if("public".equals(newStream.getVisibility())){
