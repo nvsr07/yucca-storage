@@ -44,6 +44,7 @@ public class MetadataFiller {
 		info.setDatasetName(stream.getCodiceStream());
 		info.setDescription("Dataset " +stream.getNomeStream());
 		info.setDisclaimer(stream.getDisclaimer());
+		info.setIcon(stream.getStreamIcon());
 
 		info.setFps(stream.getFps());
 		info.setLicense(stream.getLicence());
@@ -71,31 +72,6 @@ public class MetadataFiller {
 			List<Element> elem = comp.getElement();
 			if(elem!=null){
 				List<Field> fields = new ArrayList<Field>();
-
-//				Field f = new Field();	
-//				f.setFieldAlias("-");
-//				f.setFieldName("streamCode");
-//				f.setIsKey(0);
-//				f.setDataType("string");
-//				f.setMeasureUnit("-");
-//				fields.add(f );
-//				
-//				f = new Field();	
-//				f.setFieldAlias("-");
-//				f.setFieldName("sensor");
-//				f.setIsKey(0);
-//				f.setDataType("string");
-//				f.setMeasureUnit("-");
-//				fields.add(f );
-//
-//				
-//				f = new Field();	
-//				f.setFieldAlias("-");
-//				f.setFieldName("time");
-//				f.setIsKey(0);
-//				f.setDataType("dateTime");
-//				f.setMeasureUnit("-");
-//				fields.add(f );
 				
 				for(Element el : elem){
 
@@ -121,7 +97,6 @@ public class MetadataFiller {
 		}
 
 		info.setTags(tags.toArray(new Tag[0]));
-
 
 		myMeta.setInfo(info);
 
