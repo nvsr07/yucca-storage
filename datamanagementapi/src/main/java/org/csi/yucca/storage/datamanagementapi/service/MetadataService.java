@@ -521,6 +521,40 @@ public class MetadataService {
 			metadataDAO.createNewVersion(newMetadata);
 
 			updateDatasetResponse.setMetadata(newMetadata);
+			
+			
+			
+			
+			/*
+			 * Create api in the store
+			 */
+			String apiName = "";
+			try{
+				apiName = StoreService.createApiforBulk(newMetadata,false);
+			}catch(Exception duplicate){
+				if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+					try {
+						apiName = StoreService.createApiforBulk(newMetadata,true);
+					} catch (Exception e) {
+						log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+					}
+				}else{
+					log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
+				} 
+			}
+			try {
+				StoreService.publishStore("1.0", apiName, "admin");
+
+				String appName = "userportal_"+newMetadata.getConfigData().getTenantCode();
+				StoreService.addSubscriptionForTenant(apiName,appName);
+
+
+			} catch (Exception e) {
+				log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+			}
+			
+						
+			
 		} catch (Exception e) {
 			log.debug("[MetadataService::updateMetadata] - ERROR " + e.getMessage());
 			updateDatasetResponse.addErrorMessage(new ErrorMessage(e));
