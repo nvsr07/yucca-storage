@@ -210,7 +210,7 @@ public class StoreService {
 		AddStream addStream = new AddStream();
 
 		ImageProcessor processor = new ImageProcessor();
-		String imageBase64 =metadata.getInfo().getDatasetIcon();
+		String imageBase64 =metadata.getInfo().getIcon();
 
 		String path ="images/";
 		String fileName =metadata.getDatasetCode()+".png";

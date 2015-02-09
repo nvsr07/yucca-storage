@@ -24,7 +24,7 @@ public class Info extends AbstractEntity {
 	private Date startIngestionDate;
 	private Date endIngestionDate;
 	private String importFileType;
-	private String   datasetIcon;
+	private String icon;
 
 	private Tag tags[];
 	private Field fields[];
@@ -173,12 +173,14 @@ public class Info extends AbstractEntity {
 		this.fields = fields;
 	}
 
-	public String getDatasetIcon() {
-		return datasetIcon;
+	public String getIcon() {
+		return icon;
 	}
 
-	public void setDatasetIcon(String datasetIcon) {
-		this.datasetIcon = datasetIcon;
+	public void setIcon(String icon) {
+		this.icon = icon;
 	}
+
+
 
 }
