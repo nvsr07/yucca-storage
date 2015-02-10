@@ -45,13 +45,12 @@ public class StatisticsService {
 		DB db = mongo.getDB(Config.getInstance().getDbSupport());
 		DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportStatistics());
 			
-		DBObject sortOb = new BasicDBObject("_id",-1);
+		DBObject sortOb = new BasicDBObject("datetime",-1);
 		DBCursor list = col.find().sort(sortOb).limit(1);
 		
 		if(list.hasNext()){
 			statistics = list.next();
 		}
-
 		return JSON.serialize(statistics);
 	}
 }
