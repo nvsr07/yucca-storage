@@ -20,6 +20,14 @@ public class Config {
 	public static final String MONGO_COLLECTION_TENANT_DATA = "MONGO_COLLECTION_TENANT_DATA";
 	public static final String MONGO_COLLECTION_TENANT_MEASURES = "MONGO_COLLECTION_TENANT_MEASURES";
 	public static final String BASE_API_URL = "BASE_API_URL";
+	public static final String DAMMI_INFO = "DAMMI_INFO";
+	public static final String STORE_USERNAME = "STORE_USERNAME";
+	public static final String STORE_PASSWORD = "STORE_PASSWORD";
+	public static final String CONSOLE_ADDRESS = "CONSOLE_ADDRESS";
+	public static final String HTTP_OK = "HTTP_OK";
+	public static final String RESPONSE_OK = "RESPONSE_OK";
+	
+	
 
 	private static Map<String, String> params = null;
 	private static Config instance = null;
@@ -41,8 +49,15 @@ public class Config {
 		params.put(BASE_API_URL, rb.getString(BASE_API_URL));
 		params.put(MONGO_COLLECTION_TENANT_DATA, rb.getString(MONGO_COLLECTION_TENANT_DATA));
 		params.put(MONGO_COLLECTION_TENANT_MEASURES, rb.getString(MONGO_COLLECTION_TENANT_MEASURES));
+		params.put(DAMMI_INFO, rb.getString(DAMMI_INFO));
+		params.put(CONSOLE_ADDRESS, rb.getString(CONSOLE_ADDRESS));
+		params.put(HTTP_OK, rb.getString(HTTP_OK));
+		params.put(RESPONSE_OK, rb.getString(RESPONSE_OK));
+		
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
+		params.put(STORE_USERNAME, rbSecret.getString(STORE_USERNAME));
+		params.put(STORE_PASSWORD, rbSecret.getString(STORE_PASSWORD));
 	}
 
 	public static Config getInstance() {
@@ -107,5 +122,28 @@ public class Config {
 	public String getBaseApiUrl() {
 		return params.get(BASE_API_URL);
 	}
+	public String getDammiInfo() {
+		return params.get(DAMMI_INFO);
+	}
+	
+	public String getStoreUsername() {
+		return params.get(STORE_USERNAME);
+	}
+	public String getStorePassword() {
+		return params.get(STORE_PASSWORD);
+	}
+	
+	public String getConsoleAddress() {
+		return params.get(CONSOLE_ADDRESS);
+	}
+	
+	public String getHttpOk() {
+		return params.get(HTTP_OK);
+	}
+	
+	public String getResponseOk() {
+		return params.get(RESPONSE_OK);
+	}
+	
 
 }

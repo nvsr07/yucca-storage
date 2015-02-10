@@ -1,7 +1,9 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
 
+
 import java.net.UnknownHostException;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
@@ -18,6 +20,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
+import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
@@ -28,7 +31,7 @@ import com.mongodb.util.JSON;
 
 @Path("/store")
 public class StoreService {
-
+	
 	@Context
 	ServletContext context;
 	static Logger log = Logger.getLogger(StoreService.class);
@@ -129,6 +132,13 @@ public class StoreService {
 
 		QSPStore subscription = new QSPStore();
 		
+		subscription.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
+		subscription.setVar("username",Config.getInstance().getStoreUsername());
+		subscription.setVar("password",Config.getInstance().getStorePassword());
+		subscription.setVar("httpok",Config.getInstance().getHttpOk());
+		subscription.setVar("ok",Config.getInstance().getResponseOk());
+		
+		
 		subscription.setVar("apiVersion","1.0");
 		subscription.setVar("apiName",apiName);
 		subscription.setVar("appName",appName);
@@ -170,13 +180,20 @@ public class StoreService {
 		}else{
 			addStream.setVar("actionAPI","addAPI");
 		}
+		
+		addStream.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
+		addStream.setVar("username",Config.getInstance().getStoreUsername());
+		addStream.setVar("password",Config.getInstance().getStorePassword());
+		addStream.setVar("httpok",Config.getInstance().getHttpOk());
+		addStream.setVar("ok",Config.getInstance().getResponseOk());
+		
 
 		addStream.setVar("icon",path+fileName);
 		addStream.setVar("apiVersion","1.0");
 		addStream.setVar("apiName",apiFinalName);
 		addStream.setVar("context","/api/"+apiName);//ds_Voc_28;
 		addStream.setVar("P","");
-		addStream.setVar("endpoint","http://int-api.smartdatanet.it/odata/SmartDataOdataService.svc/"+apiName);
+		addStream.setVar("endpoint",Config.getInstance().getBaseApiUrl()+apiName);
 		addStream.setVar("desc",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
 		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
@@ -233,13 +250,21 @@ public class StoreService {
 		}else{
 			addStream.setVar("actionAPI","addAPI");
 		}
-
+		
+		addStream.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
+		addStream.setVar("username",Config.getInstance().getStoreUsername());
+		addStream.setVar("password",Config.getInstance().getStorePassword());
+		addStream.setVar("httpok",Config.getInstance().getHttpOk());
+		addStream.setVar("ok",Config.getInstance().getResponseOk());
+		
+		
+		
 		addStream.setVar("icon",path+fileName);
 		addStream.setVar("apiVersion","1.0");
 		addStream.setVar("apiName",apiFinalName);
 		addStream.setVar("context","/api/"+apiName);//ds_Voc_28;
 		addStream.setVar("P","");
-		addStream.setVar("endpoint","http://int-api.smartdatanet.it/odata/SmartDataOdataService.svc/"+apiName);
+		addStream.setVar("endpoint",Config.getInstance().getBaseApiUrl()+apiName);
 		addStream.setVar("desc",metadata.getInfo().getDescription()!=null ? metadata.getInfo().getDescription() :"");
 		addStream.setVar("copiright",metadata.getInfo().getCopyright()!=null ? metadata.getInfo().getCopyright() :"");
 
@@ -300,12 +325,20 @@ public class StoreService {
 			addStream.setVar("actionAPI","addAPI");
 		}
 
+		
+		addStream.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
+		addStream.setVar("username",Config.getInstance().getStoreUsername());
+		addStream.setVar("password",Config.getInstance().getStorePassword());
+		addStream.setVar("httpok",Config.getInstance().getHttpOk());
+		addStream.setVar("ok",Config.getInstance().getResponseOk());
+		
+		
 		addStream.setVar("icon",path+fileName);
 		addStream.setVar("apiVersion","1.0");
 		addStream.setVar("apiName",tenant+"."+sensor+"_"+stream+"_stream");
 		addStream.setVar("context","/api/topic/output."+tenant+"."+sensor+"_"+stream);
 		addStream.setVar("P","");
-		addStream.setVar("endpoint","http://int-api.smartdatanet.it/dammiInfo");
+		addStream.setVar("endpoint",Config.getInstance().getDammiInfo());
 		addStream.setVar("desc",newStream.getNomeStream());
 		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
@@ -358,6 +391,14 @@ public class StoreService {
 	public static boolean publishStore(String apiVersion,String apiName,String provider) throws Exception  {
 
 		PublishApi publish = new PublishApi();
+		
+		publish.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
+		publish.setVar("username",Config.getInstance().getStoreUsername());
+		publish.setVar("password",Config.getInstance().getStorePassword());
+		publish.setVar("httpok",Config.getInstance().getHttpOk());
+		publish.setVar("ok",Config.getInstance().getResponseOk());
+		
+		
 		publish.setVar("publishStatus", "PUBLISHED");
 		publish.setVar("apiVersion",apiVersion);
 		publish.setVar("apiName",apiName);
@@ -370,6 +411,13 @@ public class StoreService {
 	public static boolean removeStore(String apiVersion,String apiName,String provider) throws Exception  {
 
 		PublishApi publish = new PublishApi();
+		
+		publish.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
+		publish.setVar("username",Config.getInstance().getStoreUsername());
+		publish.setVar("password",Config.getInstance().getStorePassword());
+		publish.setVar("httpok",Config.getInstance().getHttpOk());
+		publish.setVar("ok",Config.getInstance().getResponseOk());
+	
 		publish.setVar("publishStatus", "BLOCKED");
 		publish.setVar("apiVersion",apiVersion);
 		publish.setVar("apiName",apiName);

@@ -15,21 +15,8 @@ public class VarProperties extends Properties {
 
 	public VarProperties(String res) throws IOException {
 		InputStream in;
-		String name =Constants.API_MANAGER_GENERAL_PROPERTIES;
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		vars = new Properties();
-		System.out.println("Properties: try to load " + name);
-		in = classLoader.getResourceAsStream(name);
-		if (in != null) {
-			vars.load(in);
-			in.close();
-			System.out.println("Properties: loaded " + name + " count " + vars.size());
-		} else {
-			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-			vars.load(br);
-			System.out.println("Properties: loaded " + name + " count " + vars.size());
-			br.close();
-		}
 
 		System.out.println("try to load " + res);
 		in = classLoader.getResourceAsStream(res);

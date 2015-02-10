@@ -65,8 +65,6 @@ public class MetadataFiller {
 		info.setRequestorSurname(stream.getCognomeRichiedente());
 		info.setVisibility(stream.getVisibility());
 
-
-
 		Componenti comp = stream.getComponenti();
 		if(comp!=null){
 			List<Element> elem = comp.getElement();
@@ -95,12 +93,9 @@ public class MetadataFiller {
 				tags.add(tag);
 			}
 		}
-
 		info.setTags(tags.toArray(new Tag[0]));
 
 		myMeta.setInfo(info);
-
 		return myMeta;
 	}
-
 }
