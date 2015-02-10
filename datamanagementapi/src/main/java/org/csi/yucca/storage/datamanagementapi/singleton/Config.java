@@ -15,6 +15,7 @@ public class Config {
 	public static final String MONGO_COLLECTION_SUPPORT_API = "MONGO_COLLECTION_SUPPORT_API";
 	public static final String MONGO_COLLECTION_SUPPORT_STREAM = "MONGO_COLLECTION_SUPPORT_STREAM";
 	public static final String MONGO_COLLECTION_SUPPORT_TENANT = "MONGO_COLLECTION_SUPPORT_TENANT";
+	public static final String MONGO_COLLECTION_SUPPORT_STATISTICS = "MONGO_COLLECTION_SUPPORT_STATISTICS";
 	public static final String MONGO_USERNAME = "MONGO_USERNAME";
 	public static final String MONGO_PASSWORD = "MONGO_PASSWORD";
 	public static final String MONGO_COLLECTION_TENANT_DATA = "MONGO_COLLECTION_TENANT_DATA";
@@ -26,7 +27,7 @@ public class Config {
 	public static final String CONSOLE_ADDRESS = "CONSOLE_ADDRESS";
 	public static final String HTTP_OK = "HTTP_OK";
 	public static final String RESPONSE_OK = "RESPONSE_OK";
-	
+	public static final String STORE_API_ADDRESS = "STORE_API_ADDRESS";
 	
 
 	private static Map<String, String> params = null;
@@ -46,6 +47,7 @@ public class Config {
 		params.put(MONGO_DB_AUTH, rb.getString(MONGO_DB_AUTH));
 		params.put(MONGO_DB_AUTH_FLAG, rb.getString(MONGO_DB_AUTH_FLAG));
 		params.put(MONGO_COLLECTION_SUPPORT_TENANT, rb.getString(MONGO_COLLECTION_SUPPORT_TENANT));
+		params.put(MONGO_COLLECTION_SUPPORT_STATISTICS, rb.getString(MONGO_COLLECTION_SUPPORT_STATISTICS));		
 		params.put(BASE_API_URL, rb.getString(BASE_API_URL));
 		params.put(MONGO_COLLECTION_TENANT_DATA, rb.getString(MONGO_COLLECTION_TENANT_DATA));
 		params.put(MONGO_COLLECTION_TENANT_MEASURES, rb.getString(MONGO_COLLECTION_TENANT_MEASURES));
@@ -53,6 +55,8 @@ public class Config {
 		params.put(CONSOLE_ADDRESS, rb.getString(CONSOLE_ADDRESS));
 		params.put(HTTP_OK, rb.getString(HTTP_OK));
 		params.put(RESPONSE_OK, rb.getString(RESPONSE_OK));
+		params.put(STORE_API_ADDRESS, rb.getString(STORE_API_ADDRESS));
+		
 		
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
@@ -102,6 +106,10 @@ public class Config {
 	public String getCollectionSupportTenant() {
 		return params.get(MONGO_COLLECTION_SUPPORT_TENANT);
 	}
+	public String getCollectionSupportStatistics() {
+		return params.get(MONGO_COLLECTION_SUPPORT_STATISTICS);
+	}
+	
 
 	public String getCollectionTenantData() {
 		return params.get(MONGO_COLLECTION_TENANT_DATA);
@@ -143,6 +151,9 @@ public class Config {
 	
 	public String getResponseOk() {
 		return params.get(RESPONSE_OK);
+	}
+	public String getStoreApiAddress() {
+		return params.get(STORE_API_ADDRESS);
 	}
 	
 

@@ -272,7 +272,7 @@ public class MetadataService {
 
 		MyApi api = apiDAO.readApiByCode(datasetCode);
 
-		String baseApiUrl = Config.getInstance().getBaseApiUrl();
+		String baseApiUrl = Config.getInstance().getStoreApiAddress();
 
 		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);

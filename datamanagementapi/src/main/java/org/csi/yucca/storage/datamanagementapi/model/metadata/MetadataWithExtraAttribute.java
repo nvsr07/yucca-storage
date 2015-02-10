@@ -26,9 +26,12 @@ public class MetadataWithExtraAttribute {
 	public MetadataWithExtraAttribute(Metadata metadata, StreamOut stream, MyApi api, String baseApiUrl) {
 		this.setMetadata(metadata);
 		this.setStream(stream);
-		setApiUrl(baseApiUrl + api.getApiCode() + "/");
-		setApiMetadataUrl(getApiUrl() + "$metadata");
-		setApiMeasureUrl(getApiUrl() + "$measure");
+//		setApiUrl(baseApiUrl + api.getApiCode() + "/");
+	
+		String apiToStore = baseApiUrl+"name="+metadata.getDatasetCode()+"_odata"+"&version=1.0&provider=admin";		
+		setApiMetadataUrl(apiToStore);
+		
+//		setApiMeasureUrl(getApiUrl() + "$measure");
 
 	}
 

@@ -15,6 +15,7 @@ public class ApplicationConfig extends Application {
 		singletons.add(new InstallCepService());
 		singletons.add(new InstallTenantService());
 		singletons.add(new StoreService());
+	    singletons.add(new StatisticsService());
 	}
 
 	public Set<Object> getSingletons() {
