@@ -26,15 +26,18 @@ public class ImageProcessor {
 		if (!fileSaveDir.exists()) {
 			fileSaveDir.mkdir();
 		}
-		
-		String[] imageBase64Array = imageBase64.split(",");
-		String imageBase64Clean ="";
-		if(imageBase64Array.length>1){
-			imageBase64Clean= imageBase64Array[1];
-		}else{
-			imageBase64Clean= imageBase64Array[0];
-		}
 
+		String imageBase64Clean =null;
+
+		if(imageBase64!=null){		
+			String[] imageBase64Array = imageBase64.split(",");
+
+			if(imageBase64Array.length>1){
+				imageBase64Clean= imageBase64Array[1];
+			}else{
+				imageBase64Clean= imageBase64Array[0];
+			}
+		}
 		convertImage(savePath, fileName, imageBase64Clean);
 
 		mergeImages(savePath, fileName);
@@ -51,14 +54,17 @@ public class ImageProcessor {
 		if (!fileSaveDir.exists()) {
 			fileSaveDir.mkdir();
 		}
-		String[] imageBase64Array = imageBase64.split(",");
-		String imageBase64Clean ="";
-		if(imageBase64Array.length>1){
-			imageBase64Clean= imageBase64Array[1];
-		}else{
-			imageBase64Clean= imageBase64Array[0];
-		}
 
+		String imageBase64Clean =null;
+		if(imageBase64!=null){
+			String[] imageBase64Array = imageBase64.split(",");
+
+			if(imageBase64Array.length>1){
+				imageBase64Clean= imageBase64Array[1];
+			}else{
+				imageBase64Clean= imageBase64Array[0];
+			}
+		}
 		convertImage(savePath, fileName, imageBase64Clean);
 		System.out.println("Done");
 		//		mergeImages(savePath, imageFileName);
@@ -67,7 +73,7 @@ public class ImageProcessor {
 
 	private void convertImage(String savePath, String imageFileName, String imageBase64) throws IOException {
 		BufferedImage imag=null;
-		
+
 		if(imageBase64!=null){
 			byte[] bytearray = Base64.decodeBase64(imageBase64.getBytes());
 			imag = ImageIO.read(new ByteArrayInputStream(bytearray));
@@ -75,7 +81,7 @@ public class ImageProcessor {
 		if(imageBase64==null || imag==null){
 			imag = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_IMAGE));
 		}
-		
+
 		ImageIO.write(imag, "png", new File(savePath, imageFileName));
 	}
 
