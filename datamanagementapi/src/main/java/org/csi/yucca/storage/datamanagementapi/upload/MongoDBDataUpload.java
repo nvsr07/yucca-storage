@@ -131,7 +131,7 @@ public class MongoDBDataUpload {
 					if (datasetMetadata.getInfo().getFields()[j].getSourceColumn() == (numColumn + 1)) {
 						found = true;
 						typeCode = datasetMetadata.getInfo().getFields()[j].getDataType();
-						fieldName = Util.cleanStringCamelCase(datasetMetadata.getInfo().getFields()[j].getFieldName());
+						fieldName = datasetMetadata.getInfo().getFields()[j].getFieldName();
 
 						if (datasetMetadata.getInfo().getFields()[j].getDateTimeFormat() != null) {
 							try {

@@ -175,7 +175,9 @@ public class MetadataService {
 			public void write(OutputStream os) throws IOException, WebApplicationException {
 
 				CSVWriter writer = new CSVWriter(new OutputStreamWriter(os), separator);
-				int totalColumn = headerFixedColumn.size() + fields.size() * 4;// 4
+				int totalColumn = fields.size();
+				if (isStream) {
+					totalColumn = headerFixedColumn.size() + fields.size() * 4;// 4
 																				// is
 																				// the
 																				// fields
@@ -185,6 +187,7 @@ public class MetadataService {
 																				// measureUnit,
 																				// dataType,
 																				// measure)
+				}
 				String[] headerNames = new String[totalColumn];
 				int counter = 0;
 				for (String s : headerFixedColumn) {
@@ -333,6 +336,7 @@ public class MetadataService {
 
 		if (metadata.getInfo().getFields() != null) {
 			for (Field field : metadata.getInfo().getFields()) {
+				field.setFieldName(Util.cleanStringCamelCase(field.getFieldName()));
 				if (field != null && field.getDataType() == null)
 					field.setDataType("string");
 			}
