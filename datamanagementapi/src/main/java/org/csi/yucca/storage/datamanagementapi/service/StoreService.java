@@ -3,7 +3,6 @@ package org.csi.yucca.storage.datamanagementapi.service;
 
 
 import java.net.UnknownHostException;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
@@ -31,7 +30,7 @@ import com.mongodb.util.JSON;
 
 @Path("/store")
 public class StoreService {
-	
+
 	@Context
 	ServletContext context;
 	static Logger log = Logger.getLogger(StoreService.class);
@@ -127,23 +126,22 @@ public class StoreService {
 		}
 		return JSON.parse("{OK:1}").toString();
 	}
-	
+
 	public static boolean addSubscriptionForTenant(String apiName,String appName) throws Exception {
 
 		QSPStore subscription = new QSPStore();
-		
+
 		subscription.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
 		subscription.setVar("username",Config.getInstance().getStoreUsername());
 		subscription.setVar("password",Config.getInstance().getStorePassword());
 		subscription.setVar("httpok",Config.getInstance().getHttpOk());
 		subscription.setVar("ok",Config.getInstance().getResponseOk());
-		
-		
+
 		subscription.setVar("apiVersion","1.0");
 		subscription.setVar("apiName",apiName);
 		subscription.setVar("appName",appName);
 		subscription.setVar("P","");
-		
+
 		subscription.run();
 
 		return true;
@@ -180,13 +178,12 @@ public class StoreService {
 		}else{
 			addStream.setVar("actionAPI","addAPI");
 		}
-		
+
 		addStream.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
 		addStream.setVar("username",Config.getInstance().getStoreUsername());
 		addStream.setVar("password",Config.getInstance().getStorePassword());
 		addStream.setVar("httpok",Config.getInstance().getHttpOk());
 		addStream.setVar("ok",Config.getInstance().getResponseOk());
-		
 
 		addStream.setVar("icon",path+fileName);
 		addStream.setVar("apiVersion","1.0");
@@ -203,17 +200,21 @@ public class StoreService {
 		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
 		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? newStream.getNomeTenant() :"");
 		addStream.setVar("licence",newStream.getLicence()!=null ? newStream.getLicence() :"");
+
+		addStream.setVar("virtualEntityCode",newStream.getCodiceVirtualEntity()!=null ? newStream.getCodiceVirtualEntity() :"");
 		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
 		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
 		String tags = "";
-		if(newStream.getStreamTags()!=null && newStream.getStreamTags().getTag()!=null){
-			for(Tag t : newStream.getStreamTags().getTag())
-			tags+=","+t.getTagCode();
-		}
 
 		if(newStream.getDomainStream()!=null){
-			tags+=","+newStream.getDomainStream();
+			tags+=newStream.getDomainStream();
 		}
+		if(newStream.getStreamTags()!=null && newStream.getStreamTags().getTag()!=null){
+			for(Tag t : newStream.getStreamTags().getTag())
+				tags+=","+t.getTagCode();
+		}
+
+
 		addStream.setVar("tags",tags);
 		addStream.run();
 
@@ -250,15 +251,13 @@ public class StoreService {
 		}else{
 			addStream.setVar("actionAPI","addAPI");
 		}
-		
+
 		addStream.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
 		addStream.setVar("username",Config.getInstance().getStoreUsername());
 		addStream.setVar("password",Config.getInstance().getStorePassword());
 		addStream.setVar("httpok",Config.getInstance().getHttpOk());
 		addStream.setVar("ok",Config.getInstance().getResponseOk());
-		
-		
-		
+
 		addStream.setVar("icon",path+fileName);
 		addStream.setVar("apiVersion","1.0");
 		addStream.setVar("apiName",apiFinalName);
@@ -274,25 +273,25 @@ public class StoreService {
 		addStream.setVar("nomeStream","");
 		addStream.setVar("nomeTenant",metadata.getConfigData().getTenantCode()!=null ? metadata.getConfigData().getTenantCode() :"");
 		addStream.setVar("licence",metadata.getInfo().getLicense()!=null ? metadata.getInfo().getLicense() :"");
+		addStream.setVar("disclaimer",metadata.getInfo().getDisclaimer()!=null ? metadata.getInfo().getDisclaimer() :"");
 		addStream.setVar("virtualEntityName","");
 		addStream.setVar("virtualEntityDescription","");
-		
+
 		String tags = "";
-		
+		if(metadata.getInfo().getDataDomain()!=null){
+			tags+=metadata.getInfo().getDataDomain();
+		}
 		if(metadata.getInfo().getTags()!=null){
 			for(org.csi.yucca.storage.datamanagementapi.model.metadata.Tag t : metadata.getInfo().getTags())
 				tags+=","+t.getTagCode();
 		}
 
-		if(metadata.getInfo().getDataDomain()!=null){
-			tags+=","+metadata.getInfo().getDataDomain();
-		}
 		addStream.setVar("tags",tags);
 		addStream.run();
 
 		return apiFinalName;
 	}
-	
+
 	public static boolean createStream(Stream newStream,boolean update) throws Exception{
 
 		String tenant = newStream.getCodiceTenant();
@@ -325,14 +324,12 @@ public class StoreService {
 			addStream.setVar("actionAPI","addAPI");
 		}
 
-		
 		addStream.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
 		addStream.setVar("username",Config.getInstance().getStoreUsername());
 		addStream.setVar("password",Config.getInstance().getStorePassword());
 		addStream.setVar("httpok",Config.getInstance().getHttpOk());
 		addStream.setVar("ok",Config.getInstance().getResponseOk());
-		
-		
+
 		addStream.setVar("icon",path+fileName);
 		addStream.setVar("apiVersion","1.0");
 		addStream.setVar("apiName",tenant+"."+sensor+"_"+stream+"_stream");
@@ -348,17 +345,22 @@ public class StoreService {
 		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
 		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? newStream.getNomeTenant() :"");
 		addStream.setVar("licence",newStream.getLicence()!=null ? newStream.getLicence() :"");
+		addStream.setVar("disclaimer",newStream.getDisclaimer()!=null ? newStream.getDisclaimer() :"");
+
+		addStream.setVar("virtualEntityCode",newStream.getCodiceVirtualEntity()!=null ? newStream.getCodiceVirtualEntity() :"");
 		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
 		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
+
 		String tags = "";
-		if(newStream.getStreamTags()!=null && newStream.getStreamTags().getTag()!=null){
-			for(Tag t : newStream.getStreamTags().getTag())
-			tags+=","+t.getTagCode();
+		if(newStream.getDomainStream()!=null){
+			tags+=newStream.getDomainStream();
 		}
 
-		if(newStream.getDomainStream()!=null){
-			tags+=","+newStream.getDomainStream();
+		if(newStream.getStreamTags()!=null && newStream.getStreamTags().getTag()!=null){
+			for(Tag t : newStream.getStreamTags().getTag())
+				tags+=","+t.getTagCode();
 		}
+
 		addStream.setVar("tags",tags);
 
 		addStream.run();
@@ -391,14 +393,13 @@ public class StoreService {
 	public static boolean publishStore(String apiVersion,String apiName,String provider) throws Exception  {
 
 		PublishApi publish = new PublishApi();
-		
+
 		publish.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
 		publish.setVar("username",Config.getInstance().getStoreUsername());
 		publish.setVar("password",Config.getInstance().getStorePassword());
 		publish.setVar("httpok",Config.getInstance().getHttpOk());
 		publish.setVar("ok",Config.getInstance().getResponseOk());
-		
-		
+
 		publish.setVar("publishStatus", "PUBLISHED");
 		publish.setVar("apiVersion",apiVersion);
 		publish.setVar("apiName",apiName);
@@ -411,13 +412,13 @@ public class StoreService {
 	public static boolean removeStore(String apiVersion,String apiName,String provider) throws Exception  {
 
 		PublishApi publish = new PublishApi();
-		
+
 		publish.setVar("apimanConsoleAddress",Config.getInstance().getConsoleAddress());
 		publish.setVar("username",Config.getInstance().getStoreUsername());
 		publish.setVar("password",Config.getInstance().getStorePassword());
 		publish.setVar("httpok",Config.getInstance().getHttpOk());
 		publish.setVar("ok",Config.getInstance().getResponseOk());
-	
+
 		publish.setVar("publishStatus", "BLOCKED");
 		publish.setVar("apiVersion",apiVersion);
 		publish.setVar("apiName",apiName);
