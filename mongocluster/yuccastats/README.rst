@@ -181,7 +181,7 @@ Recovered statistics are in the form::
                                  'measures': 52070,
                                  'media': 0,
                                  'social': 0},
-                  'total_smart_objects': 43,
+                  'total_smart_objects': 12,
                   'total_streams': 42,
                   'total_tenants': 17},
      '30days': {'origin': datetime.datetime(2015, 1, 2, 0, 0),
@@ -347,7 +347,7 @@ available into the ``lifetime`` field::
                                      'measures': 52070,
                                      'media': 0,
                                      'social': 0},
-                      'total_smart_objects': 43,
+                      'total_smart_objects': 12,
                       'total_streams': 42,
                       'total_tenants': 17}
 
@@ -356,7 +356,7 @@ Those are divided in multiple sets of data each related to some type of informat
     - ``stream_frequency`` reports the amount of streams for each *tag*, *domain* and *tenant*.
     - ``tenant_total_data`` reports the amount of data gathered for each tenant.
     - ``total_data`` reports the total data gathered since the platform exists.
-    - ``total_smart_objects`` reports the amount of sensors registered into the platform.
+    - ``total_smart_objects`` reports the amount of sensors (unique virtual entities) registered into the platform.
     - ``total_streams`` reports the amount of streams registered into the platform.
     - ``total_tenants`` reports the amount of tenants registered into the platform.
 

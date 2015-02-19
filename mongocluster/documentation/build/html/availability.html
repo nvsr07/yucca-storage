@@ -1,0 +1,397 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Best Practices per Availability e Consistenza &mdash; CSI MongoDB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CSI MongoDB 1.0 documentation" href="index.html" />
+    <link rel="next" title="Note per la gestione del cluster MongoDB" href="sysadminnotes.html" />
+    <link rel="prev" title="Script di avvio" href="start_script.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="sysadminnotes.html" title="Note per la gestione del cluster MongoDB"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="start_script.html" title="Script di avvio"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="best-practices-per-availability-e-consistenza">
+<h1>Best Practices per Availability e Consistenza<a class="headerlink" href="#best-practices-per-availability-e-consistenza" title="Permalink to this headline">¶</a></h1>
+<p>Il seguente documento cerca di illustrare alcuni dei principali accorgimenti che è necessario
+tenere in considerazione quando si implementa una architettura distribuita di mongodb al fine di
+evitare problematiche riguardanti:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Availability in caso di uno o più nodi mancanti</li>
+<li>Availability a fronte di indisponibilità di una server farm</li>
+<li>Distribuzione geografica dei nodi su più server farm</li>
+<li>Availability a fronte di failure, inclusa disponibilità dei dati in lettura e scrittura</li>
+<li>Continuità di servizio e Throughput di scrittura</li>
+</ul>
+</div></blockquote>
+<p>Il <strong>teorema di Brewer</strong> (CAP) afferma che non è possibile fornire contemporaneamente:
+<strong>Consistency</strong>, <strong>Availability</strong> e tolleranza al <strong>Partizionamento di rete</strong>.</p>
+<p>Questo significa che qualora si volesse ottenere Availability dei nodi e tolleranza al
+partizionamento di rete si dovrà rinunciare alla consistenza delle letture.
+In caso in cui si volesse avere consistenza delle lettura si dovrà invece localizzare
+le stesse e si andrà quindi a perdere in availability qualora fallissero i nodi su cui
+si è localizzato le letture stesse.</p>
+<p>Siccome nei sistemi distribuiti il network partitioning non è evitabile, il seguente documento
+prenderà in considerazione due casi:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Deploy su un singolo data center (quindi in assenza di network partitioning)</li>
+<li>Deploy su più data center</li>
+</ul>
+</div></blockquote>
+<p>La soluzione più comune ( qualora non si attuasse la distribuzione geografica dei nodi ) è di avere
+più data center, ma con uno dei due considerato <em>principale</em>. Questo permette il recovery dei
+dati dal secondario in caso di fallimento dell’intero data center, senza introdurre problemi legati
+al partizionamento di rete.</p>
+<div class="section" id="availability-a-fronte-di-failure-inclusa-disponibilita-dei-dati-in-lettura-e-scrittura">
+<h2>Availability a fronte di failure, inclusa disponibilità dei dati in lettura e scrittura<a class="headerlink" href="#availability-a-fronte-di-failure-inclusa-disponibilita-dei-dati-in-lettura-e-scrittura" title="Permalink to this headline">¶</a></h2>
+<p>L’availability di MongoDB è ottenuta tramite l’uso dei <strong>Replica Sets</strong>,
+all’interno di un replica set è presente un nodo <em>primario</em>, che è quello incaricato delle
+scritture ed uno o più nodi secondari.</p>
+<p>La disponibilità dei dati in lettura è data dalla presenza di più nodi all’interno del replica
+set. Tutti i nodi sono in grado di fornire risposte alle letture qualora l’applicazione sia
+configurata con preferenza di lettura: <strong>primaryPreferred</strong>, <strong>secondary</strong>, <strong>secondaryPreferred</strong>,
+<strong>nearest</strong>.</p>
+<p>In caso quindi di fallimento di uno qualunque di questi nodi,  se l’applicazione indica una
+delle sopra indicate configurazioni di lettura potrà leggere da un altro nodo disponibile.</p>
+<p>Nel caso in cui invece le preferenze di lettura siano configurate come <strong>primary</strong>,
+i dati non saranno disponibili in lettura fino al termine del processo di elezione del nuovo
+primary.</p>
+<p>La disponibilità dei dati in scrittura, è vincolata alla disponibilità
+di un nodo primary.  Qualora il nodo primario venisse a mancare il sistema elegge
+automaticamente tramite votazione dei membri il nuovo nodo primario.</p>
+<dl class="docutils">
+<dt>Il processo può richiedere in tutto tra i 20 ed i 60 secondi divisi in:</dt>
+<dd><ul class="first last simple">
+<li>10-30 Secondi per accorgersi che il primario è venuto a mancare</li>
+<li>10-30 Secondi per decidere quale nodo deve prendere il suo posto.</li>
+</ul>
+</dd>
+</dl>
+<p>Durante questo lasso di tempo le richieste di scrittura non potranno essere soddisfatte e
+<em>le applicazioni dovranno gestire gli errori di scrittura riprovando dopo un certo delay</em>.</p>
+</div>
+<div class="section" id="availability-in-caso-di-uno-o-piu-nodi-mancanti">
+<h2>Availability in caso di uno o più nodi mancanti<a class="headerlink" href="#availability-in-caso-di-uno-o-piu-nodi-mancanti" title="Permalink to this headline">¶</a></h2>
+<p>Qualora un nodo secondario venisse a mancare, come anticipato precedentemente,
+il comportamento dipenderà dalle preferenze  di lettura.</p>
+<p>Qualora il nodo primario venisse a mancare il sistema eleggerà automaticamente un nuovo primary
+tramite votazione dei membri.</p>
+<dl class="docutils">
+<dt>L’algoritmo di elezione del nuovo primario si basa su tre parametri:</dt>
+<dd><ol class="first last arabic simple">
+<li>La latenza dell’oplog (quale dei nodi è più avanti nell’oplog)</li>
+<li>Qualità della connessione tra i nodi</li>
+<li>Priorità assegnata al nodo ( i nodi a <strong>priority 0</strong> non possono mai diventare primari )</li>
+</ol>
+</dd>
+</dl>
+<p>Ogni nodo di default può emettere <strong>1 voto</strong>, il nodo che ottiene più voti diventerà il nuovo primary.</p>
+<p>E` facile capire come questo processo sia efficace,
+ma vincolato alla capacità di trovarsi in maggioranza da parte dei nodi.</p>
+<p>Nel caso in cui metà dei nodi che nel replica set <em>(ES: 2 su 4)</em> non sia disponibile i rimanenti
+non riescono a formare una maggioranza (sono solo metà) e quindi si pongono in sola lettura in
+quanto incapaci di eleggere un primario.</p>
+<p>Questa problematica può essere evitata garantendo che sia sempre possibile votare a maggioranza
+per il numero di fallimenti che si vuole supportare.
+Ad esempio, invece di installare 4 nodi se ne potrebbero installare 5,
+così anche qualora ne cadessero 2 ne restano più della metà in piedi.</p>
+<p>In generale vale la regola che una chiara maggioranza di nodi devono essere in grado di contattarsi,
+quindi il numero di nodi dovrebbe essere sempre dispari e può supportare il down di
+<strong>(N - 1) / 2 nodi</strong>, dove <strong>N</strong> è il numero totale di nodi.</p>
+</div>
+<div class="section" id="availability-in-caso-di-indisponibilita-di-una-server-farm">
+<h2>Availability in caso di indisponibilità di una server farm<a class="headerlink" href="#availability-in-caso-di-indisponibilita-di-una-server-farm" title="Permalink to this headline">¶</a></h2>
+<p>In questo caso valgono in generale le regole applicate al replica set.</p>
+<p>In caso di indisponibilità di un data center o armadi deve essere sempre possibile garantire
+una maggioranza <em>(quindi più di metà dei nodi devono potersi parlare)</em>,
+altrimenti il replica set non sarà in grado eleggere il nuovo primary in modo corretto.</p>
+<p>Prendendo l’esempio che Il replica set sia distribuito equamente
+<em>(ES: 4 nodi divisi in 2 su 2 data center)</em> e si può considerare cosa capiterebbe se sganciasse
+dalla rete il secondo data center. In questo caso, anche se tutti i nodi sono vivi,
+non sono in grado di votare a maggioranza perché riescono a contattarsi solo tra minoranze.
+In questo caso si porranno quindi tutti e 4 i nodi in sola lettura in quanto incapaci
+di determinare una maggioranza anche se sono tutti vivi.</p>
+<p>Per ovviare la problema sarebbe necessario sia disponibile un terzo data center con 1 nodo,
+così anche in caso di caduta/irraggiungibilità di 1 data center gli altri due potrebbero
+contattarsi e formare una maggioranza.</p>
+<p>Alternativamente si può decidere che uno dei due data center è quello principale e collocare un
+nodo in più su di lui, in questo caso, qualora cadesse il secondo data center, il primo resterebbe
+comunque in maggioranza. Notare che in caso di caduta del primo il cluster si porrebbe comunque in
+sola lettura, ma è comunque una soluzione preferibile al precedente caso in cui qualsiasi dei due
+data center diventasse indisponibile causerebbe l&#8217;assenza del servizio di scrittura.</p>
+<p>In generale vale la regola che una chiara maggioranza di nodi devono essere in grado di contattarsi,
+quindi il numero di data center deve essere sempre dispari e può supportare il down di
+<strong>(N - 1) / 2 data center</strong>, dove <strong>N</strong> è il numero totale data center.</p>
+<p>Il discorso non si applica solo al down effettivo, ma anche in caso di split di rete.</p>
+</div>
+<div class="section" id="replication-read-consistency">
+<span id="read-consistency"></span><h2>Replication Read Consistency<a class="headerlink" href="#replication-read-consistency" title="Permalink to this headline">¶</a></h2>
+<p>In un Replica Set, tutti i client scrivono sul primary e nella configurazione di
+default leggono anche esclusivamente dal primary.
+I nodi secondary sono usati solo per garantire l’affidabilità in caso di fallimento del primary
+e non garantiscono alcun aumento prestazionale.</p>
+<p>Questa configurazione garantisce la consistenza delle letture in quanto si va a
+leggere direttamente dallo stesso nodo che detiene i dati più aggiornati.</p>
+<p>Qualora si decidesse di introdurre la lettura anche dai secondary
+<em>(opzione che può essere configurata nell’applicazione che usa mongodb tramite il driver mongodb)</em>
+è importante tenere a mente che essa garantisce solo una forma di <strong>eventual consistency</strong>. Quindi
+ogni nodo avrà lo stesso stato dei dati solo qualora non fossero fatte scritture.</p>
+<p>Se si vuole raggiungere una forma di <strong>monotonic read consistency</strong> è necessario che la
+configurazione garantisca la lettura di ogni nodo dell’applicazione da un singolo nodo mongodb:
+Se l’istanza dell’applicazione legge dal nodo X deve leggere sempre dal nodo X.</p>
+<p>Se si permettesse la lettura da un qualsiasi nodo si perderebbe la garanzia di
+monotonic read consistency. Ogni nodo potrebbe quindi leggere avanti e indietro nel tempo
+tra due letture diverse in modo randomico in quanto ogni secondary può essere
+ad un momento diverso del tempo.</p>
+<p>Facendo un esempio, se si procede alle seguenti operazioni:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Crea gruppo A</li>
+<li>Crea utente X in gruppo A</li>
+</ol>
+</div></blockquote>
+<p>Nel caso in cui l’applicazione legga sempre dallo stesso nodo,
+nel momento in cui l’utente tenta di effettuare il login, a seconda dello stato di replicazione
+(ha applicato il punto 1, ha applicato il punto 2, non ha ancora applicatio nessuno dei due)
+si potrà ricadere solo nei casi:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Utente non esistente</li>
+<li>Login con successo</li>
+</ol>
+</div></blockquote>
+<p>Nel caso in cui invece l’applicazione legga da tutti i nodi può invece capitare che per
+recuperare l’utente legga prima da un nodo che ha applicato sia il punto 1 che il punto 2 e poi
+da un nodo che non ha applicato nessuno dei due quando deve recuperare il gruppo dell’utente.
+In questo caso probabilmente l’applicazione andrebbe in crash in quanto riuscirebbe a verificare
+utente e password, ma poi non a recuperarne il gruppo.</p>
+<p>Qualora si volesse scalare le letture sui secondary (e ci fosse più di un secondary) è bene
+assegnare ogni processo dell’applicazione ad un secondary e fargli fare fallback sul primary
+solo qualora  il secondary non fosse disponibile.
+Questo garantirebbe che le letture siano monotone, anche se tra indietro nel tempo.</p>
+<p>Per fare ciò si può assegnare ad ognuno dei nodi un tag diverso
+<em>(tranne il primary che li dovrà avere tutti)</em> e configurare il driver in
+<strong>secondaryPreferred</strong> limitandolo poi al <strong>tag del nodo</strong> da cui deve leggere.
+In questo modo si garantirebbe che il client legga sempre dallo stesso secondary e possa
+fare fallback sul primary qualora il secondary venisse a mancare. In caso di caduta del nodo
+primario tuttavia è necessario rimuovere dello stesso i tags e riassegnarli manualmente
+al nuovo primario una volta eletto.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A causa della complessità necessaria a garantire consistenza dei dati è preferibile scalare
+tramite l&#8217;uso dello <strong>sharding</strong> piuttosto che ricorrere alla lettura dai secondary. Nel
+caso dello sharding si potrà effettuare letture e scritture solo sui primary, garantendo così
+la consistenza ed aumentare le performance in quanto ogni shard dovrà elaborare una minor
+quantità di dati.</p>
+</div>
+</div>
+<div class="section" id="continuita-di-servizio-e-throughput-di-scrittura">
+<h2>Continuità di servizio e Throughput di scrittura<a class="headerlink" href="#continuita-di-servizio-e-throughput-di-scrittura" title="Permalink to this headline">¶</a></h2>
+<p>La continuità di servizio può essere fornita tramite l’uso di <strong>Write Concern</strong> e di un data center
+separato che detiene dei nodi che non hanno potere di voto <em>(votes 0)</em> ed hanno <em>priority 0</em>.</p>
+<p>Questo, come visto nella sezione <strong>Availability in caso di indisponibilità di una server farm</strong>,
+permette di garantire che in caso di fallimento di un singolo nodo ci sia sempre la capacità
+di eleggere un nuovo primary che è sempre dislocato tra quelli del datacenter primario,
+facendo così comportare il cluster come se non esistesse il secondo datacenter.</p>
+<p>Il secondo datacenter sarà quindi usato solo a scopo di recovery dei dati e ripristino del servizio,
+tuttavia per poter fare ciò è necessario che questo detenga i dati aggiornati.</p>
+<p>Questo deve essere ottenuto tramite l’uso del parametro <strong>Write Concern</strong> e richiede quindi
+interventi lato applicativo.</p>
+<p>Il numero di nodi nel secondo data center deve essere pari almeno alla metà dei nodi
+del <em>primo data center + 1</em>. Supponendo quindi che il primo data center abbia 3 nodi,
+il secondo dovrebbe averne 2.
+Impostando poi il write concern pari al numero di nodi nel <em>primo data center + 1</em> si garantirà
+che almeno uno dei nodi del secondo data center abbia il dato aggiornato all’ultimo istante sempre.</p>
+<p>Questo permette di recuperare poi dal secondo data center i dati in caso di una
+procedura di disaster recovery.</p>
+<p>Quando si imposta il valore write concern e si decide il numero di nodi da dislocare sul secondo
+data center è importante tenere in considerazione i seguenti fattori:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Il WriteConcern deve essere sempre inferiore al numero totale di nodi, altrimenti in caso
+di fallimento di 1 o più nodi le scritture non potrebbero più eseguirsi.</li>
+<li>Il WriteConcern deve essere sempre superiore al numero di nodi nel primo data center
+altrimenti non ci sarebbe la garanzia che il dato sia stato scritto anche sul
+secondo data center</li>
+<li>Il numero di nodi sul secondo data center deve essere sempre inferiore al numero
+di nodi sul primo, così che in caso di fallimento del secondo data center o di
+split di rete sia comunque sempre possibile eleggere una maggioranza all’interno
+del primo data center mantenendolo così operativo.</li>
+</ul>
+</div></blockquote>
+<img alt="_images/mongo-continuita.png" src="_images/mongo-continuita.png" />
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Non è possibile ovviare ai primi due punti usando il Write Concern <strong>majority</strong> in
+quanto la maggioranza è sempre soddisfatta dal data center primario da solo, quindi
+non garantirebbe la replicazione dei dati sul secondo data center.</p>
+</div>
+<p>Il fatto di richiedere l’incremento del WriteConcern ha ovviamente un impatto diretto sulle
+performance di scrittura, in quanto per ogni scrittura è necessario attendere
+che il dato sia stato replicato anche su quel numero di nodi.
+Specialmente nel caso della replicazione su un secondo data center questo rallentamento
+può essere molto alto a causa della latenza di rete.</p>
+<p>Qualora le read preference non fosse <em>primary</em> solitamente si vuole ricorrere anche all’uso
+del tagging per tagliare fuori i nodi del secondo data center dalle letture ed evitare
+un rallentamento causato dalle richieste ad una zona geografica diversa.</p>
+<p>Il tagging può essere usato anche per dichiarare un write concern custom che richieda che il dato
+sia scritto in almeno 1 nodo di ciasciuno dei due data center, riducendo così la lentezza
+di scrittura nel caso migliore (ma non nel caso peggiore in cui il dato si replichi sul secondo
+data center solo dopo tuti i nodi del primo).</p>
+</div>
+<div class="section" id="distribuzione-geografica-dei-nodi-su-piu-server-farm">
+<h2>Distribuzione geografica dei nodi su più server farm<a class="headerlink" href="#distribuzione-geografica-dei-nodi-su-piu-server-farm" title="Permalink to this headline">¶</a></h2>
+<p>La distribuzione geografica dei nodi su data center diversi con localizzazione
+delle lettura in base alla prossimità dei nodi è fornita da mongodb tramite
+l’uso della read preference <strong>nearest</strong>.</p>
+<p>Qualora si trattasse di un sistema in sharding, ogni server farm deve disporre di
+un suo mongos ed i client devono collegarsi al mongos della loro zona geografica,
+in quanto la preferenza di lettura dal nodo più vicino in questo caso vuole dire
+<em>il più vicino al mongos</em>, non il più vicino al client.</p>
+<p>Tuttavia l’uso di questa preferenza introduce alcune problematiche che vanno a
+ledere la robustezza dell’architettura:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">La lettura nearest sceglierà il nodo più vicino.
+Questo può portare alla perdita di consistenza in quanto non è detto che
+lo stesso nodo sia scelto due volte di seguito. Questa problematica può essere
+mitigata, ma non annullata con i seguenti accorgimenti:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Uso di 1 solo nodo locale per ogni replica set, questo fa sì che
+il client predilsica sempre lo stesso nodo e vada sugli altri solo
+in caso di fallimento dello stesso garantendo così la consistenza
+in caso di sistema interamente funzionante</li>
+<li>Localizzazione delle letture a livello di client.
+Il client stesso deve fare riuso delle stesso connessioni (connection pooling)
+e sostituirle solo in caso di fallimento del nodo.
+In questo modo si avrà consistenza nelle letture fino al fallimento del nodo “scelto”.</li>
+</ol>
+</div></blockquote>
+</li>
+<li><p class="first">Le scritture avvengono comunque sul nodo primary, per il vincolo antecedente
+il nodo primary non potrà risiedere sempre sullo stesso data center dell’applicazione.
+Di conseguenza le scritture subiranno un degrado di performance per scrivere sul
+nodo in un altra server farm</p>
+</li>
+<li><p class="first">Le scritture devono avvenire con Write Concern alto per garantire disaster recovery,
+di conseguenza comunque le scritture saranno molto più lente rispetto ad un deploy
+iteramente localizzato in quando dovranno distribuirsi tra nodi su più server farm diverse.</p>
+</li>
+</ul>
+</div></blockquote>
+<img alt="_images/mongo-geo.png" src="_images/mongo-geo.png" />
+<p>In generale per la distribuzione geografica dei nodi valgono tutte le regole applicate nel
+caso di più data center abbinate alle problematiche di read consistency in quanto per forza
+di cose si leggerà da uno o più nodi slave dovendo applicare la lettura nearest.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Best Practices per Availability e Consistenza</a><ul>
+<li><a class="reference internal" href="#availability-a-fronte-di-failure-inclusa-disponibilita-dei-dati-in-lettura-e-scrittura">Availability a fronte di failure, inclusa disponibilità dei dati in lettura e scrittura</a></li>
+<li><a class="reference internal" href="#availability-in-caso-di-uno-o-piu-nodi-mancanti">Availability in caso di uno o più nodi mancanti</a></li>
+<li><a class="reference internal" href="#availability-in-caso-di-indisponibilita-di-una-server-farm">Availability in caso di indisponibilità di una server farm</a></li>
+<li><a class="reference internal" href="#replication-read-consistency">Replication Read Consistency</a></li>
+<li><a class="reference internal" href="#continuita-di-servizio-e-throughput-di-scrittura">Continuità di servizio e Throughput di scrittura</a></li>
+<li><a class="reference internal" href="#distribuzione-geografica-dei-nodi-su-piu-server-farm">Distribuzione geografica dei nodi su più server farm</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="start_script.html"
+                        title="previous chapter">Script di avvio</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sysadminnotes.html"
+                        title="next chapter">Note per la gestione del cluster MongoDB</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/availability.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="sysadminnotes.html" title="Note per la gestione del cluster MongoDB"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="start_script.html" title="Script di avvio"
+             >previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, AXANT.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

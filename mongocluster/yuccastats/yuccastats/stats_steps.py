@@ -121,23 +121,10 @@ def step_metadata_totals(stats, **kwargs):
     }
     """
     db_support = get_support_db()
-
-    try:
-        smart_objects_count = db_support['stream'].aggregate([
-            {'$project': {'sensors': '$streams.stream.components.element.phenomenon'}},
-            {'$unwind': '$sensors'},
-            {'$group': {'_id': 1, 'count': {'$sum': 1}}}
-        ])['result'][0]['count']
-    except (IndexError, KeyError):
-        logging.getLogger('steps.step_metadata_totals').exception(
-            'Missing expected details in aggregation framework answer'
-        )
-        smart_objects_count = -1
-
     stats['lifetime'].update({
         'total_tenants': db_support['tenant'].count(),
         'total_streams': db_support['stream'].count(),
-        'total_smart_objects': smart_objects_count
+        'total_smart_objects': len(db_support['stream'].distinct('streams.stream.idVirtualEntity'))
     })
     return stats, kwargs
 

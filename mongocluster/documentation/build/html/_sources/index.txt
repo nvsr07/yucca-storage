@@ -19,6 +19,9 @@ Contenuto:
     backup
     reviewMongoDBOutEventAdaptorType
     aggregation
+    start_script
+    availability
+    sysadminnotes
 
 Indices and tables
 ==================

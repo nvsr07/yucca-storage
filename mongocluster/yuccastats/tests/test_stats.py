@@ -78,7 +78,7 @@ class TestStatisticsSteps(object):
         stats, __ = step_metadata_totals({'lifetime': {}})
         assert stats['lifetime'] == {'total_tenants': 2,
                                      'total_streams': 0,
-                                     'total_smart_objects': -1}, stats
+                                     'total_smart_objects': 0}, stats
 
     def test_stream_frequency_without_streams(self):
         stats, __ = step_stream_frequencies({'lifetime': {}})
@@ -262,7 +262,7 @@ class TestStatisticsStepsWithStreams(object):
         stats, __ = step_metadata_totals({'lifetime': {}})
         assert stats['lifetime'] == {'total_tenants': 2,
                                      'total_streams': 2,
-                                     'total_smart_objects': 3}, stats
+                                     'total_smart_objects': 1}, stats
 
     def test_stream_frequencies(self):
         stats, __ = step_stream_frequencies({'lifetime': {}})

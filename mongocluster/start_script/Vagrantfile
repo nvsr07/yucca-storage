@@ -1,0 +1,96 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+  config.vm.define "node1" do |node1|
+    node1.vm.box_check_update = false
+    node1.vm.box = "chef/centos-6.5"
+    node1.vm.network "public_network", ip: "10.102.67.51", bridge: "eth0"
+    node1.vm.provision "file", source: "./scripts", destination: "~/"
+    node1.vm.provision "file", source: "./configuration_files", destination: "~/"
+    node1.vm.provision "file", source: "./supporting_files/mongodb.repo", destination: "~/mongodb.repo"
+    node1.vm.provision "file", source: "./supporting_files/init_replica.js", destination: "~/init_replica.js"
+    node1.vm.provision "file", source: "./supporting_files/add_shards.js", destination: "~/add_shards.js"
+    node1.vm.provision :shell, inline: "sudo cp /home/vagrant/mongodb.repo /etc/yum.repos.d/mongodb.repo"
+    node1.vm.provision :shell, inline: "rm /home/vagrant/mongodb.repo"
+    node1.vm.provision :shell, inline: "sudo yum install -y mongodb-org"
+    node1.vm.provision :shell, inline: "sudo cp configuration_files/* /etc/"
+    node1.vm.provision :shell, inline: "rm -r /home/vagrant/configuration_files/"
+    node1.vm.provision :shell, inline: "sudo cp /home/vagrant/scripts/* /etc/init.d/"
+    node1.vm.provision :shell, inline: "rm -r /home/vagrant/scripts/"
+    node1.vm.provision :shell, inline: "sudo mkdir -p /data/db/mongoconf"
+    node1.vm.provision :shell, inline: "sudo mkdir -p /data/db/mongod"
+    node1.vm.provision :shell, inline: "sudo chown -R mongod:mongod /data/db/"
+    node1.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongoconf"
+    node1.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongod"
+    node1.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongos"
+    node1.vm.provision :shell, inline: "sudo chkconfig mongoconf on"
+    node1.vm.provision :shell, inline: "sudo chkconfig mongod on"
+    node1.vm.provision :shell, inline: "sudo chkconfig mongos on"
+    node1.vm.provision :shell, inline: "sudo service mongoconf start"
+    node1.vm.provision :shell, inline: "sudo service mongod start"
+    node1.vm.provision :shell, inline: "mongo 10.102.67.51:10000/admin /home/vagrant/init_replica.js"
+  end
+
+  config.vm.define "node2" do |node2|
+    node2.vm.box_check_update = false
+    node2.vm.box = "chef/centos-6.5"
+    node2.vm.network "public_network", ip: "10.102.67.52", bridge: "eth0"
+    node2.vm.provision "file", source: "./scripts", destination: "~/"
+    node2.vm.provision "file", source: "./configuration_files", destination: "~/"
+    node2.vm.provision "file", source: "./supporting_files/mongodb.repo", destination: "~/mongodb.repo"
+    node2.vm.provision "file", source: "./supporting_files/init_replica.js", destination: "~/init_replica.js"
+    node2.vm.provision "file", source: "./supporting_files/add_shards.js", destination: "~/add_shards.js"
+    node2.vm.provision :shell, inline: "sudo cp /home/vagrant/mongodb.repo /etc/yum.repos.d/mongodb.repo"
+    node2.vm.provision :shell, inline: "rm /home/vagrant/mongodb.repo"
+    node2.vm.provision :shell, inline: "sudo yum install -y mongodb-org"
+    node2.vm.provision :shell, inline: "sudo cp configuration_files/* /etc/"
+    node2.vm.provision :shell, inline: "rm -r /home/vagrant/configuration_files/"
+    node2.vm.provision :shell, inline: "sudo cp /home/vagrant/scripts/* /etc/init.d/"
+    node2.vm.provision :shell, inline: "rm -r /home/vagrant/scripts/"
+    node2.vm.provision :shell, inline: "sudo mkdir -p /data/db/mongoconf"
+    node2.vm.provision :shell, inline: "sudo mkdir -p /data/db/mongod"
+    node2.vm.provision :shell, inline: "sudo chown -R mongod:mongod /data/db/"
+    node2.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongoconf"
+    node2.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongod"
+    node2.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongos"
+    node2.vm.provision :shell, inline: "sudo chkconfig mongoconf on"
+    node2.vm.provision :shell, inline: "sudo chkconfig mongod on"
+    node2.vm.provision :shell, inline: "sudo chkconfig mongos on"
+    node2.vm.provision :shell, inline: "sudo service mongoconf start"
+    node2.vm.provision :shell, inline: "sudo service mongod start"
+    node2.vm.provision :shell, inline: "mongo 10.102.67.52:10000/admin /home/vagrant/init_replica.js"
+  end
+
+  config.vm.define "node3" do |node3|
+    node3.vm.box_check_update = false
+    node3.vm.box = "chef/centos-6.5"
+    node3.vm.network "public_network", ip: "10.102.67.53", bridge: "eth0"
+    node3.vm.provision "file", source: "./scripts", destination: "~/"
+    node3.vm.provision "file", source: "./configuration_files", destination: "~/"
+    node3.vm.provision "file", source: "./supporting_files/mongodb.repo", destination: "~/mongodb.repo"
+    node3.vm.provision "file", source: "./supporting_files/init_replica.js", destination: "~/init_replica.js"
+    node3.vm.provision "file", source: "./supporting_files/add_shards.js", destination: "~/add_shards.js"
+    node3.vm.provision :shell, inline: "sudo cp /home/vagrant/mongodb.repo /etc/yum.repos.d/mongodb.repo"
+    node3.vm.provision :shell, inline: "sudo yum install -y mongodb-org"
+    node3.vm.provision :shell, inline: "rm /home/vagrant/mongodb.repo"
+    node3.vm.provision :shell, inline: "sudo cp configuration_files/* /etc/"
+    node3.vm.provision :shell, inline: "rm -r /home/vagrant/configuration_files/"
+    node3.vm.provision :shell, inline: "sudo cp /home/vagrant/scripts/* /etc/init.d/"
+    node3.vm.provision :shell, inline: "rm -r /home/vagrant/scripts/"
+    node3.vm.provision :shell, inline: "sudo mkdir -p /data/db/mongoconf"
+    node3.vm.provision :shell, inline: "sudo mkdir -p /data/db/mongod"
+    node3.vm.provision :shell, inline: "sudo chown -R mongod:mongod /data/db/"
+    node3.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongoconf"
+    node3.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongod"
+    node3.vm.provision :shell, inline: "sudo chmod +x /etc/init.d/mongos"
+    node3.vm.provision :shell, inline: "sudo chkconfig mongoconf on"
+    node3.vm.provision :shell, inline: "sudo chkconfig mongod on"
+    node3.vm.provision :shell, inline: "sudo chkconfig mongos on"
+    node3.vm.provision :shell, inline: "sudo service mongoconf start"
+    node3.vm.provision :shell, inline: "sudo service mongod start"
+    node3.vm.provision :shell, inline: "mongo 10.102.67.53:10000/admin /home/vagrant/init_replica.js"
+  end
+
+end

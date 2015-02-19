@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Note per la gestione del cluster MongoDB &mdash; CSI MongoDB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CSI MongoDB 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Best Practices per Availability e Consistenza" href="availability.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="availability.html" title="Best Practices per Availability e Consistenza"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="note-per-la-gestione-del-cluster-mongodb">
+<h1>Note per la gestione del cluster MongoDB<a class="headerlink" href="#note-per-la-gestione-del-cluster-mongodb" title="Permalink to this headline">¶</a></h1>
+<p>Di seguito sono riportate alcune note e procedure di utilità durante la gestione di un cluster
+mongodb.</p>
+<div class="section" id="oplog-consumption-estimation">
+<h2>OpLog Consumption Estimation<a class="headerlink" href="#oplog-consumption-estimation" title="Permalink to this headline">¶</a></h2>
+<p>La <strong>OpLog Window</strong> è la definizione di quanto tempo ci va per fare un giro completo
+dell&#8217;oplog. Quindi quanto tempo un nodo del sistema può restare sganciato dal replica set
+essendo poi capace di riagganciarsi.</p>
+<p>Qualora l&#8217;oplog non sia ancora stato consumato interamente si può calcolare
+le informazioni riguardanti il consumo ed il tempo rimanente dello stesso tramite
+il seguente script:</p>
+<div class="highlight-python"><div class="highlight"><pre>#!/bin/bash
+MONGOPATH=&quot;/opt/mongodb/bin/mongo --port 27018&quot;
+
+$MONGOPATH --eval &#39;
+    var oplog_speed = db.getReplicationInfo()[&quot;usedMB&quot;] / db.getReplicationInfo()[&quot;timeDiff&quot;];
+    var oplog_size = db.getReplicationInfo()[&quot;logSizeMB&quot;];
+    var oplog_size_left = oplog_size - db.getReplicationInfo()[&quot;usedMB&quot;];
+    var oplog_time = db.getReplicationInfo()[&quot;timeDiffHours&quot;];
+
+    print(&quot;&quot;);
+    print(&quot;OpLog Window: &quot;, (oplog_size / oplog_speed / 3600).toFixed(2), &quot;Hours&quot;);
+    print(&quot;OpLog Time: &quot;, oplog_time, &quot;Hours&quot;);
+    print(&quot;OpLog Size: &quot;, oplog_size.toFixed(2), &quot;MB&quot;);
+    print(&quot;OpLog Size Left: &quot;, oplog_size_left.toFixed(2), &quot;MB&quot;);
+    print(&quot;OpLog Throughput: &quot;, oplog_speed.toFixed(3), &quot;MB/sec&quot;);
+    print(&quot;OpLog TimeLeft: &quot;, (oplog_size_left / oplog_speed / 3600).toFixed(2), &quot;Hours Left&quot;);
+&#39;
+</pre></div>
+</div>
+<p>I risultati riportati sono:</p>
+<blockquote>
+<div><ul class="simple">
+<li>OpLog Window -&gt; Quanto tempo è stimato per un giro completo di oplog.</li>
+<li>OpLog Time -&gt; Quanto tempo è registrato nell&#8217;oplog
+(Se l&#8217;oplog è già consumato questo valore corrisponde alla <strong>OpLog Window</strong>).</li>
+<li>OpLog Size -&gt; La dimensione allocata per l&#8217;oplog.</li>
+<li>OpLog Size Left -&gt; Quanto dell&#8217;oplog resta ancora disponibile, se l&#8217;oplog è già consumato
+questo valore sarà ~0.</li>
+<li>OpLog Throughput -&gt; Quale è la velocità con cui è consumato l&#8217;oplog.</li>
+<li>OpLog TimeLeft -&gt; Quanto tempo è rimanente nell&#8217;OpLog, se l&#8217;oplog è già consumato
+questo valore sarà ~0.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="scaling-orizzontale-vs-scaling-verticale">
+<h2>Scaling Orizzontale VS Scaling Verticale<a class="headerlink" href="#scaling-orizzontale-vs-scaling-verticale" title="Permalink to this headline">¶</a></h2>
+<p>Al fine di massimizzare l&#8217;efficacia dello scaling verticale è necessario
+scaricare il lavoro di lettura sui nodi secondary del replica set.
+Come indicato in <a class="reference internal" href="availability.html#read-consistency"><em>Replication Read Consistency</em></a> questo introduce una serie di
+problematiche di consistenza che rendono difficile lo sviluppo dell&#8217;applicazione.</p>
+<p>Per questa ragione si consiglia di mantenere le letture dei nodi in <tt class="docutils literal"><span class="pre">primary</span></tt>
+ed usare le repliche solo a fini di affidabilità.</p>
+<p>Qualora la potenza di calcolo del <tt class="docutils literal"><span class="pre">primary</span></tt> non fosse più sufficiente a sottostare
+al carico si suggerisce di scalare orizzontalmente con nuovi shard, che permetterebbe
+di distribuire il carico tra i nodi senza dover rinunciare alla consistenza.</p>
+<p>Indicatori di carico:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Page Faults</strong> -&gt; Se il numero di page fault è elevato, è indice che la
+RAM del sistema non è sufficiente a reggere il carico.</li>
+<li><strong>Load Average</strong> -&gt; Se il load average è superiore al numero di CPU disponibili
+nella macchina è indice che la CPU non è sufficiente a reggere il carico.</li>
+<li><strong>Disk IO</strong> -&gt; Qualora il throuput di io su disco si avvicini a quello monitorato
+sul disco usando <tt class="docutils literal"><span class="pre">mongoperf</span></tt> è indice che le performance del disco non sono
+sufficienti. Verificare prima se l&#8217;elevato uso del disco non è in verità dovuto
+ad un insufficiente quantitativo di RAM.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="procedura-migrazione-config-server">
+<h2>Procedura Migrazione Config Server<a class="headerlink" href="#procedura-migrazione-config-server" title="Permalink to this headline">¶</a></h2>
+<p>Di seguito è descritta la procedura per migrare le instanze di configurazione
+su nuove macchine. La procedura richiede il down del cluster qualora gli hostname
+dei config server cambino:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Disabilitare il bilanciatore</li>
+<li>Spendere il config server da migrare</li>
+<li>Copiare i dati del config server da migrare sul nuovo server (anche con scp va bene)</li>
+<li>Avviare il nuovo config server</li>
+<li>Spegnere tutti i nodi del cluster: mongos, mongod, config</li>
+<li>Aggiornare l&#8217;opzione <tt class="docutils literal"><span class="pre">configDB</span></tt> nei mongos sostituendo il nuovo config</li>
+<li>Riavviare tutto il cluster</li>
+<li>Riaccendere il bilanciatore.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="mongodb-suggested-deploy">
+<h2>MongoDB Suggested Deploy<a class="headerlink" href="#mongodb-suggested-deploy" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/mongodb-deploy.png" src="_images/mongodb-deploy.png" />
+<p>Il deploy suggerito include <strong>3 Shard</strong> ognuno costituito da un Replica Set di <strong>5 nodi</strong>,
+di cui <strong>4 operativi</strong> ed <strong>1 di backup</strong> (il nodo di backup è descritto in <a class="reference internal" href="backup.html#backup-replica"><em>Replica per Backup</em></a>).</p>
+<p>Questo consente di scalare sul carico tramite l&#8217;uso dello shard e fornisce l&#8217;High Availability
+fino ad un massimo di <em>2 nodi non disponibili</em> grazie all&#8217;operato del nodo di backup
+<em>anche come arbitro del replica set</em>.</p>
+<p>Il numero di shard minimo consigliato è 3 in quanto generalmente si ha un beneficio in termini
+di performance superati i 2 shard. Finché il numero di shard è 2 o inferiore i benifici dello
+sharding sono solitamente superati dal carico di lavoro extra dovuto allo shard stesso.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Note per la gestione del cluster MongoDB</a><ul>
+<li><a class="reference internal" href="#oplog-consumption-estimation">OpLog Consumption Estimation</a></li>
+<li><a class="reference internal" href="#scaling-orizzontale-vs-scaling-verticale">Scaling Orizzontale VS Scaling Verticale</a></li>
+<li><a class="reference internal" href="#procedura-migrazione-config-server">Procedura Migrazione Config Server</a></li>
+<li><a class="reference internal" href="#mongodb-suggested-deploy">MongoDB Suggested Deploy</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="availability.html"
+                        title="previous chapter">Best Practices per Availability e Consistenza</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/sysadminnotes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="availability.html" title="Best Practices per Availability e Consistenza"
+             >previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, AXANT.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
