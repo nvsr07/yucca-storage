@@ -64,7 +64,6 @@ public class InstallCepService {
 				 * Update of the streams
 				 * 
 				 */
-
 				DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportStream());
 
 				DBObject findStream = new BasicDBObject();
@@ -77,7 +76,7 @@ public class InstallCepService {
 				Long idDataset = null;
 				DBObject oldStream =null;
 				if(cursor.hasNext()){
-					
+
 					oldStream = cursor.next();
 
 					col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
@@ -143,12 +142,105 @@ public class InstallCepService {
 
 				if(newStream.getPublishStream()!=0){
 					StoreService.publishStore("1.0", apiName, "admin");
-				
+
 					String appName = "userportal_"+newStream.getCodiceTenant();
 					StoreService.addSubscriptionForTenant(apiName,appName);
 				}
 			}
+		}catch (Exception e) {
+			e.printStackTrace();
+			System.err.println(e);
+			return JSON.parse("{KO:1}").toString();
+		}
+		return JSON.parse("{OK:1}").toString();
+	}
 
+	@POST
+	@Path("/deleteDatasetLogically")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String deleteDatasetLogically(final String datasetInput) throws UnknownHostException {
+
+		mongo = MongoSingleton.getMongoClient();
+
+		Gson gson = JSonHelper.getInstance();
+		log.info("Json Mapping");
+		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
+		try{
+			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
+			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
+
+				Stream newStream = pojoStreams.getStreams().getStream();
+				DB db = mongo.getDB(Config.getInstance().getDbSupport());
+
+				/*
+				 * Update of the streams
+				 * 
+				 */
+
+				DBCollection colStream = db.getCollection(Config.getInstance().getCollectionSupportStream());
+
+				DBObject findStream = new BasicDBObject();
+				findStream.put("idStream", newStream.getIdStream());
+
+				DBCursor cursor = colStream.find(findStream);
+
+				Long idDataset = null;
+				DBObject oldStream =null;
+				if(cursor.hasNext()){
+
+					oldStream = cursor.next();
+
+					DBObject configData = (DBObject) oldStream.get("configData");
+					
+					DBObject configDataUpdate = new BasicDBObject();
+					configDataUpdate.put("$set",new BasicDBObject("configData.deleted", 1));
+					colStream.update(findStream, configDataUpdate,false,true);	
+
+					BasicDBObject findDatasets = new BasicDBObject();
+
+					idDataset = ((Number)configData.get("idDataset")).longValue();
+					findDatasets.put("idDataset",idDataset);
+
+					DBObject updateConfig = new BasicDBObject();
+
+					updateConfig.put("$set",new BasicDBObject("configData.current", 0));
+					updateConfig.put("$set",new BasicDBObject("configData.deleted", 1));
+
+					DBCollection colDataset  = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+
+					colDataset.update(findDatasets, updateConfig,false,true);		
+
+					DBCollection colApi  = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+
+					BasicDBObject findApis = new BasicDBObject();
+					findApis.put("dataset.idDataset",idDataset);
+
+					colApi.update(findApis, configDataUpdate,false,true);	
+
+					DBCursor datasets = colDataset.find(findDatasets);
+					while(datasets.hasNext()){
+						String apiName = (String) datasets.next().get("datasetCode");
+						if(apiName!=null){
+							apiName+="_odata";
+							try{
+								StoreService.removeStore("1.0", apiName, "admin");
+							}catch(Exception ex){
+								log.info("Impossible to remove "+apiName+ex.getMessage());
+							}
+						}
+						break;
+					}
+				}
+				String tenant = newStream.getCodiceTenant();
+				String sensor = newStream.getCodiceVirtualEntity();
+				String stream = newStream.getCodiceStream();
+				String apiName= tenant+"."+sensor+"_"+stream+"_stream";
+				try{
+					StoreService.removeStore("1.0", apiName, "admin");
+				}catch(Exception ex){
+					log.info("Impossible to remove "+apiName+ex.getMessage());
+				}
+			}
 		}catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
@@ -181,5 +273,4 @@ public class InstallCepService {
 		}
 		return id;
 	}
-
 }

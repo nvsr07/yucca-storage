@@ -526,9 +526,6 @@ public class MetadataService {
 
 			updateDatasetResponse.setMetadata(newMetadata);
 			
-			
-			
-			
 			/*
 			 * Create api in the store
 			 */
