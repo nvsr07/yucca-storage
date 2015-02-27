@@ -1,10 +1,10 @@
 import argparse
 import traceback
 import pprint
-from iotimporter.reader import FileReader
+from iotimporter.reader import FileReader, READ_STREAMED_JSON
 from iotimporter.mongodb import setup_connection
 from iotimporter.converter import convert
-from iotimporter.utils import sensor_from_name, frequency2fps
+from iotimporter.utils import frequency2fps, sensor_and_streamcode_for_data
 from iotimporter.writer import insert_dataset, InsertError
 
 
@@ -27,10 +27,15 @@ def main():
                         type=int,
                         help='Size of insertion group for Bulk Write, more than 1 makes insertion '
                              'faster but error reporting more unreliable in case of errors.')
-    parser.add_argument('-m', '--inmemory',
-                        action='store_true',
-                        help='Read data in memory instead of reading it line by line, '
-                             'might solve some issues with JSON Parser and speeds up the '
+    parser.add_argument('-p', '--parser',
+                        default='streamed',
+                        choices=['inmemory', 'generated', 'streamed'],
+                        help='Parser that has to be used to read the json file, '
+                             '"streamed" means that the input is a stream of JSON Documents. '
+                             '"inmemory" and "generated" both read a dictionary of documents '
+                             'where the key is the _id of the document and the value is the'
+                             'document itself. "inmemory" is a faster parser that might solve'
+                             'some issues with JSON Parser and speeds up the '
                              'import process at the cost of as much memory as the whole dataset')
     parser.add_argument('--sensordata',
                         action='store_true',
@@ -44,8 +49,17 @@ def main():
 
     opts = parser.parse_args()
 
+    if opts.parser == 'streamed':
+        generative_parser = READ_STREAMED_JSON
+    elif opts.parser == 'inmemory':
+        generative_parser = False
+    elif opts.parser == 'generated':
+        generative_parser = True
+    else:
+        raise ValueError('Unsupported parser type: "%s"', opts.parser)
+
     setup_connection(opts.mongourl, opts.tenantid)
-    reader = FileReader(opts.file, generate=not opts.inmemory)
+    reader = FileReader(opts.file, generate=generative_parser)
 
     if opts.sensordata:
         run_sensordata(reader)
@@ -75,7 +89,11 @@ def run_insertion(reader, skip, bulk_size, limit):
 
 def run_sensordata(reader):
     measure = next(reader.read_entries(skip=0))
-    sensor, stream_code = sensor_from_name(measure['Name'])
+    sensor, stream_code = sensor_and_streamcode_for_data(measure)
+    if sensor is None or stream_code is None:
+        print_red("Unable to get sensor id and streamCode, they are not provided by "
+                  "document or filename and they cannot be created by 'Name' field.")
+        return
 
     sensor_data = {
         'location': {

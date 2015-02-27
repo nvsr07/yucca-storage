@@ -1,11 +1,16 @@
-from .utils import sensor_from_name, timedict_to_datetime
+from .utils import sensor_and_streamcode_for_data, datetime_for_data
 from .mongodb import get_support_db, get_tenant_code
 
 
 def convert(input_dict):
     """Converts data from CSP .json export to the MongoDB measures schema"""
-    sensor, stream_code = sensor_from_name(input_dict['Name'])
-    time = timedict_to_datetime(input_dict['Timestamp'])
+    sensor, stream_code = sensor_and_streamcode_for_data(input_dict)
+
+    if sensor is None or stream_code is None:
+        raise ValueError('"sensor" and "streamCode" cannot be generated from "Name" '
+                         'nor they are provided by filename.')
+
+    time = datetime_for_data(input_dict)
     id_dataset, dataset_version = lookup_dataset(get_tenant_code(), stream_code, sensor)
 
     measure = {

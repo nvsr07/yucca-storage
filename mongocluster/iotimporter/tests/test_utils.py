@@ -3,7 +3,8 @@ import os
 from datetime import datetime
 from itertools import islice
 from nose.tools import raises
-from iotimporter.utils import frequency2fps, sensor_from_name, timedict_to_datetime
+from iotimporter.utils import frequency2fps, sensor_from_name, timedict_to_datetime, \
+    mongodate_to_datetime, datetime_for_data
 from iotimporter.mongodb import get_support_db, get_measures_collection_names, setup_connection, \
     _clear_mongodb_configuration, _get_tenant_default_db_name
 
@@ -65,7 +66,7 @@ class TestDateTimeConversion(object):
             "usec": 0
         }
 
-        assert timedict_to_datetime(d) == datetime(2014, 10, 2, 13, 30)
+        assert timedict_to_datetime(d) == datetime(2014, 10, 2, 11, 30)
 
     def test_with_usec(self):
         d = {
@@ -73,7 +74,34 @@ class TestDateTimeConversion(object):
             "usec": 1000000
         }
 
-        assert timedict_to_datetime(d) == datetime(2014, 10, 2, 13, 30, 1)
+        assert timedict_to_datetime(d) == datetime(2014, 10, 2, 11, 30, 1)
+
+    def test_with_mongodate(self):
+        d = {
+            "$date": 1378840842000
+        }
+
+        #2013-09-10 19:20:42
+        converted_date = mongodate_to_datetime(d)
+        assert converted_date == datetime(2013, 9, 10, 19, 20, 42), converted_date
+
+    def test_datetime_for_data(self):
+        data1 = {
+            'Timestamp': {
+                "sec": 1378840842,
+                "usec": 0
+            }
+        }
+
+        data2 = {
+            'Timestamp': {
+                "$date": 1378840842000
+            }
+        }
+
+        value1 = datetime_for_data(data1)
+        value2 = datetime_for_data(data2)
+        assert value1 == value2
 
 
 class TestCollectionLookupUtilities(object):
