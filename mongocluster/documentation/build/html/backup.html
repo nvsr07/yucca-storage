@@ -103,7 +103,7 @@ modo di backup tramite:</p>
 <div class="section" id="processo-di-backup">
 <h2>Processo di Backup<a class="headerlink" href="#processo-di-backup" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="stop-balancer">
-<h3>Stop Balancer<a class="headerlink" href="#stop-balancer" title="Permalink to this headline">¶</a></h3>
+<span id="id2"></span><h3>Stop Balancer<a class="headerlink" href="#stop-balancer" title="Permalink to this headline">¶</a></h3>
 <p>Indipendentemente dalla tecnica di backup che si decide di usare (snapshot LVM, mongodump,
 copia delle macchine Virtuali, etc...) è sempre necessario procedere allo stop del balancer
 prima di effettuare il backup.</p>
@@ -171,7 +171,7 @@ di riagganciarsi al replica set una volta terminato il backup.</p>
 </div>
 </div>
 <div class="section" id="start-balancer">
-<h3>Start Balancer<a class="headerlink" href="#start-balancer" title="Permalink to this headline">¶</a></h3>
+<span id="id3"></span><h3>Start Balancer<a class="headerlink" href="#start-balancer" title="Permalink to this headline">¶</a></h3>
 <p>Al termine del backup è necessario ricordarsi di riavviare il balancer con:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">sh</span><span class="o">.</span><span class="n">setBalancerState</span><span class="p">(</span><span class="n">true</span><span class="p">)</span>
 <span class="n">sh</span><span class="o">.</span><span class="n">startBalancer</span><span class="p">()</span>
@@ -179,6 +179,232 @@ di riagganciarsi al replica set una volta terminato il backup.</p>
 </div>
 <p>Se il balancer non viene riavviato il sistema continuerà a funzionare, ma lo sharding
 sarà di fatto disattivato.</p>
+</div>
+</div>
+<div class="section" id="restore-dei-dati">
+<h2>Restore dei Dati<a class="headerlink" href="#restore-dei-dati" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="restore-di-un-singolo-dato">
+<h3>Restore di un singolo dato<a class="headerlink" href="#restore-di-un-singolo-dato" title="Permalink to this headline">¶</a></h3>
+<p>Il dump del database salva lo stato di tutti i DB e le collections in una struttura
+ad albero sul file system corrispondente alla struttura che hanno nel DBMS stesso:</p>
+<div class="highlight-python"><div class="highlight"><pre>.
+├── admin
+│   ├── system.indexes.bson
+│   ├── system.users.bson
+│   ├── system.users.metadata.json
+│   ├── system.version.bson
+│   └── system.version.metadata.json
+├── DB_smartowear
+│   ├── archivedata.bson
+│   ├── archivedata.metadata.json
+│   ├── archivemeasures.bson
+│   ├── archivemeasures.metadata.json
+│   ├── data.bson
+│   ├── data.metadata.json
+│   ├── measures.bson
+│   ├── measures.metadata.json
+│   ├── media.bson
+│   ├── media.metadata.json
+│   ├── social.bson
+│   ├── social.metadata.json
+│   └── system.indexes.bson
+├── DB_SUPPORT
+│   ├── allineamento.bson
+│   ├── allineamento.metadata.json
+│   ├── api.bson
+│   ├── api.metadata.json
+│   ├── metadata.bson
+│   ├── metadata.metadata.json
+│   ├── statistics.bson
+│   ├── statistics.metadata.json
+│   ├── stream.bson
+│   ├── stream.metadata.json
+│   ├── system.indexes.bson
+│   ├── tenant.bson
+│   └── tenant.metadata.json
+</pre></div>
+</div>
+<p>Ad ogni directory corrisponde un <tt class="docutils literal"><span class="pre">db</span></tt>, ad ogni file corrisponde una <tt class="docutils literal"><span class="pre">collection</span></tt>.
+Avendo accesso al dump del database in formato <tt class="docutils literal"><span class="pre">mongodump</span></tt> è possibile visualizzare
+lo stato di un singolo documento all&#8217;interno del dump con il comando:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ bsondump tenant.bson --filter &#39;{&quot;idTenant&quot;: 20}&#39;
+{ &quot;_id&quot; : ObjectId( &quot;547ee7cd84aed9afa0584cfc&quot; ), &quot;idTenant&quot; : 20, &quot;tenantName&quot; : &quot;ondeuwc&quot;, &quot;tenantDescription&quot; : &quot;ondeuwc&quot;, &quot;tenantCode&quot; : &quot;ondeuwc&quot;, &quot;dataCollectionName&quot; : &quot;data&quot;, &quot;dataCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;measuresCollectionName&quot; : &quot;measures&quot;, &quot;measuresCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;socialCollectionName&quot; : &quot;social&quot;, &quot;socialCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;mediaCollectionName&quot; : &quot;media&quot;, &quot;mediaCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;archiveDataCollectionName&quot; : &quot;archivedata&quot;, &quot;archiveDataCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;archiveMeasuresCollectionName&quot; : &quot;archivemeasures&quot;, &quot;archiveMeasuresCollectionDb&quot; : &quot;DB_ondeuwc&quot; }
+17 objects found
+1 objects processed
+</pre></div>
+</div>
+<p>All&#8217;interno del parametro <tt class="docutils literal"><span class="pre">filter</span></tt> è possibile specificare la query da eseguire
+per filtrare i documenti all&#8217;interno del dump e recuperare solo il documento corretto.</p>
+<p>Nel caso in cui si trattasse di un nodo di uno <strong>shard</strong> il documento potrebbe non essere
+presente nel dump e bisogna procedere a cercarno anche nei backup degli altri nodi.</p>
+<p>Questo procedimento permette il ripristino di uno o più documenti senza bisogno di procedere al
+ripristino dell&#8217;intero database.</p>
+</div>
+<div class="section" id="restore-del-replicaset">
+<span id="recover-replicaset"></span><h3>Restore del ReplicaSet<a class="headerlink" href="#restore-del-replicaset" title="Permalink to this headline">¶</a></h3>
+<p>Qualora si volesse procedere al restore dell&#8217;intero replicaSet è necessario procedere alla
+configurazione da 0 del nodo primario in cui poi vanno importati i dati con il comando
+<tt class="docutils literal"><span class="pre">mongorestore</span></tt>.</p>
+<p>Una volta completata l&#8217;importazione dei dati, <strong>avviare il nodo come replica singola</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongod --replSet REPLICASET_NAME
+</pre></div>
+</div>
+<p>E collegandosi al nodo, inizializzare quindi il replicaSet:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; rs.initiate()
+</pre></div>
+</div>
+<p>Questo inizializzerà un <em>oplog</em> e ci permetterà di usare il nodo come sorgente
+da cui copiare i dati per gli sltri nodi del replicaset.</p>
+<div class="section" id="restore-dei-nodi-secondary">
+<span id="recover-replica-secondaries"></span><h4>Restore dei nodi Secondary<a class="headerlink" href="#restore-dei-nodi-secondary" title="Permalink to this headline">¶</a></h4>
+<p>Successivamente procedere al lock del nodo da cui si copiano i dati tramite il comando:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; db.fsyncLock()
+</pre></div>
+</div>
+<p>A questo punto si può procedere alla copia della directory in cui il nodo salva il dati
+(di default <tt class="docutils literal"><span class="pre">/data/db</span></tt>) su ognuno dei sistemi che saranno membri dello stesso replica set.</p>
+<p>Una volta completata la copia sui nodi secondary procedere allo sblocco del nodo da
+cui si sono copiati i dati con il comando:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; db.fsyncUnlock()
+{ &quot;ok&quot; : 1, &quot;info&quot; : &quot;unlock completed&quot; }
+</pre></div>
+</div>
+<p>A questo punto si può procedere all&#8217;avvio del nuovo nodo:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongod --replSet REPLICASET_NAME
+</pre></div>
+</div>
+<p>e collegandosi al primary, alla loro aggiunta al replica set:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; rs.add(&quot;LPulsar:27019&quot;)
+{ &quot;ok&quot; : 1 }
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="restore-di-un-nodo-del-replicaset">
+<h3>Restore di un Nodo del replicaSet<a class="headerlink" href="#restore-di-un-nodo-del-replicaset" title="Permalink to this headline">¶</a></h3>
+<p>Per il restore di un singolo nodo del replicaSet, il processo di ripristino dal backup
+richiede la modifica manuale dell&#8217;OpLog.</p>
+<p>Per questa ragione si consiglia di non procedere dal backup, ma di copiare i dati da uno
+dei nodi <strong>secondary</strong> ancora funzionanti tramite gli step descritti nel
+<a class="reference internal" href="#recover-replica-secondaries"><em>Restore dei nodi Secondary</em></a>.</p>
+</div>
+<div class="section" id="restore-dei-configserver">
+<h3>Restore dei ConfigServer<a class="headerlink" href="#restore-dei-configserver" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="restore-di-un-singolo-config">
+<h4>Restore di un singolo config<a class="headerlink" href="#restore-di-un-singolo-config" title="Permalink to this headline">¶</a></h4>
+<p>Nel caso di ripristino di un solo config server, come per il restore di un nodo del replicaSet è
+consigliato procedere copiando i dati da un altro config server tramite il processo:</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">db.fsyncUnlock()</span></tt></li>
+<li>copia di <tt class="docutils literal"><span class="pre">/data/db</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">db.fsyncUnlock()</span></tt></li>
+</ul>
+</div></blockquote>
+<p>come descritto in <a class="reference internal" href="#recover-replica-secondaries"><em>Restore dei nodi Secondary</em></a>.</p>
+<p>Prima di effettuare la procedura è consiglibile spegnere il bilanciatore con i comandi descritti
+in <a class="reference internal" href="#stop-balancer"><em>Stop Balancer</em></a> e successivamente riaccenderlo con i comandi descritti in
+<a class="reference internal" href="#start-balancer"><em>Start Balancer</em></a>. Comunque il bilanciamento non sarebbe potuto procedere a causa del
+comando <tt class="docutils literal"><span class="pre">db.fsyncLock()</span></tt> che viene lanciato sul config server da cui si vogliono copiare i dati.</p>
+<p>Successivamente se è cambiato l&#8217;indirizza delle macchina andrà aggiornata anche l&#8217;opzione
+<tt class="docutils literal"><span class="pre">configDB</span></tt> nella configurazione dei <em>mongos</em> sostituendo il nuovo config.</p>
+</div>
+<div class="section" id="restore-di-tutti-i-config">
+<h4>Restore di tutti i config<a class="headerlink" href="#restore-di-tutti-i-config" title="Permalink to this headline">¶</a></h4>
+<p>Se invece devono essere ripristinati tutti e tre i config server si può procedere all&#8217;import
+dei dati dal backup effettuato con <tt class="docutils literal"><span class="pre">mongodump</span></tt> per ognuno dei config server lanciando
+suoi config server stessi:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongorestore --port 63000 --oplogReplay config_backup
+</pre></div>
+</div>
+<p>Successivamente se è cambiato l&#8217;indirizzo delle macchine andrà aggiornata anche l&#8217;opzione
+<tt class="docutils literal"><span class="pre">configDB</span></tt> nella configurazione dei <em>mongos</em> sostituendo il nuovo config.</p>
+</div>
+</div>
+<div class="section" id="restore-del-cluster">
+<h3>Restore del Cluster<a class="headerlink" href="#restore-del-cluster" title="Permalink to this headline">¶</a></h3>
+<p>Al fine di ripristinare lo stato dell&#8217;intero Cluster è necessario disporre del backup di:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Un nodo per ognuno dei replicaSet membri dello shard</li>
+<li>Un <em>Config</em> server</li>
+</ul>
+</div></blockquote>
+<p>Supponendo che i backup dei tutti i nodi siano stati ottenuti con la procedura descritta
+in questo documento e quindi con il comando <tt class="docutils literal"><span class="pre">mongodump</span> <span class="pre">--oplog</span></tt> è possibile ripristinare
+lo stato di tutto il cluster procedendo nel seguente modo:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">Ripristinare dal backup del <em>replicaSet1</em> il primo replicaset seguendo le
+istruzioni indicate in <a class="reference internal" href="#recover-replicaset"><em>Restore del ReplicaSet</em></a>.</p>
+</li>
+<li><p class="first">Ripristinare dal backup del <em>replicaSet2</em> il secondo replicaset seguendo le
+istruzioni indicate in <a class="reference internal" href="#recover-replicaset"><em>Restore del ReplicaSet</em></a>.</p>
+</li>
+<li><p class="first">Se ci sono ulteriori shard per ognuno di essi ripete i punti 1/2</p>
+</li>
+<li><p class="first">Procedere al ripristino di <em>1 configserver</em> tramite <tt class="docutils literal"><span class="pre">mongorestore</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongod --configsvr --port 63000
+$ mongorestore --port 63000 --oplogReplay config_backup
+</pre></div>
+</div>
+</li>
+<li><p class="first">Collegarsi al configserver e procedere all&#8217;aggiornamento degli ip dei replicaset
+qualora essi fossero cambiati:</p>
+<div class="highlight-python"><div class="highlight"><pre>configsvr&gt; use config
+configsvr&gt; db.shards.find().pretty()
+{
+    &quot;_id&quot; : &quot;replshard1&quot;,
+    &quot;host&quot; : &quot;replshard1/10.0.1.10:10000,10.0.1.11:11000,10.0.1.12:12000&quot;
+}
+{
+    &quot;_id&quot; : &quot;replshard2&quot;,
+    &quot;host&quot; : &quot;replshard2/10.0.1.20:20000,10.0.1.21:21000,10.0.1.22:22000&quot;
+}
+
+configsvr&gt; db.shards.update({&quot;_id&quot;:&quot;replshard1&quot;},  {$set:{&quot;host&quot;: 127.0.0.1:61000}})
+WriteResult({ &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 })
+
+configsvr&gt; db.shards.update({&quot;_id&quot;:&quot;replshard2&quot;},  {$set:{&quot;host&quot;: &quot;127.0.0.1:62000&quot;}})
+WriteResult({ &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 })
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">al posto di <tt class="docutils literal"><span class="pre">127.0.0.1:61000</span></tt> sarà necessario indicare gli ip dei membri del
+replicaSet nel formato: <tt class="docutils literal"><span class="pre">replicaSetName/IP1:PORT1,IP2:PORT2,IP3:PORT3</span></tt></p>
+</div>
+</li>
+<li><p class="first">A questo punto è possibile copiare i dati del config server su altri 2 nodi
+così da tornare nello stato in cui sono presenti 3 config server seguendo le
+istruzioni indicate su <a class="reference internal" href="#recover-replica-secondaries"><em>Restore dei nodi Secondary</em></a>.</p>
+</li>
+<li><p class="first">Una volta terminato il ripristino dei config server e delle repliche è possibile
+avviare i mongos affinché si aggancino ai nuovi config server e riprendere l&#8217;uso
+del cluster.</p>
+</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="restore-del-cluster-su-una-singola-istanza">
+<h3>Restore del cluster su una singola istanza<a class="headerlink" href="#restore-del-cluster-su-una-singola-istanza" title="Permalink to this headline">¶</a></h3>
+<p>Nal claso in cui si voglia ripristinare l&#8217;intero cluster su una singola istanza è necessario:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">avviare una nuova istanza <tt class="docutils literal"><span class="pre">mongod</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongod --dbpath /data/tmp_bkp/ --port 30000
+</pre></div>
+</div>
+</li>
+<li><p class="first">ripristinare ogni dump (1 per shard):</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongorestore --port 30000 speed1bkp/
+$ mongorestore --port 30000 speed2bkp/
+$ mongorestore --port 30000 speed3bkp/
+</pre></div>
+</div>
+</li>
+</ol>
+</div></blockquote>
 </div>
 </div>
 </div>
@@ -199,6 +425,22 @@ sarà di fatto disattivato.</p>
 <li><a class="reference internal" href="#backup-config-server">Backup Config Server</a></li>
 <li><a class="reference internal" href="#backup-shard-members">Backup Shard Members</a></li>
 <li><a class="reference internal" href="#start-balancer">Start Balancer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#restore-dei-dati">Restore dei Dati</a><ul>
+<li><a class="reference internal" href="#restore-di-un-singolo-dato">Restore di un singolo dato</a></li>
+<li><a class="reference internal" href="#restore-del-replicaset">Restore del ReplicaSet</a><ul>
+<li><a class="reference internal" href="#restore-dei-nodi-secondary">Restore dei nodi Secondary</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#restore-di-un-nodo-del-replicaset">Restore di un Nodo del replicaSet</a></li>
+<li><a class="reference internal" href="#restore-dei-configserver">Restore dei ConfigServer</a><ul>
+<li><a class="reference internal" href="#restore-di-un-singolo-config">Restore di un singolo config</a></li>
+<li><a class="reference internal" href="#restore-di-tutti-i-config">Restore di tutti i config</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#restore-del-cluster">Restore del Cluster</a></li>
+<li><a class="reference internal" href="#restore-del-cluster-su-una-singola-istanza">Restore del cluster su una singola istanza</a></li>
 </ul>
 </li>
 </ul>

@@ -12,6 +12,11 @@ iotimporter
 
 tool per importazione dati forniti dall'archivio del csp
 
+yuccastats
+==========
+
+Tool per il recupero di statistiche sui dati presenti nella piattaforma
+
 vagrant
 =======
 

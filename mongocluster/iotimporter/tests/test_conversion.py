@@ -81,7 +81,7 @@ class BaseConversionTests(object):
         get_support_db().stream.save(dataset_info)
 
         dataset_info = {
-            'idStream': -1,
+            'idStream': -2,
             'streamCode': 'STREAMCODE',
             'streamName': 'Lightning',
             'configData': {
@@ -109,7 +109,7 @@ class BaseConversionTests(object):
                 'visibility': 'public',
                 'saveData': 1,
                 'fabricControllerOutcome': "Code: ok; Descr: BHO;    Operaction: inst;      ",
-                'deploymentVersion': -1,
+                'deploymentVersion': -2,
                 'deploymentStatusCode': 'inst',
                 'deploymentStatusDesc': 'installed',
                 'publishStream': 0,

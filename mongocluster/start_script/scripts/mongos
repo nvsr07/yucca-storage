@@ -49,7 +49,7 @@ start()
     ulimit -m unlimited
     ulimit -u 32000
 
-    MONGOS_STARTED=""
+    MONGOS_STARTED=42
 
     while [ $MONGOS_STARTED -ne 0 -a $RETRIES -ne 0 ]
     do

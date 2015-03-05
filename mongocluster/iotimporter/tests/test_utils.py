@@ -81,7 +81,6 @@ class TestDateTimeConversion(object):
             "$date": 1378840842000
         }
 
-        #2013-09-10 19:20:42
         converted_date = mongodate_to_datetime(d)
         assert converted_date == datetime(2013, 9, 10, 19, 20, 42), converted_date
 
