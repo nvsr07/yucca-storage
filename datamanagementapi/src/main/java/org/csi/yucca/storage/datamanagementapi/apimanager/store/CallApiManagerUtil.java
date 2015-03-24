@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +27,7 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 import org.junit.Assert;
 
 public class CallApiManagerUtil {
@@ -259,8 +261,9 @@ public class CallApiManagerUtil {
 		String add = properties.getProperty(values + "address");
 		out(values + "address -> " + add);
 		HttpPost httppost =  new HttpPost(add);
-		
+		Charset chars = Charset.forName("UTF-8");
 	    MultipartEntityBuilder reqEntity = MultipartEntityBuilder.create();
+	    reqEntity.setCharset(chars);
 	    reqEntity.setMode(HttpMultipartMode.STRICT);
 		
 		if (add != null) {
@@ -287,7 +290,7 @@ public class CallApiManagerUtil {
 					else if (key.toLowerCase().equals("password"))
 						outV = "******";
 					outf("%-20s %-30s %s",k,key,outV);
-					reqEntity.addPart(key, new StringBody(val,ContentType.TEXT_PLAIN));
+					reqEntity.addPart(key, new StringBody(val,ContentType.create("text/plain", Charset.forName("UTF-8"))));
 				}
 			}
 			HttpEntity entity = reqEntity.build();
