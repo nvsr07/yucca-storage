@@ -1,12 +1,7 @@
 #!/bin/sh
-###########################################################
-#	Sintax: compact.sh [prod][preprod]                    #
-###########################################################
-#
-# NOTA:
-# durante le operazioni di compattazione, l'archivio dei file è inconsistente
-# è necessario non eseguire attività di analytics durante la compattazione.
-################################################################################
+#######################################################################
+#	Sintax: contarecord.sh [prod|preprod] output_file [new|append     #
+#######################################################################
 
 #
 # get all dataset in a given collection and call the compacting funcion
