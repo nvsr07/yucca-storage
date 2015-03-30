@@ -12,6 +12,8 @@ import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamTags;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Streamchild;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Streams;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Tag;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.TenantList;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.TenantsShare;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Componenti;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Position;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
@@ -169,6 +171,32 @@ public class StreamFiller {
 				sti.setComponents(components );
 			}			
 		}
+		
+		
+		if(stream.getTenantsShare()!=null){
+			TenantsShare tenantsShare = new TenantsShare();
+			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList> lista = stream.getTenantsShare().getTenantList();
+			if(lista!=null){
+				 List<TenantList> listaTenant = new ArrayList<TenantList>();
+				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList tenant : lista){
+					
+					TenantList newTen = new TenantList();
+					newTen.setIdTenant(tenant.getIdTenant());
+					newTen.setIsOwner(tenant.getIsOwner());
+					newTen.setTenantCode(tenant.getTenantCode());
+					newTen.setTenantDescription(tenant.getTenantDescription());
+					newTen.setTenantName(tenant.getTenantName());					
+					listaTenant.add(newTen);					
+				}
+				tenantsShare.setTenantList(listaTenant);
+			}
+			sti.setTenantsShare(tenantsShare);
+		}
+		
+		
+		
+		
+		
 		streams.setStream(sti);
 		strOut.setStreams(streams );
 

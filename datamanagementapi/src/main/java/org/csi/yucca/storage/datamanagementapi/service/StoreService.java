@@ -12,6 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
@@ -20,6 +21,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
+import org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -171,7 +173,16 @@ public class StoreService {
 
 		}else{
 			addStream.setVar("visibility","restricted");
-			addStream.setVar("roles",newStream.getCodiceTenant()+"_subscriber");
+			String ruoli ="";
+			
+			if(newStream.getTenantsShare()!=null && newStream.getTenantsShare().getTenantList()!=null){
+				for(TenantList t : newStream.getTenantsShare().getTenantList()){
+					if(!ruoli.equals(""))
+						ruoli+=",";
+					ruoli+=t.getTenantCode()+"_subscriber";
+				}
+			}
+			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");
 		}
 
@@ -194,20 +205,20 @@ public class StoreService {
 		addStream.setVar("P","");
 		addStream.setVar("endpoint",Config.getInstance().getBaseApiUrl()+apiName);
 		addStream.setVar("desc",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
-		addStream.setVar("copiright",newStream.getCopyright()!=null ? escapeHtml4(newStream.getCopyright()) :"");
+		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
 		addStream.setVar("extra_isApi","false");
-		addStream.setVar("extra_apiDescription",newStream.getVirtualEntityName()!=null ? escapeHtml4(newStream.getVirtualEntityName()) :"");
-		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? escapeHtml4(newStream.getCodiceTenant()) :"");
-		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? escapeHtml4(newStream.getCodiceStream()) :"");
+		addStream.setVar("extra_apiDescription",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
+		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? newStream.getCodiceTenant() :"");
+		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? newStream.getCodiceStream() :"");
 		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
-		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? escapeHtml4(newStream.getNomeTenant()) :"");
-		addStream.setVar("licence",newStream.getLicence()!=null ? escapeHtml4(newStream.getLicence()) :"");
-		addStream.setVar("disclaimer",newStream.getDisclaimer()!=null ? escapeHtml4(newStream.getDisclaimer()) :"");
+		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? newStream.getNomeTenant() :"");
+		addStream.setVar("licence",newStream.getLicence()!=null ? newStream.getLicence() :"");
+		addStream.setVar("disclaimer",newStream.getDisclaimer()!=null ? newStream.getDisclaimer() :"");
 
-		addStream.setVar("virtualEntityCode",newStream.getCodiceVirtualEntity()!=null ? escapeHtml4(newStream.getCodiceVirtualEntity()) :"");
-		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? escapeHtml4(newStream.getVirtualEntityName()) :"");
-		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? escapeHtml4(newStream.getVirtualEntityDescription()) :"");
+		addStream.setVar("virtualEntityCode",newStream.getCodiceVirtualEntity()!=null ? newStream.getCodiceVirtualEntity() :"");
+		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
+		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
 		String tags = "";
 
 		if(newStream.getDomainStream()!=null){
@@ -219,7 +230,7 @@ public class StoreService {
 		}
 
 
-		addStream.setVar("tags",escapeHtml4(tags));
+		addStream.setVar("tags",tags);
 		addStream.run();
 
 		return apiFinalName;
@@ -272,13 +283,13 @@ public class StoreService {
 		addStream.setVar("copiright",metadata.getInfo().getCopyright()!=null ? metadata.getInfo().getCopyright() :"");
 
 		addStream.setVar("extra_isApi","false");
-		addStream.setVar("extra_apiDescription",metadata.getInfo().getDescription()!=null ? escapeHtml4(metadata.getInfo().getDescription()) :"");
-		addStream.setVar("codiceTenant",metadata.getConfigData().getTenantCode()!=null ? escapeHtml4(metadata.getConfigData().getTenantCode()) :"");
+		addStream.setVar("extra_apiDescription",metadata.getInfo().getDescription()!=null ? metadata.getInfo().getDescription() :"");
+		addStream.setVar("codiceTenant",metadata.getConfigData().getTenantCode()!=null ? metadata.getConfigData().getTenantCode() :"");
 		addStream.setVar("codiceStream","");
 		addStream.setVar("nomeStream","");
-		addStream.setVar("nomeTenant",metadata.getConfigData().getTenantCode()!=null ? escapeHtml4(metadata.getConfigData().getTenantCode()) :"");
-		addStream.setVar("licence",metadata.getInfo().getLicense()!=null ? escapeHtml4(metadata.getInfo().getLicense()) :"");
-		addStream.setVar("disclaimer",metadata.getInfo().getDisclaimer()!=null ? escapeHtml4(metadata.getInfo().getDisclaimer()) :"");
+		addStream.setVar("nomeTenant",metadata.getConfigData().getTenantCode()!=null ? metadata.getConfigData().getTenantCode() :"");
+		addStream.setVar("licence",metadata.getInfo().getLicense()!=null ? metadata.getInfo().getLicense() :"");
+		addStream.setVar("disclaimer",metadata.getInfo().getDisclaimer()!=null ? metadata.getInfo().getDisclaimer() :"");
 		addStream.setVar("virtualEntityName","");
 		addStream.setVar("virtualEntityDescription","");
 
@@ -291,7 +302,7 @@ public class StoreService {
 				tags+=","+t.getTagCode();
 		}
 
-		addStream.setVar("tags",escapeHtml4(tags));
+		addStream.setVar("tags",tags);
 		addStream.run();
 
 		return apiFinalName;
@@ -319,7 +330,16 @@ public class StoreService {
 
 		}else{
 			addStream.setVar("visibility","restricted");
-			addStream.setVar("roles",newStream.getCodiceTenant()+"_subscriber");
+			String ruoli ="";
+			
+			if(newStream.getTenantsShare()!=null && newStream.getTenantsShare().getTenantList()!=null){
+				for(TenantList t : newStream.getTenantsShare().getTenantList()){
+					if(!ruoli.equals(""))
+						ruoli+=",";
+					ruoli+=t.getTenantCode()+"_subscriber";
+				}
+			}
+			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");
 		}
 
@@ -342,20 +362,20 @@ public class StoreService {
 		addStream.setVar("P","");
 		addStream.setVar("endpoint",Config.getInstance().getDammiInfo());
 		addStream.setVar("desc",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
-		addStream.setVar("copiright",newStream.getCopyright()!=null ? escapeHtml4(newStream.getCopyright()) :"");
+		addStream.setVar("copiright",newStream.getCopyright()!=null ? newStream.getCopyright() :"");
 
 		addStream.setVar("extra_isApi","false");
-		addStream.setVar("extra_apiDescription",newStream.getVirtualEntityName()!=null ? escapeHtml4(newStream.getVirtualEntityName()) :"");
-		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? escapeHtml4(newStream.getCodiceTenant()) :"");
-		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? escapeHtml4(newStream.getCodiceStream()) :"");
+		addStream.setVar("extra_apiDescription",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
+		addStream.setVar("codiceTenant",newStream.getCodiceTenant()!=null ? newStream.getCodiceTenant() :"");
+		addStream.setVar("codiceStream",newStream.getCodiceStream()!=null ? newStream.getCodiceStream() :"");
 		addStream.setVar("nomeStream",newStream.getNomeStream()!=null ? newStream.getNomeStream() :"");
-		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? escapeHtml4(newStream.getNomeTenant()) :"");
-		addStream.setVar("licence",newStream.getLicence()!=null ? escapeHtml4(newStream.getLicence()) :"");
-		addStream.setVar("disclaimer",newStream.getDisclaimer()!=null ? escapeHtml4(newStream.getDisclaimer()) :"");
+		addStream.setVar("nomeTenant",newStream.getNomeTenant()!=null ? newStream.getNomeTenant() :"");
+		addStream.setVar("licence",newStream.getLicence()!=null ? newStream.getLicence() :"");
+		addStream.setVar("disclaimer",newStream.getDisclaimer()!=null ? newStream.getDisclaimer() :"");
 
-		addStream.setVar("virtualEntityCode",newStream.getCodiceVirtualEntity()!=null ? escapeHtml4(newStream.getCodiceVirtualEntity()) :"");
-		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? escapeHtml4(newStream.getVirtualEntityName()) :"");
-		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? escapeHtml4(newStream.getVirtualEntityDescription()) :"");
+		addStream.setVar("virtualEntityCode",newStream.getCodiceVirtualEntity()!=null ? newStream.getCodiceVirtualEntity() :"");
+		addStream.setVar("virtualEntityName",newStream.getVirtualEntityName()!=null ? newStream.getVirtualEntityName() :"");
+		addStream.setVar("virtualEntityDescription",newStream.getVirtualEntityDescription()!=null ? newStream.getVirtualEntityDescription() :"");
 		String tags = "";
 
 		if(newStream.getDomainStream()!=null){
@@ -367,7 +387,7 @@ public class StoreService {
 		}
 
 
-		addStream.setVar("tags",escapeHtml4(tags));
+		addStream.setVar("tags",tags);
 		addStream.run();
 		return true;
 	}

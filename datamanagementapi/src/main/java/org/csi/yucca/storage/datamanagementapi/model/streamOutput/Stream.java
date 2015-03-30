@@ -1,6 +1,8 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.TenantsShare;
+
 import com.google.gson.annotations.Expose;
 
 public class Stream {
@@ -73,6 +75,8 @@ public class Stream {
     private StreamTags streamTags;
     @Expose
     private VirtualEntityPositions virtualEntityPositions;
+    @Expose
+    private TenantsShare tenantsShare;
 
     /**
      * 
@@ -664,6 +668,14 @@ public class Stream {
 
 	public void setStreamIcon(String streamIcon) {
 		this.streamIcon = streamIcon;
+	}
+
+	public TenantsShare getTenantsShare() {
+		return tenantsShare;
+	}
+
+	public void setTenantsShare(TenantsShare tenantsShare) {
+		this.tenantsShare = tenantsShare;
 	}
 
 }
