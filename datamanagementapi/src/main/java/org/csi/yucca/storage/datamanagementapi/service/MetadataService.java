@@ -144,8 +144,9 @@ public class MetadataService {
 			headerFixedColumn.add("Sensor.Category");
 			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityCategory()));
 
-			if (stream.getStreams().getStream().getVirtualEntityPositions() != null &&stream.getStreams().getStream().getVirtualEntityPositions().getPosition()!=null
-					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition().size()>0) {
+			if (stream.getStreams().getStream().getVirtualEntityPositions() != null
+					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition() != null
+					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition().size() > 0) {
 				headerFixedColumn.add("Sensor.Latitude");
 				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().get(0).getLat()));
 				headerFixedColumn.add("Sensor.Longitude");
@@ -343,8 +344,12 @@ public class MetadataService {
 		}
 		metadata.getInfo().setRegistrationDate(new Date());
 
+		List<SDPBulkInsertException> checkFileToWriteErrors = null;
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
-		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
+		if (csvData != null) {
+			checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
+		}
+
 		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
 			for (SDPBulkInsertException error : checkFileToWriteErrors) {
 				createDatasetResponse.addErrorMessage(new ErrorMessage(error.getErrorCode(), error.getErrorMessage(), error.getErrorDetail()));
@@ -367,7 +372,7 @@ public class MetadataService {
 
 			metadata.getConfigData().setIdTenant(idTenant);
 
-			Metadata metadataCreated = metadataDAO.createMetadata(metadata,null);
+			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 
 			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
 			api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
@@ -377,42 +382,42 @@ public class MetadataService {
 
 			createDatasetResponse.setMetadata(metadataCreated);
 			createDatasetResponse.setApi(apiCreated);
-			
+
 			/*
 			 * Create api in the store
 			 */
 			String apiName = "";
-			try{
-				apiName = StoreService.createApiforBulk(metadata,false);
-			}catch(Exception duplicate){
-				if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+			try {
+				apiName = StoreService.createApiforBulk(metadata, false);
+			} catch (Exception duplicate) {
+				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 					try {
-						apiName = StoreService.createApiforBulk(metadata,true);
+						apiName = StoreService.createApiforBulk(metadata, true);
 					} catch (Exception e) {
 						log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
-				}else{
+				} else {
 					log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
-				} 
+				}
 			}
 			try {
 				StoreService.publishStore("1.0", apiName, "admin");
 
-				String appName = "userportal_"+metadata.getConfigData().getTenantCode();
-				StoreService.addSubscriptionForTenant(apiName,appName);
-
+				String appName = "userportal_" + metadata.getConfigData().getTenantCode();
+				StoreService.addSubscriptionForTenant(apiName, appName);
 
 			} catch (Exception e) {
 				log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 			}
-			
-			
-			try {
-				dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
-			} catch (Exception e) {
-				log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
-				createDatasetResponse.addErrorMessage(new ErrorMessage(e));
-				e.printStackTrace();
+
+			if (csvData != null) {
+				try {
+					dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
+				} catch (Exception e) {
+					log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
+					createDatasetResponse.addErrorMessage(new ErrorMessage(e));
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -525,37 +530,34 @@ public class MetadataService {
 			metadataDAO.createNewVersion(newMetadata);
 
 			updateDatasetResponse.setMetadata(newMetadata);
-			
+
 			/*
 			 * Create api in the store
 			 */
 			String apiName = "";
-			try{
-				apiName = StoreService.createApiforBulk(newMetadata,false);
-			}catch(Exception duplicate){
-				if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+			try {
+				apiName = StoreService.createApiforBulk(newMetadata, false);
+			} catch (Exception duplicate) {
+				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 					try {
-						apiName = StoreService.createApiforBulk(newMetadata,true);
+						apiName = StoreService.createApiforBulk(newMetadata, true);
 					} catch (Exception e) {
 						log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
-				}else{
+				} else {
 					log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
-				} 
+				}
 			}
 			try {
 				StoreService.publishStore("1.0", apiName, "admin");
 
-				String appName = "userportal_"+newMetadata.getConfigData().getTenantCode();
-				StoreService.addSubscriptionForTenant(apiName,appName);
-
+				String appName = "userportal_" + newMetadata.getConfigData().getTenantCode();
+				StoreService.addSubscriptionForTenant(apiName, appName);
 
 			} catch (Exception e) {
 				log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 			}
-			
-						
-			
+
 		} catch (Exception e) {
 			log.debug("[MetadataService::updateMetadata] - ERROR " + e.getMessage());
 			updateDatasetResponse.addErrorMessage(new ErrorMessage(e));
