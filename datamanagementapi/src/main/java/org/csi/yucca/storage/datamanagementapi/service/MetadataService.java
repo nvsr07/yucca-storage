@@ -519,6 +519,7 @@ public class MetadataService {
 			newMetadata.getInfo().setTags(inputMetadata.getInfo().getTags());
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
+			newMetadata.getInfo().setTenantsShare(inputMetadata.getInfo().getTenantsShare());
 
 			int counter = 0;
 			for (Field existingField : newMetadata.getInfo().getFields()) {

@@ -28,6 +28,8 @@ public class Info extends AbstractEntity {
 
 	private Tag tags[];
 	private Field fields[];
+	
+	private TenantsShare tenantsShare;
 
 	public Info() {
 	}
@@ -179,6 +181,14 @@ public class Info extends AbstractEntity {
 
 	public void setIcon(String icon) {
 		this.icon = icon;
+	}
+
+	public TenantsShare getTenantsShare() {
+		return tenantsShare;
+	}
+
+	public void setTenantsShare(TenantsShare tenantsShare) {
+		this.tenantsShare = tenantsShare;
 	}
 
 
