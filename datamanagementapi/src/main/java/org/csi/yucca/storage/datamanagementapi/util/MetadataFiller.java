@@ -11,6 +11,8 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tag;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.TenantList;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.TenantsShare;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Componenti;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Element;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
@@ -64,7 +66,33 @@ public class MetadataFiller {
 		info.setRequestorName(stream.getNomeRichiedente());
 		info.setRequestorSurname(stream.getCognomeRichiedente());
 		info.setVisibility(stream.getVisibility());
-
+		
+		
+		if(stream.getTenantsShare()!=null){
+			TenantsShare tenantsShare = new TenantsShare();
+			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList> lista = stream.getTenantsShare().getTenantList();
+			if(lista!=null){
+				 List<TenantList> listaTenant = new ArrayList<TenantList>();
+				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList tenant : lista){
+					
+					TenantList newTen = new TenantList();
+					newTen.setIdTenant(tenant.getIdTenant().longValue());
+					newTen.setIsOwner(tenant.getIsOwner());
+					newTen.setTenantCode(tenant.getTenantCode());
+					newTen.setTenantDescription(tenant.getTenantDescription());
+					newTen.setTenantName(tenant.getTenantName());					
+					listaTenant.add(newTen);					
+				}
+				TenantList arrayTenant[] = new TenantList[listaTenant.size()];
+				arrayTenant= listaTenant.toArray(arrayTenant);
+				tenantsShare.setTenantList(arrayTenant);
+			}
+			info.setTenantsShare(tenantsShare);
+		}
+		
+		
+		
+		
 		Componenti comp = stream.getComponenti();
 		if(comp!=null){
 			List<Element> elem = comp.getElement();

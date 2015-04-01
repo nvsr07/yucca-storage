@@ -11,7 +11,7 @@ public class TenantList {
     @Expose
     private String tenantName;
     @Expose
-    private Object tenantDescription;
+    private String tenantDescription;
     @Expose
     private String tenantCode;
     @Expose
@@ -58,7 +58,7 @@ public class TenantList {
      * @return
      *     The tenantDescription
      */
-    public Object getTenantDescription() {
+    public String getTenantDescription() {
         return tenantDescription;
     }
 
@@ -67,7 +67,7 @@ public class TenantList {
      * @param tenantDescription
      *     The tenantDescription
      */
-    public void setTenantDescription(Object tenantDescription) {
+    public void setTenantDescription(String tenantDescription) {
         this.tenantDescription = tenantDescription;
     }
 

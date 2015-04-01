@@ -1,8 +1,6 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.TenantsShare;
-
 import com.google.gson.annotations.Expose;
 
 public class Stream {
