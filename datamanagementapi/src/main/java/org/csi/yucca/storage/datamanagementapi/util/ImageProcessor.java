@@ -81,8 +81,14 @@ public class ImageProcessor {
 		if(imageBase64==null || imag==null){
 			imag = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_IMAGE));
 		}
+		
+		BufferedImage combined = new BufferedImage(Constants.DEFAULT_IMAGE_WIDTH, Constants.DEFAULT_IMAGE_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+		Image imageScaled = imag.getScaledInstance(Constants.DEFAULT_IMAGE_WIDTH, Constants.DEFAULT_IMAGE_HEIGHT, Image.SCALE_DEFAULT);
+		// paint both images, preserving the alpha channels
+		Graphics g = combined.getGraphics();
+		g.drawImage(imageScaled, 0, 0, null);
 
-		ImageIO.write(imag, "png", new File(savePath, imageFileName));
+		ImageIO.write(combined, "png", new File(savePath, imageFileName));
 	}
 
 	private boolean mergeImages(String savePath, String baseImageName) throws IOException {
@@ -107,6 +113,6 @@ public class ImageProcessor {
 		g.drawImage(overlayScaled, 0, 0, null);
 
 		// Save as new image
-		return ImageIO.write(combined, "PNG", new File(path, baseImageName));
+		return ImageIO.write(combined, "png", new File(path, baseImageName));
 	}
 }

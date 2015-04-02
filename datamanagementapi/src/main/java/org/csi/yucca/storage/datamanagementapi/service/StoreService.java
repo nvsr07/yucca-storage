@@ -179,6 +179,8 @@ public class StoreService {
 						ruoli+=",";
 					ruoli+=t.getTenantCode()+"_subscriber";
 				}
+			}else{
+				ruoli = newStream.getCodiceTenant()+"_subscriber";
 			}
 			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");
@@ -255,9 +257,24 @@ public class StoreService {
 			addStream.setVar("authType","None");
 		}else{
 			addStream.setVar("visibility","restricted");
-			addStream.setVar("roles",metadata.getConfigData().getTenantCode()+"_subscriber");
+			
+			String ruoli ="";
+			
+			if(metadata.getInfo().getTenantsShare()!=null && metadata.getInfo().getTenantsShare().getTenantList()!=null){
+				for(org.csi.yucca.storage.datamanagementapi.model.metadata.TenantList t : metadata.getInfo().getTenantsShare().getTenantList()){
+					if(!ruoli.equals(""))
+						ruoli+=",";
+					ruoli+=t.getTenantCode()+"_subscriber";
+				}
+			}else{
+				ruoli = metadata.getConfigData().getTenantCode()+"_subscriber";
+			}
+			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");
 		}
+		
+		
+		
 
 		if(update){
 			addStream.setVar("actionAPI","updateAPI");
@@ -336,6 +353,8 @@ public class StoreService {
 						ruoli+=",";
 					ruoli+=t.getTenantCode()+"_subscriber";
 				}
+			}else{
+				ruoli = newStream.getCodiceTenant()+"_subscriber";
 			}
 			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");

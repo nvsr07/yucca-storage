@@ -10,6 +10,8 @@ public class Constants {
 	public static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss.S";
 	public static final int MAX_NUM_ROW_DATA_DOWNLOAD = 10000;
 	public static final String DEFAULT_IMAGE = "smart.png";
+	public static final int DEFAULT_IMAGE_WIDTH = 256;
+	public static final int DEFAULT_IMAGE_HEIGHT = 256;
 	public static final String DEFAULT_ODATA_IMAGE = "odataOverlay.png";
 	
 
