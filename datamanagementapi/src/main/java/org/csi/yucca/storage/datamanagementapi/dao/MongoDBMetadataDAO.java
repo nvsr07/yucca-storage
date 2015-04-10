@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
-import org.csi.yucca.storage.datamanagementapi.service.StoreService;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;

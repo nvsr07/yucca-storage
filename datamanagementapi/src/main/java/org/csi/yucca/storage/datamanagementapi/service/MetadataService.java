@@ -343,6 +343,9 @@ public class MetadataService {
 			}
 		}
 		metadata.getInfo().setRegistrationDate(new Date());
+		
+		
+		
 
 		List<SDPBulkInsertException> checkFileToWriteErrors = null;
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
@@ -372,8 +375,27 @@ public class MetadataService {
 
 			metadata.getConfigData().setIdTenant(idTenant);
 
+			// binary metadata: create a metadata record specific for attachment
+			Metadata binaryMetadata = null;
+			if (metadata.getInfo().getFields() != null) {
+				for (Field field : metadata.getInfo().getFields()) {
+					if(field.getDataType().equals("binary")){
+						binaryMetadata = Metadata.createBinaryMetadata(metadata);
+						break;
+					}
+				}
+			}
+			if(binaryMetadata!=null){
+				Metadata binaryMetadataCreated = metadataDAO.createMetadata(binaryMetadata, null);
+				metadata.getInfo().setBinaryDatasetVersion(binaryMetadataCreated.getDatasetVersion());
+				metadata.getInfo().setBinaryIdDataset(binaryMetadataCreated.getIdDataset());
+			}
+
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 
+
+
+			
 			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
 			api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
 			api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
@@ -427,9 +449,9 @@ public class MetadataService {
 	@POST
 	@Path("/add/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String addDataa(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request)
+	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request)
 			throws NumberFormatException, UnknownHostException {
-		log.debug("[MetadataService::createMetadata] - START");
+		log.debug("[MetadataService::addData] - START");
 
 		String encoding = null;
 		String formatType = null;
@@ -459,7 +481,7 @@ public class MetadataService {
 			e.printStackTrace();
 		}
 
-		log.debug("[MetadataService::createMetadata] - encoding: " + encoding + ", formatType: " + formatType + ", csvSeparator: " + csvSeparator);
+		log.debug("[MetadataService::addData] - encoding: " + encoding + ", formatType: " + formatType + ", csvSeparator: " + csvSeparator);
 		MongoClient mongo = MongoSingleton.getMongoClient();
 		String supportDb = Config.getInstance().getDbSupport();
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
@@ -480,7 +502,7 @@ public class MetadataService {
 			try {
 				dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", existingMetadata);
 			} catch (Exception e) {
-				log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
+				log.error("[MetadataService::addData] - writeFileToMongo ERROR: " + e.getMessage());
 				updateDatasetResponse.addErrorMessage(new ErrorMessage(e));
 				e.printStackTrace();
 			}
@@ -543,10 +565,10 @@ public class MetadataService {
 					try {
 						apiName = StoreService.createApiforBulk(newMetadata, true);
 					} catch (Exception e) {
-						log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+						log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
 				} else {
-					log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
+					log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 				}
 			}
 			try {
@@ -556,7 +578,7 @@ public class MetadataService {
 				StoreService.addSubscriptionForTenant(apiName, appName);
 
 			} catch (Exception e) {
-				log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+				log.error("[MetadataService::updateMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 			}
 
 		} catch (Exception e) {

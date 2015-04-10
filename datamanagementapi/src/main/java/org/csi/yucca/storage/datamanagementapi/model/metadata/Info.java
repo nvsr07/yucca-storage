@@ -2,7 +2,6 @@ package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import java.util.Date;
 
-
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
@@ -27,9 +26,12 @@ public class Info extends AbstractEntity {
 	private String importFileType;
 	private String icon;
 
+	private Long binaryIdDataset;
+	private Integer binaryDatasetVersion;
+
 	private Tag tags[];
 	private Field fields[];
-	
+
 	private TenantsShare tenantsShare;
 
 	public Info() {
@@ -192,6 +194,20 @@ public class Info extends AbstractEntity {
 		this.tenantsShare = tenantsShare;
 	}
 
+	public Long getBinaryIdDataset() {
+		return binaryIdDataset;
+	}
 
+	public void setBinaryIdDataset(Long binaryIdDataset) {
+		this.binaryIdDataset = binaryIdDataset;
+	}
+
+	public Integer getBinaryDatasetVersion() {
+		return binaryDatasetVersion;
+	}
+
+	public void setBinaryDatasetVersion(Integer binaryDatasetVersion) {
+		this.binaryDatasetVersion = binaryDatasetVersion;
+	}
 
 }
