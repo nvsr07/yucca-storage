@@ -610,7 +610,8 @@ public class MetadataService {
 		try {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				sb.append(line);
+				String lineUtf8 = new String (line.getBytes ("iso-8859-1"), "UTF-8");
+				sb.append(lineUtf8);
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
