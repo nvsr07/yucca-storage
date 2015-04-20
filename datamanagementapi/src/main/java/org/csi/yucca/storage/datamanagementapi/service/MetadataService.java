@@ -76,7 +76,8 @@ public class MetadataService {
 
 	@GET
 	@Path("/{tenant}")
-	@Produces(MediaType.APPLICATION_JSON)
+	//@Produces(MediaType.APPLICATION_JSON)
+	@Produces("application/json; charset=UTF-8")
 	public String getAllCurrent(@PathParam("tenant") String tenant) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getAll] - START");
 		MongoClient mongo = MongoSingleton.getMongoClient();
@@ -258,7 +259,8 @@ public class MetadataService {
 
 	@GET
 	@Path("/{tenant}/{datasetCode}")
-	@Produces(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+	@Produces("application/json; charset=UTF-8")
 	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException, UnknownHostException {
 		// select
 		log.debug("[MetadataService::get] - START - datasetCode: " + datasetCode);
