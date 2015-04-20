@@ -3,6 +3,8 @@ package org.csi.yucca.storage.datamanagementapi.service;
 
 
 import java.net.UnknownHostException;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
@@ -19,7 +21,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
-import org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList;
+import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -41,7 +43,7 @@ public class StoreService {
 	@Path("/apiCreateApiStore")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String apiCreateApiStore(final String datasetInput) throws UnknownHostException {
-		
+
 		Gson gson = JSonHelper.getInstance();
 
 		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
@@ -70,8 +72,18 @@ public class StoreService {
 
 				if(newStream.getPublishStream()!=0){
 					publishStore("1.0", apiName, "admin");
-					String appName = "userportal_"+newStream.getCodiceTenant();
-					StoreService.addSubscriptionForTenant(apiName,appName);
+					Set<String> tenantSet = new TreeSet<String>();
+					if(newStream.getTenantssharing()!=null){
+						for( Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()){
+							tenantSet.add(tenantSh.getTenantCode());
+							String appName = "userportal_"+tenantSh.getTenantCode();
+							StoreService.addSubscriptionForTenant(apiName,appName);
+						}						
+					}
+					if(!tenantSet.contains(newStream.getCodiceTenant())){
+						String appName = "userportal_"+newStream.getCodiceTenant();
+						StoreService.addSubscriptionForTenant(apiName,appName);
+					}
 				}
 			}
 
@@ -116,8 +128,18 @@ public class StoreService {
 				String apiName= tenant+"."+sensor+"_"+stream+"_stream";
 				if(newStream.getPublishStream()!=0){
 					publishStore("1.0", apiName, "admin");
-					String appName = "userportal_"+newStream.getCodiceTenant();
-					StoreService.addSubscriptionForTenant(apiName,appName);
+					Set<String> tenantSet = new TreeSet<String>();
+					if(newStream.getTenantssharing()!=null){
+						for( Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()){
+							tenantSet.add(tenantSh.getTenantCode());
+							String appName = "userportal_"+tenantSh.getTenantCode();
+							StoreService.addSubscriptionForTenant(apiName,appName);
+						}						
+					}
+					if(!tenantSet.contains(newStream.getCodiceTenant())){
+						String appName = "userportal_"+newStream.getCodiceTenant();
+						StoreService.addSubscriptionForTenant(apiName,appName);
+					}
 				}
 			}
 
@@ -172,16 +194,18 @@ public class StoreService {
 		}else{
 			addStream.setVar("visibility","restricted");
 			String ruoli ="";
-			
-			if(newStream.getTenantsShare()!=null && newStream.getTenantsShare().getTenantList()!=null){
-				for(TenantList t : newStream.getTenantsShare().getTenantList()){
+
+			if(newStream.getTenantssharing()!=null && newStream.getTenantssharing().getTenantsharing()!=null){
+				for(Tenantsharing t : newStream.getTenantssharing().getTenantsharing()){
 					if(!ruoli.equals(""))
 						ruoli+=",";
 					ruoli+=t.getTenantCode()+"_subscriber";
 				}
-			}else{
-				ruoli = newStream.getCodiceTenant()+"_subscriber";
 			}
+			if(!ruoli.contains(newStream.getCodiceTenant()+"_subscriber")){
+				ruoli += newStream.getCodiceTenant()+"_subscriber";
+			}
+
 			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");
 		}
@@ -257,24 +281,27 @@ public class StoreService {
 			addStream.setVar("authType","None");
 		}else{
 			addStream.setVar("visibility","restricted");
-			
+
 			String ruoli ="";
-			
-			if(metadata.getInfo().getTenantsShare()!=null && metadata.getInfo().getTenantsShare().getTenantList()!=null){
-				for(org.csi.yucca.storage.datamanagementapi.model.metadata.TenantList t : metadata.getInfo().getTenantsShare().getTenantList()){
+
+			if(metadata.getInfo().getTenantssharing()!=null && metadata.getInfo().getTenantssharing().getTenantsharing()!=null){
+				for(org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantsharing t : metadata.getInfo().getTenantssharing().getTenantsharing()){
 					if(!ruoli.equals(""))
 						ruoli+=",";
 					ruoli+=t.getTenantCode()+"_subscriber";
 				}
-			}else{
-				ruoli = metadata.getConfigData().getTenantCode()+"_subscriber";
 			}
+
+			if(!ruoli.contains(metadata.getConfigData().getTenantCode()+"_subscriber")){
+				ruoli += metadata.getConfigData().getTenantCode()+"_subscriber";
+			}
+
 			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");
 		}
-		
-		
-		
+
+
+
 
 		if(update){
 			addStream.setVar("actionAPI","updateAPI");
@@ -346,15 +373,17 @@ public class StoreService {
 		}else{
 			addStream.setVar("visibility","restricted");
 			String ruoli ="";
-			
-			if(newStream.getTenantsShare()!=null && newStream.getTenantsShare().getTenantList()!=null){
-				for(TenantList t : newStream.getTenantsShare().getTenantList()){
+
+			if(newStream.getTenantssharing()!=null && newStream.getTenantssharing().getTenantsharing()!=null){
+				for(Tenantsharing t : newStream.getTenantssharing().getTenantsharing()){
 					if(!ruoli.equals(""))
 						ruoli+=",";
 					ruoli+=t.getTenantCode()+"_subscriber";
 				}
-			}else{
-				ruoli = newStream.getCodiceTenant()+"_subscriber";
+			}
+
+			if(!ruoli.contains(newStream.getCodiceTenant()+"_subscriber")){
+				ruoli += newStream.getCodiceTenant()+"_subscriber";
 			}
 			addStream.setVar("roles",ruoli);
 			addStream.setVar("authType","Application & Application User");
