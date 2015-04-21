@@ -2,6 +2,8 @@ package org.csi.yucca.storage.datamanagementapi.service;
 
 
 import java.net.UnknownHostException;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
@@ -17,6 +19,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
+import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
@@ -133,18 +136,29 @@ public class InstallCepService {
 				 */
 				String apiName = "";
 				try{
+					//Insert
 					apiName = StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),false);
 				}catch(Exception duplicate){
 					if(duplicate.getMessage().toLowerCase().contains("duplicate")){
+						//Update
 						apiName = StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),true);
 					}else throw duplicate;
 				}
 
 				if(newStream.getPublishStream()!=0){
 					StoreService.publishStore("1.0", apiName, "admin");
-
-					String appName = "userportal_"+newStream.getCodiceTenant();
-					StoreService.addSubscriptionForTenant(apiName,appName);
+					Set<String> tenantSet = new TreeSet<String>();
+					if(newStream.getTenantssharing()!=null){
+						for( Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()){
+							tenantSet.add(tenantSh.getTenantCode());
+							String appName = "userportal_"+tenantSh.getTenantCode();
+							StoreService.addSubscriptionForTenant(apiName,appName);
+						}						
+					}
+					if(!tenantSet.contains(newStream.getCodiceTenant())){
+						String appName = "userportal_"+newStream.getCodiceTenant();
+						StoreService.addSubscriptionForTenant(apiName,appName);
+					}
 				}
 			}
 		}catch (Exception e) {

@@ -32,7 +32,7 @@ public class Info extends AbstractEntity {
 	private Tag tags[];
 	private Field fields[];
 
-	private TenantsShare tenantsShare;
+	private Tenantssharing tenantssharing;
 
 	public Info() {
 	}
@@ -186,12 +186,12 @@ public class Info extends AbstractEntity {
 		this.icon = icon;
 	}
 
-	public TenantsShare getTenantsShare() {
-		return tenantsShare;
+	public Tenantssharing getTenantssharing() {
+		return tenantssharing;
 	}
 
-	public void setTenantsShare(TenantsShare tenantsShare) {
-		this.tenantsShare = tenantsShare;
+	public void setTenantssharing(Tenantssharing tenantssharing) {
+		this.tenantssharing = tenantssharing;
 	}
 
 	public Long getBinaryIdDataset() {

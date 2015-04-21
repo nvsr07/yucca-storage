@@ -74,7 +74,7 @@ public class Stream {
     @Expose
     private VirtualEntityPositions virtualEntityPositions;
     @Expose
-    private TenantsShare tenantsShare;
+    private Tenantssharing tenantssharing;
 
     /**
      * 
@@ -668,12 +668,12 @@ public class Stream {
 		this.streamIcon = streamIcon;
 	}
 
-	public TenantsShare getTenantsShare() {
-		return tenantsShare;
+	public Tenantssharing getTenantssharing() {
+		return tenantssharing;
 	}
 
-	public void setTenantsShare(TenantsShare tenantsShare) {
-		this.tenantsShare = tenantsShare;
+	public void setTenantssharing(Tenantssharing tenantssharing) {
+		this.tenantssharing = tenantssharing;
 	}
 
 }

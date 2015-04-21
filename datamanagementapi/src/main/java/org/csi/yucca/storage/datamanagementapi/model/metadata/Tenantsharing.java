@@ -4,7 +4,7 @@ import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
 
-public class TenantList extends AbstractEntity {
+public class Tenantsharing extends AbstractEntity {
 
 	private Long idTenant;
 	private Integer isOwner;
@@ -12,7 +12,7 @@ public class TenantList extends AbstractEntity {
 	private String tenantDescription;
 	private String tenantName;
 
-	public TenantList() {
+	public Tenantsharing() {
 	}
 
 	public String toJson() {

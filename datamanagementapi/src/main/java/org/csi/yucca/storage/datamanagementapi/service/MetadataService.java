@@ -8,9 +8,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +42,8 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantsharing;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantssharing;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.service.response.ErrorMessage;
@@ -393,6 +398,35 @@ public class MetadataService {
 				metadata.getInfo().setBinaryIdDataset(binaryMetadataCreated.getIdDataset());
 			}
 
+			
+			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
+			if(metadata.getInfo().getTenantssharing()!=null ){
+				Set<String> tenantSet = new TreeSet<String>();
+				for(Tenantsharing tenantInList : metadata.getInfo().getTenantssharing().getTenantsharing()){
+					if(!tenantInList.getTenantCode().equals(metadata.getConfigData().getTenantCode()) && !tenantSet.contains(metadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner()!=1){
+						lista.add(tenantInList);
+						tenantSet.add(tenantInList.getTenantCode());
+					}
+				}
+			}
+			Tenantsharing owner = new Tenantsharing();
+			owner.setIdTenant(metadata.getConfigData().getIdTenant());
+			owner.setIsOwner(1);
+			owner.setTenantCode(metadata.getConfigData().getTenantCode());
+			owner.setTenantName(metadata.getConfigData().getTenantCode());
+			//owner.setTenantDescription(metadata.getConfigData().get);
+
+			lista.add(owner);
+			Tenantsharing arrayTenant[] = new Tenantsharing[lista.size()];
+			arrayTenant= lista.toArray(arrayTenant);
+			if(metadata.getInfo().getTenantssharing()==null ){
+				Tenantssharing tenantssharing = new Tenantssharing();
+				metadata.getInfo().setTenantssharing(tenantssharing);				
+			}
+			metadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
+			
+			
+			
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 
 
@@ -425,11 +459,21 @@ public class MetadataService {
 				}
 			}
 			try {
-				StoreService.publishStore("1.0", apiName, "admin");
-
-				String appName = "userportal_" + metadata.getConfigData().getTenantCode();
-				StoreService.addSubscriptionForTenant(apiName, appName);
-
+				
+					StoreService.publishStore("1.0", apiName, "admin");
+					Set<String> tenantSet = new TreeSet<String>();
+					if(metadata.getInfo().getTenantssharing()!=null){
+						for( Tenantsharing tenantSh : metadata.getInfo().getTenantssharing().getTenantsharing()){
+							tenantSet.add(tenantSh.getTenantCode());
+							String appName = "userportal_"+tenantSh.getTenantCode();
+							StoreService.addSubscriptionForTenant(apiName,appName);
+						}						
+					}
+					if(!tenantSet.contains(metadata.getConfigData().getTenantCode())){
+						String appName = "userportal_"+metadata.getConfigData().getTenantCode();
+						StoreService.addSubscriptionForTenant(apiName,appName);
+					}
+				
 			} catch (Exception e) {
 				log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 			}
@@ -543,8 +587,35 @@ public class MetadataService {
 			newMetadata.getInfo().setTags(inputMetadata.getInfo().getTags());
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
-			newMetadata.getInfo().setTenantsShare(inputMetadata.getInfo().getTenantsShare());
+			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
 
+			
+			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
+			if(newMetadata.getInfo().getTenantssharing()!=null ){
+				Set<String> tenantSet = new TreeSet<String>();
+				for(Tenantsharing tenantInList : newMetadata.getInfo().getTenantssharing().getTenantsharing()){
+					if(!tenantInList.getTenantCode().equals(newMetadata.getConfigData().getTenantCode()) && !tenantSet.contains(newMetadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner()!=1){
+						lista.add(tenantInList);
+						tenantSet.add(tenantInList.getTenantCode());
+					}
+				}
+			}
+			Tenantsharing owner = new Tenantsharing();
+			owner.setIdTenant(newMetadata.getConfigData().getIdTenant());
+			owner.setIsOwner(1);
+			owner.setTenantCode(newMetadata.getConfigData().getTenantCode());
+			owner.setTenantName(newMetadata.getConfigData().getTenantCode());
+			//owner.setTenantDescription(metadata.getConfigData().get);
+
+			lista.add(owner);
+			Tenantsharing arrayTenant[] = new Tenantsharing[lista.size()];
+			arrayTenant= lista.toArray(arrayTenant);
+			if(newMetadata.getInfo().getTenantssharing()==null ){
+				Tenantssharing tenantssharing = new Tenantssharing();
+				newMetadata.getInfo().setTenantssharing(tenantssharing);				
+			}
+			newMetadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
+			
 			int counter = 0;
 			for (Field existingField : newMetadata.getInfo().getFields()) {
 				existingField.setFieldAlias(inputMetadata.getInfo().getFields()[counter].getFieldAlias());

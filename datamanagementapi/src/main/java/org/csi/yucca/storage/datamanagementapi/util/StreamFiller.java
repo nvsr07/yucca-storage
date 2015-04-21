@@ -2,6 +2,8 @@ package org.csi.yucca.storage.datamanagementapi.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Components;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.ConfigData;
@@ -12,8 +14,8 @@ import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamTags;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Streamchild;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Streams;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Tag;
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.TenantList;
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.TenantsShare;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Tenantsharing;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Tenantssharing;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Componenti;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Position;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
@@ -83,13 +85,13 @@ public class StreamFiller {
 		StreamInternalChildren streamInternalChildren=new StreamInternalChildren();
 		sti.setStreamInternalChildren(streamInternalChildren);
 
-		
+
 		//FIXME make an array when the model changes for now just make it work :P .
 		org.csi.yucca.storage.datamanagementapi.model.streamOutput.VirtualEntityPositions VEPO = new org.csi.yucca.storage.datamanagementapi.model.streamOutput.VirtualEntityPositions();
 		if(stream.getVirtualEntityPositions()!=null){
-			
+
 			VEPO.setPosition(new ArrayList<org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position>());
-			
+
 			org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position position =new org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position();
 			for(Position p : stream.getVirtualEntityPositions().getPosition()){
 				position.setRoom(p.getRoom());
@@ -98,7 +100,7 @@ public class StreamFiller {
 				position.setFloor(p.getFloor());
 				position.setLat(p.getLat());
 				position.setLon(p.getLon());
-				
+
 				VEPO.getPosition().add(position);
 			}
 			sti.setVirtualEntityPositions(VEPO);
@@ -171,32 +173,41 @@ public class StreamFiller {
 				sti.setComponents(components );
 			}			
 		}
-		
-		
-		if(stream.getTenantsShare()!=null){
-			TenantsShare tenantsShare = new TenantsShare();
-			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList> lista = stream.getTenantsShare().getTenantList();
+
+		Tenantssharing tenantsShare = new Tenantssharing();
+		List<Tenantsharing> listaTenant = new ArrayList<Tenantsharing>();
+		if(stream.getTenantssharing()!=null){
+			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing> lista = stream.getTenantssharing().getTenantsharing();
 			if(lista!=null){
-				 List<TenantList> listaTenant = new ArrayList<TenantList>();
-				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList tenant : lista){
-					
-					TenantList newTen = new TenantList();
-					newTen.setIdTenant(tenant.getIdTenant());
-					newTen.setIsOwner(tenant.getIsOwner());
-					newTen.setTenantCode(tenant.getTenantCode());
-					newTen.setTenantDescription(tenant.getTenantDescription());
-					newTen.setTenantName(tenant.getTenantName());					
-					listaTenant.add(newTen);					
+				Set<String> tenantSet = new TreeSet<String>();
+				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenant : lista){
+					if(tenant.getTenantCode().equals(stream.getCodiceTenant()) && !tenantSet.contains(tenant.getTenantCode())  && tenant.getIsOwner() !=1){
+
+						Tenantsharing newTen = new Tenantsharing();
+						newTen.setIdTenant(tenant.getIdTenant());
+						newTen.setIsOwner(tenant.getIsOwner());
+						newTen.setTenantCode(tenant.getTenantCode());
+						newTen.setTenantDescription(tenant.getTenantDescription());
+						newTen.setTenantName(tenant.getTenantName());	
+						tenantSet.add(tenant.getTenantCode());
+						listaTenant.add(newTen);					
+					}
 				}
-				tenantsShare.setTenantList(listaTenant);
 			}
-			sti.setTenantsShare(tenantsShare);
 		}
 		
+		//Insert owner
+		Tenantsharing newTen = new Tenantsharing();
+		newTen.setIdTenant(stream.getIdTenant().intValue());
+		newTen.setIsOwner(1);
+		newTen.setTenantCode(stream.getCodiceTenant());
+		newTen.setTenantName(stream.getNomeTenant());					
+		listaTenant.add(newTen);	
 		
-		
-		
-		
+		tenantsShare.setTenantsharing(listaTenant);
+	
+		sti.setTenantssharing(tenantsShare);
+
 		streams.setStream(sti);
 		strOut.setStreams(streams );
 

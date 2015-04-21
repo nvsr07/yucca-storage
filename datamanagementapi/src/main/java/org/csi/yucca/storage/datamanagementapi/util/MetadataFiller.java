@@ -5,14 +5,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tag;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.TenantList;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.TenantsShare;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantsharing;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantssharing;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Componenti;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Element;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
@@ -66,39 +68,51 @@ public class MetadataFiller {
 		info.setRequestorName(stream.getNomeRichiedente());
 		info.setRequestorSurname(stream.getCognomeRichiedente());
 		info.setVisibility(stream.getVisibility());
-		
-		
-		if(stream.getTenantsShare()!=null){
-			TenantsShare tenantsShare = new TenantsShare();
-			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList> lista = stream.getTenantsShare().getTenantList();
+
+
+		Tenantssharing tenantsShare = new Tenantssharing();
+		List<Tenantsharing> listaTenant = new ArrayList<Tenantsharing>();
+		if(stream.getTenantssharing()!=null){
+			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing> lista = stream.getTenantssharing().getTenantsharing();
 			if(lista!=null){
-				 List<TenantList> listaTenant = new ArrayList<TenantList>();
-				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.TenantList tenant : lista){
-					
-					TenantList newTen = new TenantList();
-					newTen.setIdTenant(tenant.getIdTenant().longValue());
-					newTen.setIsOwner(tenant.getIsOwner());
-					newTen.setTenantCode(tenant.getTenantCode());
-					newTen.setTenantDescription(tenant.getTenantDescription());
-					newTen.setTenantName(tenant.getTenantName());					
-					listaTenant.add(newTen);					
+				Set<String> tenantSet = new TreeSet<String>();
+				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenant : lista){
+
+					if(!tenant.getTenantCode().equals(stream.getCodiceTenant()) && !tenantSet.contains(tenant.getTenantCode())  && tenant.getIsOwner()!=1){
+						
+						Tenantsharing newTen = new Tenantsharing();
+						newTen.setIdTenant(tenant.getIdTenant().longValue());
+						newTen.setIsOwner(tenant.getIsOwner());
+						newTen.setTenantCode(tenant.getTenantCode());
+						newTen.setTenantDescription(tenant.getTenantDescription());
+						newTen.setTenantName(tenant.getTenantName());
+						tenantSet.add(tenant.getTenantCode());
+						listaTenant.add(newTen);					
+					}
 				}
-				TenantList arrayTenant[] = new TenantList[listaTenant.size()];
-				arrayTenant= listaTenant.toArray(arrayTenant);
-				tenantsShare.setTenantList(arrayTenant);
 			}
-			info.setTenantsShare(tenantsShare);
 		}
 		
+		//Insert owner
+		Tenantsharing newTen = new Tenantsharing();
+		newTen.setIdTenant(stream.getIdTenant());
+		newTen.setIsOwner(1);
+		newTen.setTenantCode(stream.getCodiceTenant());
+		newTen.setTenantName(stream.getNomeTenant());					
+		listaTenant.add(newTen);	
+
+		Tenantsharing arrayTenant[] = new Tenantsharing[listaTenant.size()];
+		arrayTenant= listaTenant.toArray(arrayTenant);
+		tenantsShare.setTenantsharing(arrayTenant);
 		
-		
-		
+		info.setTenantssharing(tenantsShare);
+
 		Componenti comp = stream.getComponenti();
 		if(comp!=null){
 			List<Element> elem = comp.getElement();
 			if(elem!=null){
 				List<Field> fields = new ArrayList<Field>();
-				
+
 				for(Element el : elem){
 
 					Field f = new Field();	

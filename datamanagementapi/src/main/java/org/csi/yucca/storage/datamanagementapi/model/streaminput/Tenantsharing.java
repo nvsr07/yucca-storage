@@ -1,10 +1,9 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streaminput;
 
-import javax.annotation.Generated;
 import com.google.gson.annotations.Expose;
 
-public class TenantList {
+public class Tenantsharing {
 
     @Expose
     private Integer idTenant;
