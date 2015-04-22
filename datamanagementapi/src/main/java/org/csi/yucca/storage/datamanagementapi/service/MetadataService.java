@@ -118,7 +118,7 @@ public class MetadataService {
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
 
-		String fileName = metadata.getInfo().getDatasetName() + "." + format;
+		String fileName = metadata.getDatasetCode() + "." + format;
 
 		final List<Field> fields = new LinkedList<Field>();
 
