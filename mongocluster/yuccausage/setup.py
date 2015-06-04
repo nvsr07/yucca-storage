@@ -10,7 +10,7 @@ except IOError:
 VERSION = "0.0.1"
 
 INSTALL_REQUIREMENTS = [
-    'pymongo==2.8.1',
+    'pymongo==3.0.2',
 ]
 
 TEST_REQUIREMENTS = [
@@ -20,9 +20,9 @@ TEST_REQUIREMENTS = [
 
 
 setup(
-    name='yuccastats',
+    name='yuccausage',
     version=VERSION,
-    description="Gather cross tenant statistics for YUCCA platform",
+    description="Gather cross tenant usage statistics for YUCCA platform",
     long_description=README,
     classifiers=[],
     keywords='',
@@ -41,7 +41,7 @@ setup(
     tests_require=TEST_REQUIREMENTS,
     entry_points={
         'console_scripts': [
-            'yuccastats = yuccastats.__main__:main',
+            'yuccausage = yuccausage.__main__:main',
         ]
     }
 )
