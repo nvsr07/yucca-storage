@@ -127,7 +127,7 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
                  'idDataset': idDataset,
                  'datasetVersion': datasetVersion}
             )['info']['visibility']
-            tenant_streams_measures_data[idStream] = stream_data
+            tenant_streams_measures_data[str(idStream)] = stream_data
 
         stats['lifetime']['tenant_streams_measures_data'][curtenant] = tenant_streams_measures_data
 
@@ -137,14 +137,14 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
         tenant_data_datasets_data = {}
         for metadata in metadatas:
             idDataset = metadata['idDataset']
-            dataset_data = tenant_data_datasets_data.get(idDataset, {})
+            dataset_data = tenant_data_datasets_data.get(str(idDataset), {})
             datasetVersion = metadata['datasetVersion']
             dasetVersion_data = {}
             dasetVersion_data['total'] = data_col.find({'idDataset': idDataset,
                                                    'datasetVersion': datasetVersion}).count()
             dasetVersion_data['visibility'] = metadata['info']['visibility']
-            dataset_data[datasetVersion] = dasetVersion_data
-            tenant_data_datasets_data[idDataset] = dataset_data
+            dataset_data[str(datasetVersion)] = dasetVersion_data
+            tenant_data_datasets_data[str(idDataset)] = dataset_data
         stats['lifetime']['tenant_data_datasets_data'][curtenant] = tenant_data_datasets_data
 
     return stats, dict(kwargs, tenants_info=tenants_info)
@@ -402,7 +402,7 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
              'idDataset': idDataset,
              'datasetVersion': datasetVersion}
         )['info']['visibility']
-        tenant_streams_data[idStream] = stream_data
+        tenant_streams_data[str(idStream)] = stream_data
 
     return tenant_streams_data
 
@@ -418,14 +418,14 @@ def _tenant_datasets_data_since(origin_id, tenant_info, data_collection):
     for metadata in metadatas:
 
         idDataset = metadata['idDataset']
-        dataset_data = tenant_datasets_data.get(idDataset, {})
+        dataset_data = tenant_datasets_data.get(str(idDataset), {})
         datasetVersion = metadata['datasetVersion']
         dasetVersion_data = {}
         dasetVersion_data['total'] = data_collection.find({'_id': {'$gte': origin_id},
                                                       'idDataset': idDataset,
                                                       'datasetVersion': datasetVersion}).count()
         dasetVersion_data['visibility'] = metadata['info']['visibility']
-        dataset_data[datasetVersion] = dasetVersion_data
-        tenant_datasets_data[idDataset] = dataset_data
+        dataset_data[str(datasetVersion)] = dasetVersion_data
+        tenant_datasets_data[str(idDataset)] = dataset_data
 
     return tenant_datasets_data

@@ -305,17 +305,17 @@ class TestStatisticsSteps(object):
                 }
             },
             'tenant_streams_measures_data': {
-                'test-smartlab': {12: {'total': self.counts['measures'], 'visibility': 'public'}},
-                'test-csp': {12: {'total': self.counts['measures'], 'visibility': 'public'}}},
+                'test-smartlab': {'12': {'total': self.counts['measures'], 'visibility': 'public'}},
+                'test-csp': {'12': {'total': self.counts['measures'], 'visibility': 'public'}}},
             'tenant_data_datasets_data': {
                 'test-smartlab': {
-                    1: {
-                        1: {'total': self.counts['data'], 'visibility': 'public'}
+                    '1': {
+                        '1': {'total': self.counts['data'], 'visibility': 'public'}
                     }
                 },
                 'test-csp': {
-                    2: {
-                        1: {'total': self.counts['data'], 'visibility': 'public'}}}
+                    '2': {
+                        '1': {'total': self.counts['data'], 'visibility': 'public'}}}
             },
             'origin': datetime(2001, 1, 1, 0, 0)}, stats
 
@@ -342,17 +342,19 @@ class TestStatisticsSteps(object):
                                          }
                                      },
                                      'tenant_streams_measures_data': {
-                                         'test-smartlab': {12: {'total': 0,
+                                         'test-smartlab': {'12': {'total': 0,
                                                                 'visibility': 'public'}},
-                                         'test-csp': {12: {'total': 0,
+                                         'test-csp': {'12': {'total': 0,
                                                            'visibility': 'public'}}},
                                      'tenant_data_datasets_data': {
                                          'test-smartlab': {
-                                             1: {
-                                                 1: {'total': 0, 'visibility': 'public'}}},
+                                             '1': {
+                                                 '1': {'total': 0,
+                                                       'visibility': 'public'}}},
                                          'test-csp': {
-                                             2: {
-                                                 1: {'total': 0, 'visibility': 'public'}}}}}, stats
+                                             '2': {
+                                                 '1': {'total': 0,
+                                                       'visibility': 'public'}}}}}, stats
 
     def test_thirtydays(self):
         stats, kwargs = step_gather_tenant_info({'30days': {'tenant_total_data': {},
@@ -380,17 +382,19 @@ class TestStatisticsSteps(object):
                 }
             },
             'tenant_streams_measures_data': {
-                'test-smartlab': {12: {'total': self.counts['measures'] - removed_items,
+                'test-smartlab': {'12': {'total': self.counts['measures'] - removed_items,
                                        'visibility': 'public'}},
-                'test-csp': {12: {'total': self.counts['measures'] - removed_items,
+                'test-csp': {'12': {'total': self.counts['measures'] - removed_items,
                                   'visibility': 'public'}}},
             'tenant_data_datasets_data': {
                 'test-smartlab': {
-                    1: {
-                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}},
+                    '1': {
+                        '1': {'total': self.counts['data'] - removed_items,
+                              'visibility': 'public'}}},
                 'test-csp': {
-                    2: {
-                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}}
+                    '2': {
+                        '1': {'total': self.counts['data'] - removed_items,
+                              'visibility': 'public'}}}
             },
             'origin': datetime(2001, 1, 10, 0, 0)}
 
@@ -422,17 +426,19 @@ class TestStatisticsSteps(object):
                 }
             },
             'tenant_streams_measures_data': {
-                'test-smartlab': {12: {'total': self.counts['measures'] - removed_items,
+                'test-smartlab': {'12': {'total': self.counts['measures'] - removed_items,
                                        'visibility': 'public'}},
-                'test-csp': {12: {'total': self.counts['measures'] - removed_items,
+                'test-csp': {'12': {'total': self.counts['measures'] - removed_items,
                                   'visibility': 'public'}}},
             'tenant_data_datasets_data': {
                 'test-smartlab': {
-                    1: {
-                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}},
+                    '1': {
+                        '1': {'total': self.counts['data'] - removed_items,
+                              'visibility': 'public'}}},
                 'test-csp': {
-                    2: {
-                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}}
+                    '2': {
+                        '1': {'total': self.counts['data'] - removed_items,
+                              'visibility': 'public'}}}
             },
             'origin': datetime(2001, 1, 8, 0, 0)}
 
