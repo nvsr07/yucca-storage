@@ -60,7 +60,7 @@ class TestStatisticsSteps(object):
                 "idTenant": -4,
                 "tenantCode": "test-smartlab",
                 "idDataset": 1,
-                "datasetVersion": 2
+                "datasetVersion": 1
             }
         }, {
             "idStream": 12,
@@ -70,14 +70,14 @@ class TestStatisticsSteps(object):
                 "idTenant": -1,
                 "tenantCode": "test-csp",
                 "idDataset": 2,
-                "datasetVersion": 2
+                "datasetVersion": 1
             }
         }]
 
         metadatas = [{
             "idDataset": 1,
             "datasetCode": "ds_Trfl_3",
-            "datasetVersion": 2,
+            "datasetVersion": 1,
             "configData": {
                 "idTenant": -1,
                 "tenantCode": "test-smartlab",
@@ -117,7 +117,7 @@ class TestStatisticsSteps(object):
         }, {
             "idDataset": 2,
             "datasetCode": "ds_Trfl_3",
-            "datasetVersion": 2,
+            "datasetVersion": 1,
             "configData": {
                 "idTenant": -1,
                 "tenantCode": "test-csp",
@@ -157,7 +157,7 @@ class TestStatisticsSteps(object):
         }, {
             "idDataset": 1,
             "datasetCode": "ds_Trfl_3",
-            "datasetVersion": 2,
+            "datasetVersion": 1,
             "configData": {
                 "idTenant": -1,
                 "tenantCode": "test-smartlab",
@@ -197,7 +197,7 @@ class TestStatisticsSteps(object):
         }, {
             "idDataset": 2,
             "datasetCode": "ds_Trfl_3",
-            "datasetVersion": 2,
+            "datasetVersion": 1,
             "configData": {
                 "idTenant": -1,
                 "tenantCode": "test-csp",
@@ -252,7 +252,7 @@ class TestStatisticsSteps(object):
                 ids = [ObjectId.from_datetime(datetime(2001, 1, 1, 1, x) + timedelta(days=x))
                        for x in range(items_to_insert)]
                 for i in range(items_to_insert):
-                    col.insert((dict(count=i, _id=ids[i], idDataset=index+1)))
+                    col.insert((dict(count=i, _id=ids[i], idDataset=index+1, datasetVersion=1)))
 
     @classmethod
     def teardown_class(cls):
@@ -308,8 +308,14 @@ class TestStatisticsSteps(object):
                 'test-smartlab': {12: {'total': self.counts['measures'], 'visibility': 'public'}},
                 'test-csp': {12: {'total': self.counts['measures'], 'visibility': 'public'}}},
             'tenant_data_datasets_data': {
-                'test-smartlab': {1: {'total': self.counts['data'], 'visibility': 'public'}},
-                'test-csp': {2: {'total': self.counts['data'], 'visibility': 'public'}}
+                'test-smartlab': {
+                    1: {
+                        1: {'total': self.counts['data'], 'visibility': 'public'}
+                    }
+                },
+                'test-csp': {
+                    2: {
+                        1: {'total': self.counts['data'], 'visibility': 'public'}}}
             },
             'origin': datetime(2001, 1, 1, 0, 0)}, stats
 
@@ -341,10 +347,12 @@ class TestStatisticsSteps(object):
                                          'test-csp': {12: {'total': 0,
                                                            'visibility': 'public'}}},
                                      'tenant_data_datasets_data': {
-                                         'test-smartlab': {1: {'total': 0,
-                                                               'visibility': 'public'}},
-                                         'test-csp': {2: {'total': 0,
-                                                          'visibility': 'public'}}}}, stats
+                                         'test-smartlab': {
+                                             1: {
+                                                 1: {'total': 0, 'visibility': 'public'}}},
+                                         'test-csp': {
+                                             2: {
+                                                 1: {'total': 0, 'visibility': 'public'}}}}}, stats
 
     def test_thirtydays(self):
         stats, kwargs = step_gather_tenant_info({'30days': {'tenant_total_data': {},
@@ -377,10 +385,12 @@ class TestStatisticsSteps(object):
                 'test-csp': {12: {'total': self.counts['measures'] - removed_items,
                                   'visibility': 'public'}}},
             'tenant_data_datasets_data': {
-                'test-smartlab': {1: {'total': self.counts['data'] - removed_items,
-                                      'visibility': 'public'}},
-                'test-csp': {2: {'total': self.counts['data'] - removed_items,
-                                 'visibility': 'public'}}
+                'test-smartlab': {
+                    1: {
+                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}},
+                'test-csp': {
+                    2: {
+                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}}
             },
             'origin': datetime(2001, 1, 10, 0, 0)}
 
@@ -417,10 +427,12 @@ class TestStatisticsSteps(object):
                 'test-csp': {12: {'total': self.counts['measures'] - removed_items,
                                   'visibility': 'public'}}},
             'tenant_data_datasets_data': {
-                'test-smartlab': {1: {'total': self.counts['data'] - removed_items,
-                                      'visibility': 'public'}},
-                'test-csp': {2: {'total': self.counts['data'] - removed_items,
-                                 'visibility': 'public'}}
+                'test-smartlab': {
+                    1: {
+                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}},
+                'test-csp': {
+                    2: {
+                        1: {'total': self.counts['data'] - removed_items, 'visibility': 'public'}}}
             },
             'origin': datetime(2001, 1, 8, 0, 0)}
 
@@ -477,7 +489,7 @@ class TestStatisticsStepsWithStreams(object):
             {"idStream": 12,
              "streamCode": "temperature", "streamName": "Temperatura rilevata",
              "configData": {"idTenant": 4, "tenantCode": "test-smartlab", "idDataset": 1,
-                            "datasetVersion": 2},
+                            "datasetVersion": 1},
              "streams": {
                  "stream": {
                      "idVirtualEntity": 9, "idCategoriaVe": 3, "idTipoVe": 1,
@@ -504,7 +516,7 @@ class TestStatisticsStepsWithStreams(object):
             {"idStream": 13,
              "streamCode": "temperature", "streamName": "Temperatura rilevata",
              "configData": {"idTenant": 4, "tenantCode": "test-smartlab", "idDataset": 1,
-                            "datasetVersion": 2},
+                            "datasetVersion": 1},
              "streams": {
                  "stream": {
                      "idVirtualEntity": 9, "idCategoriaVe": 3, "idTipoVe": 1,
