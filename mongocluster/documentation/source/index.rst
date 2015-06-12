@@ -22,6 +22,7 @@ Contenuto:
     start_script
     availability
     sysadminnotes
+    upgrade_java_driver
 
 Indices and tables
 ==================

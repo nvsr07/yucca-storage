@@ -6,13 +6,13 @@ while [ $secs -gt 0 ]; do
    : $((secs--))
 done
 echo Restoring DB_SUPPORT
-./supporting_files/mongo/bin/mongorestore --port 30000 ./supporting_files/dbs/DB_SUPPORT/
+/opt/mongo/bin/mongorestore --port 30000 ./supporting_files/dbs/DB_SUPPORT/
 for d in ./supporting_files/dbs/*/ ; do
     db=$(basename "$d")
     if [ $db != 'DB_SUPPORT' ]; 
         then echo restoring $db
-        ./supporting_files/mongo/bin/mongorestore --port 30000 $d
+        /opt/mongo/bin/mongorestore --port 30000 $d
         echo adding $db to shard
-        ./supporting_files/mongo/bin/mongo --port 30000 --eval "sh.enableSharding('$db')"
+        /opt/mongo/bin/mongo --port 30000 --eval "sh.enableSharding('$db')"
     fi 
 done
