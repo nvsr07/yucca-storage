@@ -1,12 +1,8 @@
 package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
-
-import org.csi.yucca.storage.datamanagementapi.util.Constants;
 
 public class VarProperties extends Properties {
 

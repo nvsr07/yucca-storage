@@ -172,6 +172,7 @@ ENDTEST  **/
 		
 		boolean inTest = false;
 		JsonMap me = new JsonMap();
+		
 		BufferedReader reader = new BufferedReader(new FileReader("src/java/it/csi/wso2/apiman/load/JsonMap.java"));
 		String line = null;
 		while ((line = reader.readLine()) != null) {
@@ -185,6 +186,7 @@ ENDTEST  **/
 				System.out.println("out " + out);
 			}
 		}
+		reader.close();
 	}
 
 }

@@ -15,7 +15,6 @@ public class Metadata extends AbstractEntity {
 	public static final String CONFIG_DATA_TYPE_API = "api";
 	public static final String CONFIG_DATA_SUBTYPE_API_MULTI_BULK = "apiMultiBulk";
 
-
 	private String id;
 	private Long idDataset; // max dei presenti (maggiore di un milione)
 
@@ -117,12 +116,11 @@ public class Metadata extends AbstractEntity {
 			getConfigData().setEntityNameSpace(nameSpace);
 		}
 	}
-	
-	
-	public static Metadata createBinaryMetadata(Metadata parentMetadata){
+
+	public static Metadata createBinaryMetadata(Metadata parentMetadata) {
 		Metadata binaryMetadata = new Metadata();
 		binaryMetadata.setDatasetVersion(1);
-		
+
 		Info binaryMetadataInfo = new Info();
 		Field[] binaryFields = binaryDatasetBaseFields();
 		binaryMetadataInfo.setDatasetName(parentMetadata.getInfo().getDatasetName());
@@ -140,30 +138,75 @@ public class Metadata extends AbstractEntity {
 		binaryMetadataConfigData.setTenantCode(parentMetadata.getConfigData().getTenantCode());
 		binaryMetadataConfigData.setType(Metadata.CONFIG_DATA_TYPE_DATASET);
 		binaryMetadataConfigData.setSubtype(Metadata.CONFIG_DATA_SUBTYPE_BINARY_DATASET);
-				
+
 		binaryMetadata.setConfigData(binaryMetadataConfigData);
-		
+
 		return binaryMetadata;
 	}
-	
-	public static Field[] binaryDatasetBaseFields(){
-		Field fileNameField = new  Field();
-		fileNameField.setDataType("string");
-		fileNameField.setFieldName("fileName");
-		fileNameField.setFieldAlias("File Name");
 
-		Field fileTypeField = new  Field();
-		fileTypeField.setDataType("string");
-		fileTypeField.setFieldName("fileType");
-		fileTypeField.setFieldAlias("File Type");
+	public static Field[] binaryDatasetBaseFields() {
+		// Field fileNameField = new Field();
+		// fileNameField.setDataType("string");
+		// fileNameField.setFieldName("fileName");
+		// fileNameField.setFieldAlias("File Name");
+		//
+		// Field fileTypeField = new Field();
+		// fileTypeField.setDataType("string");
+		// fileTypeField.setFieldName("fileType");
+		// fileTypeField.setFieldAlias("File Type");
+		//
+		// Field contentTypeField = new Field();
+		// contentTypeField.setDataType("string");
+		// contentTypeField.setFieldName("contentType ");
+		// contentTypeField.setFieldAlias("Content Type");
 
-		Field contentTypeField = new  Field();
-		contentTypeField.setDataType("string");
-		contentTypeField.setFieldName("contentType ");
-		contentTypeField.setFieldAlias("Content Type");
+		Field idBinaryField = new Field();
+		idBinaryField.setDataType("long");
+		idBinaryField.setFieldName("idBinary");
+		idBinaryField.setFieldAlias("Id ");
 
-		
-		return new Field[]{fileNameField, fileTypeField, contentTypeField};
+		Field filenameBinaryField = new Field();
+		filenameBinaryField.setDataType("string");
+		filenameBinaryField.setFieldName("filenameBinary");
+		filenameBinaryField.setFieldAlias("File Name");
+
+		Field aliasNameBinaryField = new Field();
+		aliasNameBinaryField.setDataType("string");
+		aliasNameBinaryField.setFieldName("aliasNameBinary");
+		aliasNameBinaryField.setFieldAlias("File Alias");
+
+		Field sizeBinaryField = new Field();
+		sizeBinaryField.setDataType("string");
+		sizeBinaryField.setFieldName("sizeBinary");
+		sizeBinaryField.setFieldAlias("File Size");
+
+		Field insertDateBinaryField = new Field();
+		insertDateBinaryField.setDataType("date");
+		insertDateBinaryField.setFieldName("insertDateBinary");
+		insertDateBinaryField.setFieldAlias("Insert Date");
+
+		Field lastUpdateDateBinaryField = new Field();
+		lastUpdateDateBinaryField.setDataType("date");
+		lastUpdateDateBinaryField.setFieldName("lastUpdateDateBinary");
+		lastUpdateDateBinaryField.setFieldAlias("Last Update");
+
+		Field contentTypeBinaryField = new Field();
+		contentTypeBinaryField.setDataType("string");
+		contentTypeBinaryField.setFieldName("contentTypeBinary");
+		contentTypeBinaryField.setFieldAlias("Content Type");
+
+		Field pathBinaryField = new Field();
+		pathBinaryField.setDataType("string");
+		pathBinaryField.setFieldName("urlDownloadBinary");
+		pathBinaryField.setFieldAlias("Download url");
+
+		Field metadataBinaryField = new Field();
+		metadataBinaryField.setDataType("string");
+		metadataBinaryField.setFieldName("metadataBinary");
+		metadataBinaryField.setFieldAlias("Metadata");
+
+		return new Field[] { idBinaryField, filenameBinaryField, aliasNameBinaryField, sizeBinaryField, insertDateBinaryField, lastUpdateDateBinaryField,
+				contentTypeBinaryField, pathBinaryField, metadataBinaryField };
 	}
 
 }
