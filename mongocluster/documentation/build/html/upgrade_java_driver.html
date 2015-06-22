@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Java driver assessment &mdash; CSI MongoDB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CSI MongoDB 1.0 documentation" href="index.html" />
+    <link rel="next" title="Procedura di Upgrade per MongoDB versione 3.0" href="upgrade_mongodb.html" />
+    <link rel="prev" title="Note per la gestione del cluster MongoDB" href="sysadminnotes.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="upgrade_mongodb.html" title="Procedura di Upgrade per MongoDB versione 3.0"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sysadminnotes.html" title="Note per la gestione del cluster MongoDB"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="java-driver-assessment">
+<h1>Java driver assessment<a class="headerlink" href="#java-driver-assessment" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="java-driver-compatibility-with-mongodb">
+<h2>Java Driver compatibility with MongoDB<a class="headerlink" href="#java-driver-compatibility-with-mongodb" title="Permalink to this headline">¶</a></h2>
+<p>La versione 2.13 del driver JAVA è dichiarato essere fully compatible con MongoDB 3.0. <a class="reference external" href="http://docs.mongodb.org/ecosystem/drivers/driver-compatibility-reference/#reference-compatibility-mongodb-java">http://docs.mongodb.org/ecosystem/drivers/driver-compatibility-reference/#reference-compatibility-mongodb-java</a></p>
+</div>
+<div class="section" id="progetti-in-assesment">
+<h2>Progetti in assesment<a class="headerlink" href="#progetti-in-assesment" title="Permalink to this headline">¶</a></h2>
+<p>I progetti presi in considerazione sono:</p>
+<ul class="simple">
+<li>yucca-dataservice</li>
+<li>yucca-fabriccontroller</li>
+<li>yucca-realtime</li>
+<li>yucca-storage</li>
+</ul>
+</div>
+<div class="section" id="classi-verificate">
+<h2>Classi verificate<a class="headerlink" href="#classi-verificate" title="Permalink to this headline">¶</a></h2>
+<p>Nei progetti yucca le classi usate del driver JAVA mongodb sono le seguenti:</p>
+<ul class="simple">
+<li>AggregationOptions;</li>
+<li>BasicDBList;</li>
+<li>BasicDBObject;</li>
+<li>BasicDBObjectBuilder;</li>
+<li>BulkWriteOperation;</li>
+<li>BulkWriteResult;</li>
+<li>Cursor;</li>
+<li>DB;</li>
+<li>DBCollection;</li>
+<li>DBCursor;</li>
+<li>DBObject;</li>
+<li>DBRef;</li>
+<li>MongoClient;</li>
+<li>MongoCredential;</li>
+<li>ServerAddress;</li>
+<li>WriteConcern;</li>
+<li>WriteResult;</li>
+</ul>
+</div>
+<div class="section" id="deprecation-list">
+<h2>Deprecation list<a class="headerlink" href="#deprecation-list" title="Permalink to this headline">¶</a></h2>
+<p>Nessuna delle deprecation riportate nella versione 2.11.4 e 2.12 affligge un cambiamento nella 2.13.
+Il metodo per il controllo delle deprecation è stato fatto, cercando l&#8217;utilizzo delle classi con deprecation warning nei progetti yucca, dopodiché è stato valutato l&#8217;utilizzo di queste classi se fossero stati usati methods o field che hanno il deprecation warning.
+Nella versione 2.12 del driver java le seguenti componenti hanno dei deprecation warning</p>
+<ul class="simple">
+<li>DB, nessuno dei methodi e dei field in deprecation è stato utilizzato nei progetti yucca</li>
+<li>DBCollection, nessuno dei methodi e dei field in deprecation è stato utilizzato nei progetti yucca</li>
+<li>DBCursor, nessuno dei methodi e dei field in deprecation è stato utilizzato nei progetti yucca</li>
+<li>WriteConcern, nessuno dei methodi e dei field in deprecation è stato utilizzato nei progetti yucca</li>
+<li>WriteResult, nessuno dei methodi e dei field in deprecation è stato utilizzato nei progetti yucca</li>
+</ul>
+<p>La lista dei deprecation valutati sono presi dalla documentazione ufficiale presente su: <a class="reference external" href="http://api.mongodb.org/java">http://api.mongodb.org/java</a>
+presente per tutte le versioni del driver java</p>
+<p>es:</p>
+<div class="highlight-python"><div class="highlight"><pre>grep &#39;getSizes\|numGetMores\|slaveOk&#39; $(grep -ro &quot;import com.mongodb.DBCursor&quot; yucca-*|sort|uniq|cut -f 1 -d :)
+</pre></div>
+</div>
+</div>
+<div class="section" id="autenticazione-con-mongodb-3-0">
+<h2>Autenticazione con mongodb 3.0<a class="headerlink" href="#autenticazione-con-mongodb-3-0" title="Permalink to this headline">¶</a></h2>
+<p>Per l&#8217;utilizzo dell&#8217;authenticazione con MongoDB 3.0 è possibile continuare ad utilizzare MONGODB-CR senza cambiare il codice di authenticazione con il driver 2.13.
+Nel caso si volesse invece passare al nuovo meccanismo SCRAM-SHA-1 è necessario rimpiazzare gli utilizzi di <a class="reference external" href="http://api.mongodb.org/java/2.13/com/mongodb/MongoCredential.html#createMongoCRCredential(java.lang.String,%20java.lang.String,%20char%5B%5D)">MongoCredential#createMongoCRCredential</a> con <a class="reference external" href="http://api.mongodb.org/java/2.13/com/mongodb/MongoCredential.html#createCredential(java.lang.String,%20java.lang.String,%20char%5B%5D)">MongoCredential#createCredential</a></p>
+</div>
+<div class="section" id="benefici">
+<h2>Benefici<a class="headerlink" href="#benefici" title="Permalink to this headline">¶</a></h2>
+<p>Il driver 2.13 ha il grande pregio di essere compatibile con la versione 3.0 di mongodb ed è l&#8217;ultima release in rilascio per quanto riguarda la versione 2.x dei driver java. In più una grande feature nuova è il supporto per il nuovo meccanismo di autenticazione che viene usato in mongodb 3.0</p>
+<p>Ci sono bugfix e improvement più o meno importanti che affliggono le versioni precedenti ma che sono state corrette nella 2.13.
+La lista aggiornata delle migliorie e dei bug è visionabile su:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVA%20AND%20issuetype%20%3D%20Improvement%20AND%20fixVersion%20%3D%20%222.13.0%22">Improvements</a></li>
+<li><a class="reference external" href="https://jira.mongodb.org/issues/?jql=project%20%3D%20JAVA%20AND%20issuetype%20%3D%20Bug%20AND%20fixVersion%20%3D%20%222.13.0%22">Bugs</a></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="conclusioni">
+<h2>Conclusioni<a class="headerlink" href="#conclusioni" title="Permalink to this headline">¶</a></h2>
+<p>È possibile e consigliato rimpiazzare il driver nei progetti sopracitati con la versione 2.13 per renderli compatibili con la versione 3.0 di mongodb senza particolari modifiche al codice e senza speciali accorgimenti.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Java driver assessment</a><ul>
+<li><a class="reference internal" href="#java-driver-compatibility-with-mongodb">Java Driver compatibility with MongoDB</a></li>
+<li><a class="reference internal" href="#progetti-in-assesment">Progetti in assesment</a></li>
+<li><a class="reference internal" href="#classi-verificate">Classi verificate</a></li>
+<li><a class="reference internal" href="#deprecation-list">Deprecation list</a></li>
+<li><a class="reference internal" href="#autenticazione-con-mongodb-3-0">Autenticazione con mongodb 3.0</a></li>
+<li><a class="reference internal" href="#benefici">Benefici</a></li>
+<li><a class="reference internal" href="#conclusioni">Conclusioni</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sysadminnotes.html"
+                        title="previous chapter">Note per la gestione del cluster MongoDB</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="upgrade_mongodb.html"
+                        title="next chapter">Procedura di Upgrade per MongoDB versione 3.0</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/upgrade_java_driver.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="upgrade_mongodb.html" title="Procedura di Upgrade per MongoDB versione 3.0"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sysadminnotes.html" title="Note per la gestione del cluster MongoDB"
+             >previous</a> |</li>
+        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, AXANT.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

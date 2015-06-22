@@ -22,7 +22,9 @@ Contenuto:
     start_script
     availability
     sysadminnotes
+    query_delay_analysis
     upgrade_java_driver
+    upgrade_mongodb
 
 Indices and tables
 ==================
