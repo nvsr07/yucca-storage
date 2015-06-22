@@ -178,7 +178,7 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             datasetVersion_data['description'] = metadata['info']['description']
             datasetVersion_data['license'] = metadata['info']['license']
             datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
-            datasetVersion_data['copyright'] = metadata['info']['copyright']
+            datasetVersion_data['copyright'] = metadata['info'].get('copyright')
             datasetVersion_data['datasetTags'] = metadata['info']['tags']
 
             dataset_data[str(datasetVersion)] = datasetVersion_data
@@ -563,7 +563,7 @@ def _tenant_datasets_data_since(origin_id, tenant_info, data_collection):
         datasetVersion_data['description'] = metadata['info']['description']
         datasetVersion_data['license'] = metadata['info']['license']
         datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
-        datasetVersion_data['copyright'] = metadata['info']['copyright']
+        datasetVersion_data['copyright'] = metadata['info'].get('copyright')
         datasetVersion_data['datasetTags'] = metadata['info']['tags']
 
         dataset_data[str(datasetVersion)] = datasetVersion_data
