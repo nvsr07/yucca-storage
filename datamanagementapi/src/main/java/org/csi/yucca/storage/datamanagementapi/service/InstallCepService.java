@@ -1,6 +1,5 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
-
 import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,113 +54,108 @@ public class InstallCepService {
 
 		Gson gson = JSonHelper.getInstance();
 		log.info("Json Mapping");
-		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
-		try{
+		// match @nil elements
+		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null");
+		try {
 			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
-			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
+			if (pojoStreams != null && pojoStreams.getStreams() != null && pojoStreams.getStreams().getStream() != null) {
 
 				Stream newStream = pojoStreams.getStreams().getStream();
 				DB db = mongo.getDB(Config.getInstance().getDbSupport());
 
-				/*
-				 * Update of the streams
-				 * 
-				 */
+				// Update of the streams
 				DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportStream());
 
 				DBObject findStream = new BasicDBObject();
 				DBObject sortStream = new BasicDBObject();
 				findStream.put("idStream", newStream.getIdStream());
-				sortStream.put("_id",-1);
+				sortStream.put("_id", -1);
 
 				DBCursor cursor = col.find(findStream).sort(sortStream);
 
 				Long idDataset = null;
-				DBObject oldStream =null;
-				if(cursor.hasNext()){
+				DBObject oldStream = null;
+				if (cursor.hasNext()) {
 
 					oldStream = cursor.next();
 
 					col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 					DBObject configData = (DBObject) oldStream.get("configData");
-					idDataset = ((Number)configData.get("idDataset")).longValue();
+					idDataset = ((Number) configData.get("idDataset")).longValue();
 
 					BasicDBObject findDatasets = new BasicDBObject();
-
-					findDatasets.put("idDataset",idDataset);
-
+					findDatasets.put("idDataset", idDataset);
 					DBObject updateConfig = new BasicDBObject();
-
-					updateConfig.put("$set",new BasicDBObject("configData.current", 0));
-
-					col.update(findDatasets, updateConfig,false,true);		
-
+					updateConfig.put("$set", new BasicDBObject("configData.current", 0));
+					col.update(findDatasets, updateConfig, false, true);
 				}
 				col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
-				Metadata myMeta= 	MetadataFiller.fillMetadata(newStream);
+				Metadata myMeta = MetadataFiller.fillMetadata(newStream);
 
-				//myMeta get persisted on db and returns the object with the id updated
+				// myMeta get persisted on db and returns the object with the id
+				// updated
 				log.info("Saving Metadata for Stream");
-				new MongoDBMetadataDAO(mongo,Config.getInstance().getDbSupport(),Config.getInstance().getCollectionSupportDataset()).createMetadata(myMeta,idDataset);
+				new MongoDBMetadataDAO(mongo, Config.getInstance().getDbSupport(), Config.getInstance().getCollectionSupportDataset()).createMetadata(myMeta, idDataset);
 
 				// Insert Api only for new streams not for updates
-				if(oldStream==null){
+				if (oldStream == null) {
 					log.info("Saving Api for Stream");
-					MyApi api = APIFiller.fillApi(newStream,myMeta);
+					MyApi api = APIFiller.fillApi(newStream, myMeta);
 					log.info(gson.toJson(api, MyApi.class));
 					col = db.getCollection(Config.getInstance().getCollectionSupportApi());
-					DBObject apiObject = (DBObject)JSON.parse(gson.toJson(api, MyApi.class));
+					DBObject apiObject = (DBObject) JSON.parse(gson.toJson(api, MyApi.class));
 					apiObject.removeField("id");
-					insertDocumentWithKey(col,apiObject,"idApi",MAX_RETRY);
+					insertDocumentWithKey(col, apiObject, "idApi", MAX_RETRY);
 				}
 
-				StreamOut strOut = StreamFiller.fillStream(newStream,myMeta.getIdDataset());
+				StreamOut strOut = StreamFiller.fillStream(newStream, myMeta.getIdDataset());
 				log.info(gson.toJson(strOut, StreamOut.class));
 				log.info(gson.toJson(myMeta, Metadata.class));
 
-				//stream gets the idStream from the Json
+				// stream gets the idStream from the Json
 				col = db.getCollection(Config.getInstance().getCollectionSupportStream());
-				DBObject dbObject = (DBObject)JSON.parse(gson.toJson(strOut, StreamOut.class));
+				DBObject dbObject = (DBObject) JSON.parse(gson.toJson(strOut, StreamOut.class));
 
-				DBObject uniqueStream = new BasicDBObject("idStream",strOut.getIdStream());
+				DBObject uniqueStream = new BasicDBObject("idStream", strOut.getIdStream());
 				uniqueStream.put("streams.stream.deploymentVersion", strOut.getStreams().getStream().getDeploymentVersion());
 
 				dbObject.removeField("id");
-				// if the stream with that id and version exists .. update it, otherwise insert the new one.
-				//upsert:true  multi:false 
-				col.update(uniqueStream,dbObject,true,false);
+				// if the stream with that id and version exists .. update it,
+				// otherwise insert the new one.
+				// upsert:true multi:false
+				col.update(uniqueStream, dbObject, true, false);
 
-				/*
-				 * Create api in the store
-				 */
+				// Create api in the store
 				String apiName = "";
-				try{
-					//Insert
-					apiName = StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),false);
-				}catch(Exception duplicate){
-					if(duplicate.getMessage().toLowerCase().contains("duplicate")){
-						//Update
-						apiName = StoreService.createApiforStream(newStream,myMeta.getDatasetCode(),true);
-					}else throw duplicate;
-				}
+				try {
+					// Insert
+					apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), false, pojoStreams);
 
-				if(newStream.getPublishStream()!=0){
-					StoreService.publishStore("1.0", apiName, "admin");
-					Set<String> tenantSet = new TreeSet<String>();
-					if(newStream.getTenantssharing()!=null){
-						for( Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()){
-							tenantSet.add(tenantSh.getTenantCode());
-							String appName = "userportal_"+tenantSh.getTenantCode();
-							StoreService.addSubscriptionForTenant(apiName,appName);
-						}						
+					//L'operazione di Publish deve essere eseguita solo alla prima installazione
+					if (newStream.getPublishStream() != 0) {
+						StoreService.publishStore("1.0", apiName, "admin");
+						Set<String> tenantSet = new TreeSet<String>();
+						if (newStream.getTenantssharing() != null) {
+							for (Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()) {
+								tenantSet.add(tenantSh.getTenantCode());
+								String appName = "userportal_" + tenantSh.getTenantCode();
+								StoreService.addSubscriptionForTenant(apiName, appName);
+							}
+						}
+						if (!tenantSet.contains(newStream.getCodiceTenant())) {
+							String appName = "userportal_" + newStream.getCodiceTenant();
+							StoreService.addSubscriptionForTenant(apiName, appName);
+						}
 					}
-					if(!tenantSet.contains(newStream.getCodiceTenant())){
-						String appName = "userportal_"+newStream.getCodiceTenant();
-						StoreService.addSubscriptionForTenant(apiName,appName);
-					}
+				} catch (Exception duplicate) {
+					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
+						// Update
+						apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), true, pojoStreams);
+					} else
+						throw duplicate;
 				}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
 			return JSON.parse("{KO:1}").toString();
@@ -178,18 +172,16 @@ public class InstallCepService {
 
 		Gson gson = JSonHelper.getInstance();
 		log.info("Json Mapping");
-		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
-		try{
+		// match @nil elements
+		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null");
+		try {
 			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
-			if(pojoStreams != null && pojoStreams.getStreams()!= null && pojoStreams.getStreams().getStream()!= null){
+			if (pojoStreams != null && pojoStreams.getStreams() != null && pojoStreams.getStreams().getStream() != null) {
 
 				Stream newStream = pojoStreams.getStreams().getStream();
 				DB db = mongo.getDB(Config.getInstance().getDbSupport());
 
-				/*
-				 * Update of the streams
-				 * 
-				 */
+				// Update of the streams
 
 				DBCollection colStream = db.getCollection(Config.getInstance().getCollectionSupportStream());
 
@@ -199,47 +191,47 @@ public class InstallCepService {
 				DBCursor cursor = colStream.find(findStream);
 
 				Long idDataset = null;
-				DBObject oldStream =null;
-				if(cursor.hasNext()){
+				DBObject oldStream = null;
+				if (cursor.hasNext()) {
 
 					oldStream = cursor.next();
 
 					DBObject configData = (DBObject) oldStream.get("configData");
-					
+
 					DBObject configDataUpdate = new BasicDBObject();
-					configDataUpdate.put("$set",new BasicDBObject("configData.deleted", 1));
-					colStream.update(findStream, configDataUpdate,false,true);	
+					configDataUpdate.put("$set", new BasicDBObject("configData.deleted", 1));
+					colStream.update(findStream, configDataUpdate, false, true);
 
 					BasicDBObject findDatasets = new BasicDBObject();
 
-					idDataset = ((Number)configData.get("idDataset")).longValue();
-					findDatasets.put("idDataset",idDataset);
+					idDataset = ((Number) configData.get("idDataset")).longValue();
+					findDatasets.put("idDataset", idDataset);
 
 					DBObject updateConfig = new BasicDBObject();
 
-					updateConfig.put("$set",new BasicDBObject("configData.current", 0));
-					updateConfig.put("$set",new BasicDBObject("configData.deleted", 1));
+					updateConfig.put("$set", new BasicDBObject("configData.current", 0));
+					updateConfig.put("$set", new BasicDBObject("configData.deleted", 1));
 
-					DBCollection colDataset  = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+					DBCollection colDataset = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 
-					colDataset.update(findDatasets, updateConfig,false,true);		
+					colDataset.update(findDatasets, updateConfig, false, true);
 
-					DBCollection colApi  = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+					DBCollection colApi = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 
 					BasicDBObject findApis = new BasicDBObject();
-					findApis.put("dataset.idDataset",idDataset);
+					findApis.put("dataset.idDataset", idDataset);
 
-					colApi.update(findApis, configDataUpdate,false,true);	
+					colApi.update(findApis, configDataUpdate, false, true);
 
 					DBCursor datasets = colDataset.find(findDatasets);
-					while(datasets.hasNext()){
+					while (datasets.hasNext()) {
 						String apiName = (String) datasets.next().get("datasetCode");
-						if(apiName!=null){
-							apiName+="_odata";
-							try{
+						if (apiName != null) {
+							apiName += "_odata";
+							try {
 								StoreService.removeStore("1.0", apiName, "admin");
-							}catch(Exception ex){
-								log.info("Impossible to remove "+apiName+ex.getMessage());
+							} catch (Exception ex) {
+								log.info("Impossible to remove " + apiName + ex.getMessage());
 							}
 						}
 						break;
@@ -248,14 +240,14 @@ public class InstallCepService {
 				String tenant = newStream.getCodiceTenant();
 				String sensor = newStream.getCodiceVirtualEntity();
 				String stream = newStream.getCodiceStream();
-				String apiName= tenant+"."+sensor+"_"+stream+"_stream";
-				try{
+				String apiName = tenant + "." + sensor + "_" + stream + "_stream";
+				try {
 					StoreService.removeStore("1.0", apiName, "admin");
-				}catch(Exception ex){
-					log.info("Impossible to remove "+apiName+ex.getMessage());
+				} catch (Exception ex) {
+					log.info("Impossible to remove " + apiName + ex.getMessage());
 				}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
 			return JSON.parse("{KO:1}").toString();
@@ -264,24 +256,24 @@ public class InstallCepService {
 		return JSON.parse("{OK:1}").toString();
 	}
 
-	private static Long insertDocumentWithKey(DBCollection col,DBObject obj,String key,Integer maxRetry) throws Exception{
-		Long id =0L;
-		try{
+	private static Long insertDocumentWithKey(DBCollection col, DBObject obj, String key, Integer maxRetry) throws Exception {
+		Long id = 0L;
+		try {
 			BasicDBObject sortobj = new BasicDBObject();
-			sortobj.append(key, -1);			
+			sortobj.append(key, -1);
 			DBObject doc = col.find().sort(sortobj).limit(1).one();
 			log.info(doc);
-			if(doc != null && doc.get(key)!=null)
-				id = ((Number)doc.get(key)).longValue() +1;
-			else{
-				id=1L;
+			if (doc != null && doc.get(key) != null)
+				id = ((Number) doc.get(key)).longValue() + 1;
+			else {
+				id = 1L;
 			}
 			obj.put(key, id);
 			col.insert(obj);
-		}catch(Exception e){
-			if(maxRetry>0){
-				return insertDocumentWithKey(col, obj,key,--maxRetry);
-			}else{
+		} catch (Exception e) {
+			if (maxRetry > 0) {
+				return insertDocumentWithKey(col, obj, key, --maxRetry);
+			} else {
 				throw e;
 			}
 		}

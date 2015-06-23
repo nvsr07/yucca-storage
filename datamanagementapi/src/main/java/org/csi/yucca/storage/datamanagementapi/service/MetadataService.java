@@ -350,9 +350,6 @@ public class MetadataService {
 			}
 		}
 		metadata.getInfo().setRegistrationDate(new Date());
-		
-		
-		
 
 		List<SDPBulkInsertException> checkFileToWriteErrors = null;
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
@@ -428,9 +425,6 @@ public class MetadataService {
 			
 			
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
-
-
-
 			
 			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
 			api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
@@ -446,11 +440,11 @@ public class MetadataService {
 			 */
 			String apiName = "";
 			try {
-				apiName = StoreService.createApiforBulk(metadata, false);
+				apiName = StoreService.createApiforBulk(metadata, false, datasetMetadata);
 			} catch (Exception duplicate) {
 				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 					try {
-						apiName = StoreService.createApiforBulk(metadata, true);
+						apiName = StoreService.createApiforBulk(metadata, true, datasetMetadata);
 					} catch (Exception e) {
 						log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
@@ -632,11 +626,11 @@ public class MetadataService {
 			 */
 			String apiName = "";
 			try {
-				apiName = StoreService.createApiforBulk(newMetadata, false);
+				apiName = StoreService.createApiforBulk(newMetadata, false, metadataInput);
 			} catch (Exception duplicate) {
 				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 					try {
-						apiName = StoreService.createApiforBulk(newMetadata, true);
+						apiName = StoreService.createApiforBulk(newMetadata, true, metadataInput);
 					} catch (Exception e) {
 						log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}

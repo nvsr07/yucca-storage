@@ -33,7 +33,8 @@ public class CallApiManagerUtil {
 	private boolean addTimestamp = true;
 	
 	private VarProperties properties;
-	private  HttpClient  client = HttpClientBuilder.create().build();
+	private HttpClient  client = HttpClientBuilder.create().build();
+	private String JSONContent = "{";
 	
 
 	public void loadProperties(String res) {
@@ -45,21 +46,24 @@ public class CallApiManagerUtil {
 		}
 		Assert.assertNotNull(properties);
 	}
+	
 	int nop;
 	String op = "<init>";
-	
 	public String getVar(String key) {
 		return properties.getVar(key);	
 	}
+	
 	public String setVar(String key,String val) {
 		String prev = (String) properties.setVar(key, val);
 		return prev;
 	}
+	
 	public void setOp(String op) {
 		nop++;
 		this.op = op;
 		System.out.println("----------------------------------------------");
 	}
+	
 	public void setOp(String op,int step) {
 		nop = step;
 		this.op = op;
@@ -191,7 +195,6 @@ public class CallApiManagerUtil {
 	String oper = "operation.";
 	
 	public void exec() throws Exception {
-//		String oper = "operation.";
 		for (step = 1; ; step++) {
 			String key = oper + step;
 			String val = properties.getProperty(key);
@@ -239,6 +242,7 @@ public class CallApiManagerUtil {
 				httppost.setHeader(headerKey,headerVal);
 				outf("Header %-30s %s",headerKey,headerVal);
 			}
+			
 			HttpResponse r = client.execute(httppost);
 			String status = r.getStatusLine().toString();
 			out("status " + status);
