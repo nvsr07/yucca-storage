@@ -70,7 +70,18 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             tenantCode: {
                 streamCode:{
                     total: int,
-                    visibility: 'public'
+                    visibility: 'public',
+                    streamName: 'Temperature',
+                    virtualEntityDescription: 'Formaldehyde sensor Haladins',
+                    streamTags:[
+                        {tagCode: 'INDOOR'},
+                        {tagCode: 'QUALITY'},
+                        ...
+                    ],
+                    components:[
+                        {componentName: 'value', measureUnit: 'C'},
+                        ...
+                    ]
                 },
                 ...
             },
@@ -81,7 +92,18 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
                 idDataset:{
                     datasetVersion:{
                         total: int,
-                        visibility: 'public'
+                        visibility: 'public',
+                        datasetName: 'T'.
+                        description: 'Dataset Temperature',
+                        license: 'CC BY 4.0',
+                        disclaimer: None
+                        copyright: 'Copyright (C) 2014, CSP Innovazione nelle ICT',
+                        datasetTags:[
+                            {tagCode: 'AIR'},
+                            {tagCode: 'INDOOR'},
+                            {tagCode: 'QUALITY'},
+                            ...
+                        ]
                     },
                     ...
                 },
@@ -127,6 +149,15 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
                  'idDataset': idDataset,
                  'datasetVersion': datasetVersion}
             )['info']['visibility']
+
+            stream_info = stream['streams']['stream']
+            stream_data['streamName'] = stream['streamName']
+            stream_data['virtualEntityDescription'] = stream_info['virtualEntityDescription']
+            stream_data['streamTags'] = stream_info['streamTags']['tags']
+            stream_data['components'] = [{'componentName': element['componentName'],
+                                          'measureUnit': element['measureUnit']}
+                                         for element in stream_info['components']['element']]
+
             tenant_streams_measures_data[str(idStream)] = stream_data
 
         stats['lifetime']['tenant_streams_measures_data'][curtenant] = tenant_streams_measures_data
@@ -139,11 +170,18 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             idDataset = metadata['idDataset']
             dataset_data = tenant_data_datasets_data.get(str(idDataset), {})
             datasetVersion = metadata['datasetVersion']
-            dasetVersion_data = {}
-            dasetVersion_data['total'] = data_col.find({'idDataset': idDataset,
+            datasetVersion_data = {}
+            datasetVersion_data['total'] = data_col.find({'idDataset': idDataset,
                                                    'datasetVersion': datasetVersion}).count()
-            dasetVersion_data['visibility'] = metadata['info']['visibility']
-            dataset_data[str(datasetVersion)] = dasetVersion_data
+            datasetVersion_data['visibility'] = metadata['info']['visibility']
+            datasetVersion_data['datasetName'] = metadata['info']['datasetName']
+            datasetVersion_data['description'] = metadata['info']['description']
+            datasetVersion_data['license'] = metadata['info']['license']
+            datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
+            datasetVersion_data['copyright'] = metadata['info'].get('copyright')
+            datasetVersion_data['datasetTags'] = metadata['info']['tags']
+
+            dataset_data[str(datasetVersion)] = datasetVersion_data
             tenant_data_datasets_data[str(idDataset)] = dataset_data
         stats['lifetime']['tenant_data_datasets_data'][curtenant] = tenant_data_datasets_data
 
@@ -169,7 +207,18 @@ def step_monthly_data(stats, month_origin_time, tenants_info, **kwargs):
             tenantCode: {
                 streamCode:{
                     total: int,
-                    visibility: 'public'
+                    visibility: 'public',
+                    streamName: 'Temperature',
+                    virtualEntityDescription: 'Formaldehyde sensor Haladins',
+                    streamTags:[
+                        {tagCode: 'INDOOR'},
+                        {tagCode: 'QUALITY'},
+                        ...
+                    ],
+                    components:[
+                        {componentName: 'value', measureUnit: 'C'},
+                        ...
+                    ]
                 },
                 ...
             },
@@ -180,7 +229,18 @@ def step_monthly_data(stats, month_origin_time, tenants_info, **kwargs):
                 idDataset:{
                     datasetVersion:{
                         total: int,
-                        visibility: 'public'
+                        visibility: 'public',
+                        datasetName: 'T'.
+                        description: 'Dataset Temperature',
+                        license: 'CC BY 4.0',
+                        disclaimer: None
+                        copyright: 'Copyright (C) 2014, CSP Innovazione nelle ICT',
+                        datasetTags:[
+                            {tagCode: 'AIR'},
+                            {tagCode: 'INDOOR'},
+                            {tagCode: 'QUALITY'},
+                            ...
+                        ]
                     },
                     ...
                 },
@@ -214,7 +274,18 @@ def step_midnight_data(stats, midnight_origin_time, tenants_info, **kwargs):
             tenantCode: {
                 streamCode:{
                     total: int,
-                    visibility: 'public'
+                    visibility: 'public',
+                    streamName: 'Temperature',
+                    virtualEntityDescription: 'Formaldehyde sensor Haladins',
+                    streamTags:[
+                        {tagCode: 'INDOOR'},
+                        {tagCode: 'QUALITY'},
+                        ...
+                    ],
+                    components:[
+                        {componentName: 'value', measureUnit: 'C'},
+                        ...
+                    ]
                 },
                 ...
             },
@@ -225,7 +296,18 @@ def step_midnight_data(stats, midnight_origin_time, tenants_info, **kwargs):
                 idDataset:{
                     datasetVersion:{
                         total: int,
-                        visibility: 'public'
+                        visibility: 'public',
+                        datasetName: 'T'.
+                        description: 'Dataset Temperature',
+                        license: 'CC BY 4.0',
+                        disclaimer: None
+                        copyright: 'Copyright (C) 2014, CSP Innovazione nelle ICT',
+                        datasetTags:[
+                            {tagCode: 'AIR'},
+                            {tagCode: 'INDOOR'},
+                            {tagCode: 'QUALITY'},
+                            ...
+                        ]
                     },
                     ...
                 },
@@ -259,7 +341,18 @@ def step_thirtydays_data(stats, thirtydays_origin_time, tenants_info, **kwargs):
             tenantCode: {
                 streamCode:{
                     total: int,
-                    visibility: 'public'
+                    visibility: 'public',
+                    streamName: 'Temperature',
+                    virtualEntityDescription: 'Formaldehyde sensor Haladins',
+                    streamTags:[
+                        {tagCode: 'INDOOR'},
+                        {tagCode: 'QUALITY'},
+                        ...
+                    ],
+                    components:[
+                        {componentName: 'value', measureUnit: 'C'},
+                        ...
+                    ]
                 },
                 ...
             },
@@ -270,7 +363,18 @@ def step_thirtydays_data(stats, thirtydays_origin_time, tenants_info, **kwargs):
                 idDataset:{
                     datasetVersion:{
                         total: int,
-                        visibility: 'public'
+                        visibility: 'public',
+                        datasetName: 'T'.
+                        description: 'Dataset Temperature',
+                        license: 'CC BY 4.0',
+                        disclaimer: None
+                        copyright: 'Copyright (C) 2014, CSP Innovazione nelle ICT',
+                        datasetTags:[
+                            {tagCode: 'AIR'},
+                            {tagCode: 'INDOOR'},
+                            {tagCode: 'QUALITY'},
+                            ...
+                        ]
                     },
                     ...
                 },
@@ -304,7 +408,18 @@ def step_sevendays_data(stats, sevendays_origin_time, tenants_info, **kwargs):
             tenantCode: {
                 streamCode:{
                     total: int,
-                    visibility: 'public'
+                    visibility: 'public',
+                    streamName: 'Temperature',
+                    virtualEntityDescription: 'Formaldehyde sensor Haladins',
+                    streamTags:[
+                        {tagCode: 'INDOOR'},
+                        {tagCode: 'QUALITY'},
+                        ...
+                    ],
+                    components:[
+                        {componentName: 'value', measureUnit: 'C'},
+                        ...
+                    ]
                 },
                 ...
             },
@@ -315,7 +430,18 @@ def step_sevendays_data(stats, sevendays_origin_time, tenants_info, **kwargs):
                 idDataset:{
                     datasetVersion:{
                         total: int,
-                        visibility: 'public'
+                        visibility: 'public',
+                        datasetName: 'T'.
+                        description: 'Dataset Temperature',
+                        license: 'CC BY 4.0',
+                        disclaimer: None
+                        copyright: 'Copyright (C) 2014, CSP Innovazione nelle ICT',
+                        datasetTags:[
+                            {tagCode: 'AIR'},
+                            {tagCode: 'INDOOR'},
+                            {tagCode: 'QUALITY'},
+                            ...
+                        ]
                     },
                     ...
                 },
@@ -402,6 +528,13 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
              'idDataset': idDataset,
              'datasetVersion': datasetVersion}
         )['info']['visibility']
+        stream_info = stream['streams']['stream']
+        stream_data['streamName'] = stream['streamName']
+        stream_data['virtualEntityDescription'] = stream_info['virtualEntityDescription']
+        stream_data['streamTags'] = stream_info['streamTags']['tags']
+        stream_data['components'] = [{'componentName': element['componentName'],
+                                      'measureUnit': element['measureUnit']}
+                                     for element in stream_info['components']['element']]
         tenant_streams_data[str(idStream)] = stream_data
 
     return tenant_streams_data
@@ -420,12 +553,20 @@ def _tenant_datasets_data_since(origin_id, tenant_info, data_collection):
         idDataset = metadata['idDataset']
         dataset_data = tenant_datasets_data.get(str(idDataset), {})
         datasetVersion = metadata['datasetVersion']
-        dasetVersion_data = {}
-        dasetVersion_data['total'] = data_collection.find({'_id': {'$gte': origin_id},
+        datasetVersion_data = {}
+        datasetVersion_data['total'] = data_collection.find({'_id': {'$gte': origin_id},
                                                       'idDataset': idDataset,
                                                       'datasetVersion': datasetVersion}).count()
-        dasetVersion_data['visibility'] = metadata['info']['visibility']
-        dataset_data[str(datasetVersion)] = dasetVersion_data
+        datasetVersion_data['visibility'] = metadata['info']['visibility']
+
+        datasetVersion_data['datasetName'] = metadata['info']['datasetName']
+        datasetVersion_data['description'] = metadata['info']['description']
+        datasetVersion_data['license'] = metadata['info']['license']
+        datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
+        datasetVersion_data['copyright'] = metadata['info'].get('copyright')
+        datasetVersion_data['datasetTags'] = metadata['info']['tags']
+
+        dataset_data[str(datasetVersion)] = datasetVersion_data
         tenant_datasets_data[str(idDataset)] = dataset_data
 
     return tenant_datasets_data

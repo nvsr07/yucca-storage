@@ -471,19 +471,17 @@ and run::
 It should correctly install test suite dependencies and run it::
 
     tests.test_stats.TestStatisticsSteps.test_date ... ok
-    tests.test_stats.TestStatisticsSteps.test_metadata_stats ... ok
     tests.test_stats.TestStatisticsSteps.test_midnight ... ok
     tests.test_stats.TestStatisticsSteps.test_monthly ... ok
-    tests.test_stats.TestStatisticsSteps.test_stream_frequency_without_streams ... ok
+    tests.test_stats.TestStatisticsSteps.test_sevendays ... ok
     tests.test_stats.TestStatisticsSteps.test_tenant_totals ... ok
     tests.test_stats.TestStatisticsSteps.test_thirtydays ... ok
-    tests.test_stats.TestStatisticsStepsWithStreams.test_metadata_stats_with_streams ... ok
-    tests.test_stats.TestStatisticsStepsWithStreams.test_stream_frequencies ... ok
     tests.test_utils.TestCollectionLookupUtilities.test_connected_collection ... ok
     tests.test_utils.TestCollectionLookupUtilities.test_tenant_collections ... ok
     tests.test_utils.TestDateTimeUtils.test_begin_of_day ... ok
     tests.test_utils.TestDateTimeUtils.test_first_month_day ... ok
     tests.test_utils.TestDateTimeUtils.test_isodate ... ok
+    tests.test_utils.TestDateTimeUtils.test_sevendays_ago ... ok
     tests.test_utils.TestDateTimeUtils.test_thirtydays_ago ... ok
     tests.test_utils.TestDateTimeUtils.test_yestertday ... ok
     tests.test_utils.TestMongoDBConnection.test_missing_db_configuration_is_detected ... ok
@@ -492,13 +490,13 @@ It should correctly install test suite dependencies and run it::
     Name                     Stmts   Miss  Cover   Missing
     ------------------------------------------------------
     yuccausage                   0      0   100%
-    yuccausage.mongodb          33      0   100%
-    yuccausage.stats_steps      90      0   100%
-    yuccausage.utils            12      0   100%
+    yuccausage.mongodb          36      0   100%
+    yuccausage.stats_steps     136      0   100%
+    yuccausage.utils            14      0   100%
     ------------------------------------------------------
-    TOTAL                      135      0   100%
+    TOTAL                      186      0   100%
     ----------------------------------------------------------------------
-    Ran 18 tests in 0.307s
+    Ran 16 tests in 1.264s
 
     OK
 

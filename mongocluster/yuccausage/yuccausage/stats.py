@@ -37,7 +37,18 @@ def gather_stats(month_origin_time, midnight_origin_time, thirtydays_origin_time
                     tenantCode: {
                         streamCode:{
                             total: int,
-                            visibility: 'public'
+                            visibility: 'public',
+                            streamName: 'Temperature',
+                            virtualEntityDescription:'Formaldehyde sensor Haladins',
+                            streamTags:[
+                                {'tagCode' : 'INDOOR'},
+                                {'tagCode' : 'QUALITY'},
+                                ...
+                            ],
+                            components:[
+                                {'componentName" : 'value', 'measureUnit' : 'C'},
+                                ...
+                            ]
                         },
                         ...
                     },
@@ -70,7 +81,18 @@ def gather_stats(month_origin_time, midnight_origin_time, thirtydays_origin_time
                     tenantCode: {
                         streamCode:{
                             total: int,
-                            visibility: 'public'
+                            visibility: 'public',
+                            streamName: 'Temperature',
+                            virtualEntityDescription:'Formaldehyde sensor Haladins',
+                            streamTags:[
+                                {'tagCode' : 'INDOOR'},
+                                {'tagCode' : 'QUALITY'},
+                                ...
+                            ],
+                            components:[
+                                {'componentName" : 'value', 'measureUnit' : 'C'},
+                                ...
+                            ]
                         },
                         ...
                     },
@@ -103,7 +125,18 @@ def gather_stats(month_origin_time, midnight_origin_time, thirtydays_origin_time
                     tenantCode: {
                         streamCode:{
                             total: int,
-                            visibility: 'public'
+                            visibility: 'public',
+                            streamName: 'Temperature',
+                            virtualEntityDescription:'Formaldehyde sensor Haladins',
+                            streamTags:[
+                                {'tagCode' : 'INDOOR'},
+                                {'tagCode' : 'QUALITY'},
+                                ...
+                            ],
+                            components:[
+                                {'componentName" : 'value', 'measureUnit' : 'C'},
+                                ...
+                            ]
                         },
                         ...
                     },
@@ -136,7 +169,18 @@ def gather_stats(month_origin_time, midnight_origin_time, thirtydays_origin_time
                     tenantCode: {
                         streamCode:{
                             total: int,
-                            visibility: 'public'
+                            visibility: 'public',
+                            streamName: 'Temperature',
+                            virtualEntityDescription:'Formaldehyde sensor Haladins',
+                            streamTags:[
+                                {tagCode : 'INDOOR'},
+                                {tagCode : 'QUALITY'},
+                                ...
+                            ],
+                            components:[
+                                {componentName : 'value', measureUnit : 'C'},
+                                ...
+                            ]
                         },
                         ...
                     },
@@ -146,7 +190,18 @@ def gather_stats(month_origin_time, midnight_origin_time, thirtydays_origin_time
                     tenantCode: {
                         streamCode:{
                             total: int,
-                            visibility: 'public'
+                            visibility: 'public',
+                            datasetName: 'T'.
+                            description: 'Dataset Temperature',
+                            license: 'CC BY 4.0',
+                            disclaimer: None
+                            copyright: 'Copyright (C) 2014, CSP Innovazione nelle ICT.',
+                            datasetTags:[
+                                {tagCode: 'AIR'},
+                                {tagCode: 'INDOOR'},
+                                {tagCode: 'QUALITY'},
+                                ...
+                            ]
                         },
                         ...
                     },

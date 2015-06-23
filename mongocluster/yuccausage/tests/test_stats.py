@@ -61,6 +61,24 @@ class TestStatisticsSteps(object):
                 "tenantCode": "test-smartlab",
                 "idDataset": 1,
                 "datasetVersion": 1
+            },
+            "streams": {
+                "stream": {
+                    "virtualEntityDescription": "Arduino Reference",
+                    "components": {
+                        "element": [
+                            {"componentName": "c0",
+                             "measureUnit": "C"}
+                        ]
+                    },
+                    "streamTags": {
+                        "tags": [
+                            {
+                                "tagCode": "AIR"
+                            }
+                        ]
+                    }
+                }
             }
         }, {
             "idStream": 12,
@@ -71,6 +89,24 @@ class TestStatisticsSteps(object):
                 "tenantCode": "test-csp",
                 "idDataset": 2,
                 "datasetVersion": 1
+            },
+            "streams": {
+                "stream": {
+                    "virtualEntityDescription": "Arduino Reference",
+                    "components": {
+                        "element": [
+                            {"componentName": "c0",
+                             "measureUnit": "C"}
+                        ]
+                    },
+                    "streamTags": {
+                        "tags": [
+                            {
+                                "tagCode": "AIR"
+                            }
+                        ]
+                    }
+                }
             }
         }]
 
@@ -305,17 +341,68 @@ class TestStatisticsSteps(object):
                 }
             },
             'tenant_streams_measures_data': {
-                'test-smartlab': {'12': {'total': self.counts['measures'], 'visibility': 'public'}},
-                'test-csp': {'12': {'total': self.counts['measures'], 'visibility': 'public'}}},
+                'test-smartlab': {
+                    '12': {
+                        'total': self.counts['measures'],
+                        'visibility': 'public',
+                        'components': [
+                            {'componentName': 'c0',
+                             'measureUnit': 'C'}
+                        ],
+                        'streamName': 'Temperatura rilevata',
+                        'streamTags': [
+                            {'tagCode': 'AIR'},
+                        ],
+                        'virtualEntityDescription': 'Arduino Reference'
+                    }
+                },
+                'test-csp': {
+                    '12': {
+                        'total': self.counts['measures'],
+                        'visibility': 'public',
+                        'components': [
+                            {'componentName': 'c0',
+                             'measureUnit': 'C'}
+                        ],
+                        'streamName': 'Temperatura rilevata',
+                        'streamTags': [
+                            {'tagCode': 'AIR'},
+                        ],
+                        'virtualEntityDescription': 'Arduino Reference'
+                    }
+                }
+            },
             'tenant_data_datasets_data': {
                 'test-smartlab': {
                     '1': {
-                        '1': {'total': self.counts['data'], 'visibility': 'public'}
+                        '1': {
+                            'total': self.counts['data'],
+                            'visibility': 'public',
+                            'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                            'datasetName': 'TrFl',
+                            'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                            {'tagCode': 'TRAFFIC'}],
+                            'description': 'Dataset TrafficFlow',
+                            'disclaimer': None,
+                            'license': 'CC BY 4.0'
+                        }
                     }
                 },
                 'test-csp': {
                     '2': {
-                        '1': {'total': self.counts['data'], 'visibility': 'public'}}}
+                        '1': {
+                            'total': self.counts['data'],
+                            'visibility': 'public',
+                            'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                            'datasetName': 'TrFl',
+                            'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                            {'tagCode': 'TRAFFIC'}],
+                            'description': 'Dataset TrafficFlow',
+                            'disclaimer': None,
+                            'license': 'CC BY 4.0'
+                        }
+                    }
+                }
             },
             'origin': datetime(2001, 1, 1, 0, 0)}, stats
 
@@ -324,6 +411,9 @@ class TestStatisticsSteps(object):
                                                               'tenant_streams_measures_data': {},
                                                               'tenant_data_datasets_data': {}}})
         stats, __ = step_midnight_data(stats, datetime(2001, 2, 9), **kwargs)
+
+        print stats['midnight']
+
         assert stats['midnight'] == {'origin': datetime(2001, 2, 9, 0, 0),
                                      'tenant_total_data': {
                                          'test-smartlab': {
@@ -342,19 +432,69 @@ class TestStatisticsSteps(object):
                                          }
                                      },
                                      'tenant_streams_measures_data': {
-                                         'test-smartlab': {'12': {'total': 0,
-                                                                'visibility': 'public'}},
-                                         'test-csp': {'12': {'total': 0,
-                                                           'visibility': 'public'}}},
+                                         'test-smartlab': {
+                                             '12': {
+                                                 'total': 0,
+                                                 'visibility': 'public',
+                                                 'components': [
+                                                     {'componentName': 'c0',
+                                                      'measureUnit': 'C'}
+                                                 ],
+                                                 'streamName': 'Temperatura rilevata',
+                                                 'streamTags': [
+                                                     {'tagCode': 'AIR'},
+                                                 ],
+                                                 'virtualEntityDescription': 'Arduino Reference'
+                                             }
+                                         },
+                                         'test-csp': {
+                                             '12': {
+                                                 'total': 0,
+                                                 'visibility': 'public',
+                                                 'components': [
+                                                     {'componentName': 'c0',
+                                                      'measureUnit': 'C'}
+                                                 ],
+                                                 'streamName': 'Temperatura rilevata',
+                                                 'streamTags': [
+                                                     {'tagCode': 'AIR'},
+                                                 ],
+                                                 'virtualEntityDescription': 'Arduino Reference'
+                                             }
+                                         }
+                                     },
                                      'tenant_data_datasets_data': {
                                          'test-smartlab': {
                                              '1': {
-                                                 '1': {'total': 0,
-                                                       'visibility': 'public'}}},
+                                                 '1': {
+                                                     'total': 0,
+                                                     'visibility': 'public',
+                                                     'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                                                     'datasetName': 'TrFl',
+                                                     'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                                                     {'tagCode': 'TRAFFIC'}],
+                                                     'description': 'Dataset TrafficFlow',
+                                                     'disclaimer': None,
+                                                     'license': 'CC BY 4.0'
+                                                 }
+                                             }
+                                         },
                                          'test-csp': {
                                              '2': {
-                                                 '1': {'total': 0,
-                                                       'visibility': 'public'}}}}}, stats
+                                                 '1': {
+                                                     'total': 0,
+                                                     'visibility': 'public',
+                                                     'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                                                     'datasetName': 'TrFl',
+                                                     'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                                                     {'tagCode': 'TRAFFIC'}],
+                                                     'description': 'Dataset TrafficFlow',
+                                                     'disclaimer': None,
+                                                     'license': 'CC BY 4.0'
+                                                 }
+                                             }
+                                         }
+                                     }}, stats['midnight']
 
     def test_thirtydays(self):
         stats, kwargs = step_gather_tenant_info({'30days': {'tenant_total_data': {},
@@ -382,19 +522,68 @@ class TestStatisticsSteps(object):
                 }
             },
             'tenant_streams_measures_data': {
-                'test-smartlab': {'12': {'total': self.counts['measures'] - removed_items,
-                                       'visibility': 'public'}},
-                'test-csp': {'12': {'total': self.counts['measures'] - removed_items,
-                                  'visibility': 'public'}}},
+                'test-smartlab': {
+                    '12': {
+                        'total': self.counts['measures'] - removed_items,
+                        'visibility': 'public',
+                        'components': [
+                            {'componentName': 'c0',
+                             'measureUnit': 'C'}
+                        ],
+                        'streamName': 'Temperatura rilevata',
+                        'streamTags': [
+                            {'tagCode': 'AIR'},
+                        ],
+                        'virtualEntityDescription': 'Arduino Reference'
+                    }
+                },
+                'test-csp': {
+                    '12': {
+                        'total': self.counts['measures'] - removed_items,
+                        'visibility': 'public',
+                        'components': [
+                            {'componentName': 'c0',
+                             'measureUnit': 'C'}
+                        ],
+                        'streamName': 'Temperatura rilevata',
+                        'streamTags': [
+                            {'tagCode': 'AIR'},
+                        ],
+                        'virtualEntityDescription': 'Arduino Reference'
+                    }
+                }
+            },
             'tenant_data_datasets_data': {
                 'test-smartlab': {
                     '1': {
-                        '1': {'total': self.counts['data'] - removed_items,
-                              'visibility': 'public'}}},
+                        '1': {
+                            'total': self.counts['data'] - removed_items,
+                            'visibility': 'public',
+                            'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                            'datasetName': 'TrFl',
+                            'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                            {'tagCode': 'TRAFFIC'}],
+                            'description': 'Dataset TrafficFlow',
+                            'disclaimer': None,
+                            'license': 'CC BY 4.0'
+                        }
+                    }
+                },
                 'test-csp': {
                     '2': {
-                        '1': {'total': self.counts['data'] - removed_items,
-                              'visibility': 'public'}}}
+                        '1': {
+                            'total': self.counts['data'] - removed_items,
+                            'visibility': 'public',
+                            'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                            'datasetName': 'TrFl',
+                            'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                            {'tagCode': 'TRAFFIC'}],
+                            'description': 'Dataset TrafficFlow',
+                            'disclaimer': None,
+                            'license': 'CC BY 4.0'
+                        }
+                    }
+                }
             },
             'origin': datetime(2001, 1, 10, 0, 0)}
 
@@ -426,19 +615,68 @@ class TestStatisticsSteps(object):
                 }
             },
             'tenant_streams_measures_data': {
-                'test-smartlab': {'12': {'total': self.counts['measures'] - removed_items,
-                                       'visibility': 'public'}},
-                'test-csp': {'12': {'total': self.counts['measures'] - removed_items,
-                                  'visibility': 'public'}}},
+                'test-smartlab': {
+                    '12': {
+                        'total': self.counts['measures'] - removed_items,
+                        'visibility': 'public',
+                        'components': [
+                            {'componentName': 'c0',
+                             'measureUnit': 'C'}
+                        ],
+                        'streamName': 'Temperatura rilevata',
+                        'streamTags': [
+                            {'tagCode': 'AIR'},
+                        ],
+                        'virtualEntityDescription': 'Arduino Reference'
+                    }
+                },
+                'test-csp': {
+                    '12': {
+                        'total': self.counts['measures'] - removed_items,
+                        'visibility': 'public',
+                        'components': [
+                            {'componentName': 'c0',
+                             'measureUnit': 'C'}
+                        ],
+                        'streamName': 'Temperatura rilevata',
+                        'streamTags': [
+                            {'tagCode': 'AIR'},
+                        ],
+                        'virtualEntityDescription': 'Arduino Reference'
+                    }
+                }
+            },
             'tenant_data_datasets_data': {
                 'test-smartlab': {
                     '1': {
-                        '1': {'total': self.counts['data'] - removed_items,
-                              'visibility': 'public'}}},
+                        '1': {
+                            'total': self.counts['data'] - removed_items,
+                            'visibility': 'public',
+                            'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                            'datasetName': 'TrFl',
+                            'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                            {'tagCode': 'TRAFFIC'}],
+                            'description': 'Dataset TrafficFlow',
+                            'disclaimer': None,
+                            'license': 'CC BY 4.0'
+                        }
+                    }
+                },
                 'test-csp': {
                     '2': {
-                        '1': {'total': self.counts['data'] - removed_items,
-                              'visibility': 'public'}}}
+                        '1': {
+                            'total': self.counts['data'] - removed_items,
+                            'visibility': 'public',
+                            'copyright': 'Copyright (C) 2014, CSP Innovazione nelle ICT. All rights reserved.',
+                            'datasetName': 'TrFl',
+                            'datasetTags': [{'tagCode': 'OUTDOOR'},
+                                            {'tagCode': 'TRAFFIC'}],
+                            'description': 'Dataset TrafficFlow',
+                            'disclaimer': None,
+                            'license': 'CC BY 4.0'
+                        }
+                    }
+                }
             },
             'origin': datetime(2001, 1, 8, 0, 0)}
 
