@@ -127,10 +127,19 @@ public class InstallCepService {
 
 				// Create api in the store
 				String apiName = "";
+				Boolean updateOperation = false;
 				try {
 					// Insert
 					apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), false, pojoStreams);
-
+				} catch (Exception duplicate) {
+					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
+						// Update
+						apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), true, pojoStreams);
+						updateOperation = true;
+					} else
+						throw duplicate;
+				}
+				if (!updateOperation){
 					//L'operazione di Publish deve essere eseguita solo alla prima installazione
 					if (newStream.getPublishStream() != 0) {
 						StoreService.publishStore("1.0", apiName, "admin");
@@ -147,12 +156,6 @@ public class InstallCepService {
 							StoreService.addSubscriptionForTenant(apiName, appName);
 						}
 					}
-				} catch (Exception duplicate) {
-					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
-						// Update
-						apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), true, pojoStreams);
-					} else
-						throw duplicate;
 				}
 			}
 		} catch (Exception e) {

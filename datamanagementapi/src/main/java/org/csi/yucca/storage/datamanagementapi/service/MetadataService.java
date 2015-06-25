@@ -81,7 +81,7 @@ public class MetadataService {
 
 	@GET
 	@Path("/{tenant}")
-	//@Produces(MediaType.APPLICATION_JSON)
+	// @Produces(MediaType.APPLICATION_JSON)
 	@Produces("application/json; charset=UTF-8")
 	public String getAllCurrent(@PathParam("tenant") String tenant) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getAll] - START");
@@ -150,8 +150,7 @@ public class MetadataService {
 			headerFixedColumn.add("Sensor.Category");
 			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityCategory()));
 
-			if (stream.getStreams().getStream().getVirtualEntityPositions() != null
-					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition() != null
+			if (stream.getStreams().getStream().getVirtualEntityPositions() != null && stream.getStreams().getStream().getVirtualEntityPositions().getPosition() != null
 					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition().size() > 0) {
 				headerFixedColumn.add("Sensor.Latitude");
 				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().get(0).getLat()));
@@ -257,14 +256,13 @@ public class MetadataService {
 			}
 		};
 
-		Response build = Response.ok(streamResponse, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName)
-				.build();
+		Response build = Response.ok(streamResponse, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName).build();
 		return build;
 	}
 
 	@GET
 	@Path("/{tenant}/{datasetCode}")
-//	@Produces(MediaType.APPLICATION_JSON)
+	// @Produces(MediaType.APPLICATION_JSON)
 	@Produces("application/json; charset=UTF-8")
 	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException, UnknownHostException {
 		// select
@@ -383,24 +381,24 @@ public class MetadataService {
 			Metadata binaryMetadata = null;
 			if (metadata.getInfo().getFields() != null) {
 				for (Field field : metadata.getInfo().getFields()) {
-					if(field.getDataType().equals("binary")){
+					if (field.getDataType().equals("binary")) {
 						binaryMetadata = Metadata.createBinaryMetadata(metadata);
 						break;
 					}
 				}
 			}
-			if(binaryMetadata!=null){
+			if (binaryMetadata != null) {
 				Metadata binaryMetadataCreated = metadataDAO.createMetadata(binaryMetadata, null);
 				metadata.getInfo().setBinaryDatasetVersion(binaryMetadataCreated.getDatasetVersion());
 				metadata.getInfo().setBinaryIdDataset(binaryMetadataCreated.getIdDataset());
 			}
 
-			
 			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
-			if(metadata.getInfo().getTenantssharing()!=null ){
+			if (metadata.getInfo().getTenantssharing() != null) {
 				Set<String> tenantSet = new TreeSet<String>();
-				for(Tenantsharing tenantInList : metadata.getInfo().getTenantssharing().getTenantsharing()){
-					if(!tenantInList.getTenantCode().equals(metadata.getConfigData().getTenantCode()) && !tenantSet.contains(metadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner()!=1){
+				for (Tenantsharing tenantInList : metadata.getInfo().getTenantssharing().getTenantsharing()) {
+					if (!tenantInList.getTenantCode().equals(metadata.getConfigData().getTenantCode()) && !tenantSet.contains(metadata.getConfigData().getTenantCode())
+							&& tenantInList.getIsOwner() != 1) {
 						lista.add(tenantInList);
 						tenantSet.add(tenantInList.getTenantCode());
 					}
@@ -411,21 +409,19 @@ public class MetadataService {
 			owner.setIsOwner(1);
 			owner.setTenantCode(metadata.getConfigData().getTenantCode());
 			owner.setTenantName(metadata.getConfigData().getTenantCode());
-			//owner.setTenantDescription(metadata.getConfigData().get);
+			// owner.setTenantDescription(metadata.getConfigData().get);
 
 			lista.add(owner);
 			Tenantsharing arrayTenant[] = new Tenantsharing[lista.size()];
-			arrayTenant= lista.toArray(arrayTenant);
-			if(metadata.getInfo().getTenantssharing()==null ){
+			arrayTenant = lista.toArray(arrayTenant);
+			if (metadata.getInfo().getTenantssharing() == null) {
 				Tenantssharing tenantssharing = new Tenantssharing();
-				metadata.getInfo().setTenantssharing(tenantssharing);				
+				metadata.getInfo().setTenantssharing(tenantssharing);
 			}
 			metadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
-			
-			
-			
+
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
-			
+
 			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
 			api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
 			api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
@@ -453,21 +449,21 @@ public class MetadataService {
 				}
 			}
 			try {
-				
-					StoreService.publishStore("1.0", apiName, "admin");
-					Set<String> tenantSet = new TreeSet<String>();
-					if(metadata.getInfo().getTenantssharing()!=null){
-						for( Tenantsharing tenantSh : metadata.getInfo().getTenantssharing().getTenantsharing()){
-							tenantSet.add(tenantSh.getTenantCode());
-							String appName = "userportal_"+tenantSh.getTenantCode();
-							StoreService.addSubscriptionForTenant(apiName,appName);
-						}						
+
+				StoreService.publishStore("1.0", apiName, "admin");
+				Set<String> tenantSet = new TreeSet<String>();
+				if (metadata.getInfo().getTenantssharing() != null) {
+					for (Tenantsharing tenantSh : metadata.getInfo().getTenantssharing().getTenantsharing()) {
+						tenantSet.add(tenantSh.getTenantCode());
+						String appName = "userportal_" + tenantSh.getTenantCode();
+						StoreService.addSubscriptionForTenant(apiName, appName);
 					}
-					if(!tenantSet.contains(metadata.getConfigData().getTenantCode())){
-						String appName = "userportal_"+metadata.getConfigData().getTenantCode();
-						StoreService.addSubscriptionForTenant(apiName,appName);
-					}
-				
+				}
+				if (!tenantSet.contains(metadata.getConfigData().getTenantCode())) {
+					String appName = "userportal_" + metadata.getConfigData().getTenantCode();
+					StoreService.addSubscriptionForTenant(apiName, appName);
+				}
+
 			} catch (Exception e) {
 				log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 			}
@@ -489,8 +485,8 @@ public class MetadataService {
 	@POST
 	@Path("/add/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request)
-			throws NumberFormatException, UnknownHostException {
+	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request) throws NumberFormatException,
+			UnknownHostException {
 		log.debug("[MetadataService::addData] - START");
 
 		String encoding = null;
@@ -554,8 +550,8 @@ public class MetadataService {
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{tenant}/{datasetCode}")
-	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, final String metadataInput)
-			throws NumberFormatException, UnknownHostException {
+	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, final String metadataInput) throws NumberFormatException,
+			UnknownHostException {
 		log.debug("[MetadataService::updateMetadata] - START");
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 		try {
@@ -583,12 +579,12 @@ public class MetadataService {
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
 
-			
 			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
-			if(newMetadata.getInfo().getTenantssharing()!=null ){
+			if (newMetadata.getInfo().getTenantssharing() != null) {
 				Set<String> tenantSet = new TreeSet<String>();
-				for(Tenantsharing tenantInList : newMetadata.getInfo().getTenantssharing().getTenantsharing()){
-					if(!tenantInList.getTenantCode().equals(newMetadata.getConfigData().getTenantCode()) && !tenantSet.contains(newMetadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner()!=1){
+				for (Tenantsharing tenantInList : newMetadata.getInfo().getTenantssharing().getTenantsharing()) {
+					if (!tenantInList.getTenantCode().equals(newMetadata.getConfigData().getTenantCode()) && !tenantSet.contains(newMetadata.getConfigData().getTenantCode())
+							&& tenantInList.getIsOwner() != 1) {
 						lista.add(tenantInList);
 						tenantSet.add(tenantInList.getTenantCode());
 					}
@@ -599,17 +595,17 @@ public class MetadataService {
 			owner.setIsOwner(1);
 			owner.setTenantCode(newMetadata.getConfigData().getTenantCode());
 			owner.setTenantName(newMetadata.getConfigData().getTenantCode());
-			//owner.setTenantDescription(metadata.getConfigData().get);
+			// owner.setTenantDescription(metadata.getConfigData().get);
 
 			lista.add(owner);
 			Tenantsharing arrayTenant[] = new Tenantsharing[lista.size()];
-			arrayTenant= lista.toArray(arrayTenant);
-			if(newMetadata.getInfo().getTenantssharing()==null ){
+			arrayTenant = lista.toArray(arrayTenant);
+			if (newMetadata.getInfo().getTenantssharing() == null) {
 				Tenantssharing tenantssharing = new Tenantssharing();
-				newMetadata.getInfo().setTenantssharing(tenantssharing);				
+				newMetadata.getInfo().setTenantssharing(tenantssharing);
 			}
 			newMetadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
-			
+
 			int counter = 0;
 			for (Field existingField : newMetadata.getInfo().getFields()) {
 				existingField.setFieldAlias(inputMetadata.getInfo().getFields()[counter].getFieldAlias());
@@ -625,12 +621,14 @@ public class MetadataService {
 			 * Create api in the store
 			 */
 			String apiName = "";
+			Boolean updateOperation = false;
 			try {
 				apiName = StoreService.createApiforBulk(newMetadata, false, metadataInput);
 			} catch (Exception duplicate) {
 				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 					try {
 						apiName = StoreService.createApiforBulk(newMetadata, true, metadataInput);
+						updateOperation = true;
 					} catch (Exception e) {
 						log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
@@ -638,16 +636,17 @@ public class MetadataService {
 					log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 				}
 			}
-			try {
-				StoreService.publishStore("1.0", apiName, "admin");
-
-				String appName = "userportal_" + newMetadata.getConfigData().getTenantCode();
-				StoreService.addSubscriptionForTenant(apiName, appName);
-
-			} catch (Exception e) {
-				log.error("[MetadataService::updateMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+			if (!updateOperation){
+				try {
+					StoreService.publishStore("1.0", apiName, "admin");
+	
+					String appName = "userportal_" + newMetadata.getConfigData().getTenantCode();
+					StoreService.addSubscriptionForTenant(apiName, appName);
+	
+				} catch (Exception e) {
+					log.error("[MetadataService::updateMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+				}
 			}
-
 		} catch (Exception e) {
 			log.debug("[MetadataService::updateMetadata] - ERROR " + e.getMessage());
 			updateDatasetResponse.addErrorMessage(new ErrorMessage(e));
@@ -677,7 +676,7 @@ public class MetadataService {
 		try {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				String lineUtf8 = new String (line.getBytes ("iso-8859-1"), "UTF-8");
+				String lineUtf8 = new String(line.getBytes("iso-8859-1"), "UTF-8");
 				sb.append(lineUtf8);
 			}
 		} catch (IOException e) {
