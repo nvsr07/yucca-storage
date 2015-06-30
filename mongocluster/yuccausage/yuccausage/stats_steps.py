@@ -152,7 +152,7 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
 
             stream_info = stream['streams']['stream']
             stream_data['streamName'] = stream['streamName']
-            stream_data['virtualEntityDescription'] = stream_info['virtualEntityDescription']
+            stream_data['virtualEntityDescription'] = stream_info.get('virtualEntityDescription')
             stream_data['streamTags'] = stream_info['streamTags']['tags']
             stream_data['components'] = [{'componentName': element['componentName'],
                                           'measureUnit': element['measureUnit']}
@@ -175,11 +175,11 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
                                                    'datasetVersion': datasetVersion}).count()
             datasetVersion_data['visibility'] = metadata['info']['visibility']
             datasetVersion_data['datasetName'] = metadata['info']['datasetName']
-            datasetVersion_data['description'] = metadata['info']['description']
-            datasetVersion_data['license'] = metadata['info']['license']
+            datasetVersion_data['description'] = metadata['info'].get('description')
+            datasetVersion_data['license'] = metadata['info'].get('license')
             datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
             datasetVersion_data['copyright'] = metadata['info'].get('copyright')
-            datasetVersion_data['datasetTags'] = metadata['info']['tags']
+            datasetVersion_data['datasetTags'] = metadata['info'].get('tags')
 
             dataset_data[str(datasetVersion)] = datasetVersion_data
             tenant_data_datasets_data[str(idDataset)] = dataset_data
@@ -530,7 +530,7 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
         )['info']['visibility']
         stream_info = stream['streams']['stream']
         stream_data['streamName'] = stream['streamName']
-        stream_data['virtualEntityDescription'] = stream_info['virtualEntityDescription']
+        stream_data['virtualEntityDescription'] = stream_info.get('virtualEntityDescription')
         stream_data['streamTags'] = stream_info['streamTags']['tags']
         stream_data['components'] = [{'componentName': element['componentName'],
                                       'measureUnit': element['measureUnit']}
@@ -560,11 +560,11 @@ def _tenant_datasets_data_since(origin_id, tenant_info, data_collection):
         datasetVersion_data['visibility'] = metadata['info']['visibility']
 
         datasetVersion_data['datasetName'] = metadata['info']['datasetName']
-        datasetVersion_data['description'] = metadata['info']['description']
-        datasetVersion_data['license'] = metadata['info']['license']
+        datasetVersion_data['description'] = metadata['info'].get('description')
+        datasetVersion_data['license'] = metadata['info'].get('license')
         datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
         datasetVersion_data['copyright'] = metadata['info'].get('copyright')
-        datasetVersion_data['datasetTags'] = metadata['info']['tags']
+        datasetVersion_data['datasetTags'] = metadata['info'].get('tags')
 
         dataset_data[str(datasetVersion)] = datasetVersion_data
         tenant_datasets_data[str(idDataset)] = dataset_data
