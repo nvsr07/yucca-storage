@@ -115,6 +115,7 @@ public class StoreService {
 				try {
 					createStream(newStream, false);
 				} catch (Exception duplicate) {
+					log.error("Error on createStream (maybe duplicate...)",duplicate);
 					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 						createStream(newStream, true);
 					} else
