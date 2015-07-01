@@ -362,6 +362,7 @@ public class StoreService {
 		String stream = newStream.getCodiceStream();
 
 		AddStream addStream = new AddStream();
+		addStream.setProperties(update);
 
 		ImageProcessor processor = new ImageProcessor();
 		String imageBase64 = newStream.getStreamIcon();
