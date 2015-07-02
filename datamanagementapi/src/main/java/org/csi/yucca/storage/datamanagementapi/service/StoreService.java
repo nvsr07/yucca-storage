@@ -113,11 +113,11 @@ public class StoreService {
 				String stream = newStream.getCodiceStream();
 
 				try {
-					createStream(newStream, false);
+					createStream(newStream, false, pojoStreams);
 				} catch (Exception duplicate) {
 					log.error("Error on createStream (maybe duplicate...)",duplicate);
 					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
-						createStream(newStream, true);
+						createStream(newStream, true, pojoStreams);
 					} else
 						throw duplicate;
 				}
@@ -355,7 +355,7 @@ public class StoreService {
 		return apiFinalName;
 	}
 
-	public static boolean createStream(Stream newStream, boolean update) throws Exception {
+	public static boolean createStream(Stream newStream, boolean update, POJOStreams pojoStreams) throws Exception {
 
 		String tenant = newStream.getCodiceTenant();
 		String sensor = newStream.getCodiceVirtualEntity();
@@ -439,6 +439,14 @@ public class StoreService {
 		}
 
 		addStream.setVar("tags", tags);
+		
+		//DT Add document
+		pojoStreams.getStreams().getStream().setStreamIcon("");
+		Gson gson = JSonHelper.getInstance();
+		String datasetInput = gson.toJson(pojoStreams);
+		addStream.setVar("content", datasetInput);
+		
+		
 		addStream.run();
 		return true;
 	}
