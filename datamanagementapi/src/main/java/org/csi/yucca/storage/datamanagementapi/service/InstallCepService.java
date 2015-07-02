@@ -130,11 +130,11 @@ public class InstallCepService {
 				Boolean updateOperation = false;
 				try {
 					// Insert
-					apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), false, pojoStreams);
+					apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), false, json);
 				} catch (Exception duplicate) {
 					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 						// Update
-						apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), true, pojoStreams);
+						apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), true, json);
 						updateOperation = true;
 					} else
 						throw duplicate;

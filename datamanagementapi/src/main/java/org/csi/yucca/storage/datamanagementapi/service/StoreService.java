@@ -58,10 +58,10 @@ public class StoreService {
 
 				String apiName = tenant + "." + sensor + "_" + stream;
 				try {
-					createApiforStream(newStream, apiName, false, pojoStreams);
+					createApiforStream(newStream, apiName, false, json);
 				} catch (Exception duplicate) {
 					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
-						createApiforStream(newStream, apiName, true, pojoStreams);
+						createApiforStream(newStream, apiName, true, json);
 					} else
 						throw duplicate;
 				}
@@ -113,11 +113,11 @@ public class StoreService {
 				String stream = newStream.getCodiceStream();
 
 				try {
-					createStream(newStream, false, pojoStreams);
+					createStream(newStream, false, json);
 				} catch (Exception duplicate) {
 					log.error("Error on createStream (maybe duplicate...)",duplicate);
 					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
-						createStream(newStream, true, pojoStreams);
+						createStream(newStream, true, json);
 					} else
 						throw duplicate;
 				}
@@ -167,7 +167,7 @@ public class StoreService {
 		return true;
 	}
 
-	public static String createApiforStream(Stream newStream, String apiName, boolean update, POJOStreams pojoStreams) throws Exception {
+	public static String createApiforStream(Stream newStream, String apiName, boolean update, String json) throws Exception {
 
 		String apiFinalName = apiName + "_odata";
 		
@@ -253,14 +253,19 @@ public class StoreService {
 		objStream.setVar("tags", tags);
 		
 		//DT Add document
-		pojoStreams.getStreams().getStream().setStreamIcon("");
-		Gson gson = JSonHelper.getInstance();
-		String datasetInput = gson.toJson(pojoStreams);
+		String datasetInput = extractContentForDocument(json);
 		objStream.setVar("content", datasetInput);
 		
 		objStream.run();
 
 		return apiFinalName;
+	}
+
+	private static String extractContentForDocument(String json) {
+		Gson gson = JSonHelper.getInstance();
+		POJOStreams pojoStreams2 = gson.fromJson(json, POJOStreams.class);
+		pojoStreams2.getStreams().getStream().setStreamIcon("");
+		return gson.toJson(pojoStreams2);
 	}
 
 	public static String createApiforBulk(Metadata metadata, boolean update, String jsonFile) throws Exception {
@@ -355,7 +360,7 @@ public class StoreService {
 		return apiFinalName;
 	}
 
-	public static boolean createStream(Stream newStream, boolean update, POJOStreams pojoStreams) throws Exception {
+	public static boolean createStream(Stream newStream, boolean update, String json) throws Exception {
 
 		String tenant = newStream.getCodiceTenant();
 		String sensor = newStream.getCodiceVirtualEntity();
@@ -440,10 +445,7 @@ public class StoreService {
 
 		addStream.setVar("tags", tags);
 		
-		//DT Add document
-		pojoStreams.getStreams().getStream().setStreamIcon("");
-		Gson gson = JSonHelper.getInstance();
-		String datasetInput = gson.toJson(pojoStreams);
+		String datasetInput = extractContentForDocument(json);
 		addStream.setVar("content", datasetInput);
 		
 		
