@@ -126,6 +126,8 @@ public class CallApiManagerUtil {
 		String values = properties.getProperty(key + ".params.values");
 		String outVar = properties.getProperty(key + ".out");
 		String httpExpect = properties.getProperty(key + ".http.status.expect");
+		String httpignoreExc = properties.getProperty(key + ".http.ignoreException");
+		System.out.println("execHttp key:["+key+"]");
 		if (httpExpect == null)
 			httpExpect = properties.getVar("httpok");
 		String respExpect = properties.getProperty(key + ".response.expect");
@@ -135,17 +137,28 @@ public class CallApiManagerUtil {
 			" names: "+ names + " values " + values + " httpExpect " + httpExpect + 
 			" respExpect " + respExpect);
 		String resp;
+		if (httpignoreExc != null) {
+			try {
+				resp = exec(step,names,values,null); // no httpExpected for ignore errors
+				out(resp);
+			} catch (Exception ex)
+			{
+				ex.printStackTrace();
+				resp="Exception";
+			}
+		}
+		else {
 			resp = exec(step,names,values,httpExpect);
 			out(resp);
-//			out("expect " + respExpect);
             int p = resp.indexOf(respExpect);
             if (p < 0){
             	out("response don't match with expected value: " + respExpect);
             	throw new Exception(resp);
             }
 			Assert.assertTrue(p >= 0);
-			if (outVar != null)
-				properties.setVar(outVar, resp);
+		}
+		if (outVar != null)
+			properties.setVar(outVar, resp);
 	}
 
 	private void execClass(String key,String val) {
@@ -246,7 +259,8 @@ public class CallApiManagerUtil {
 			HttpResponse r = client.execute(httppost);
 			String status = r.getStatusLine().toString();
 			out("status " + status);
-			Assert.assertTrue(status.equals(httpExpect));
+			if (httpExpect!=null)
+				Assert.assertTrue(status.equals(httpExpect));
 
 			StringBuilder out = new StringBuilder();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(r.getEntity().getContent()));
@@ -301,7 +315,8 @@ public class CallApiManagerUtil {
 			HttpResponse r = client.execute(httppost);
 			String status = r.getStatusLine().toString();
 			out("status " + status);
-			Assert.assertTrue(status.equals(httpExpect));
+			if (httpExpect!=null)
+				Assert.assertTrue(status.equals(httpExpect));
 
 			StringBuilder out = new StringBuilder();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(r.getEntity().getContent()));
@@ -348,7 +363,8 @@ public class CallApiManagerUtil {
 			HttpResponse r = client.execute(httpget);
 			String status = r.getStatusLine().toString();
 			out("status " + status);
-			Assert.assertTrue(status.equals(httpExpect));
+			if (httpExpect!=null)
+				Assert.assertTrue(status.equals(httpExpect));
 
 			StringBuilder out = new StringBuilder();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(r.getEntity().getContent()));
