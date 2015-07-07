@@ -14,6 +14,8 @@ public class Constants {
 	public static final int DEFAULT_IMAGE_HEIGHT = 256;
 	public static final String DEFAULT_ODATA_IMAGE = "odataOverlay.png";
 	
+	public static final Integer VIRTUAL_ENTITY_TWITTER_TYPE_ID  = 3; 
+	
 
 	public static final DateFormat DEFAULT_FIELD_DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.getDefault());
 

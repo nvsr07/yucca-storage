@@ -12,8 +12,11 @@ public class Metadata extends AbstractEntity {
 	public static final String CONFIG_DATA_SUBTYPE_BULK_DATASET = "bulkDataset";
 	public static final String CONFIG_DATA_SUBTYPE_BINARY_DATASET = "binaryDataset";
 	public static final String CONFIG_DATA_SUBTYPE_STREAM_DATASET = "streamDataset";
+	public static final String CONFIG_DATA_SUBTYPE_SOCIAL_DATASET = "socialDataset";
 	public static final String CONFIG_DATA_TYPE_API = "api";
 	public static final String CONFIG_DATA_SUBTYPE_API_MULTI_BULK = "apiMultiBulk";
+	
+	public static final String CONFIG_DATA_DEFAULT_COLLECTION_SOCIAL = "social";
 
 	private String id;
 	private Long idDataset; // max dei presenti (maggiore di un milione)
@@ -95,10 +98,12 @@ public class Metadata extends AbstractEntity {
 									// 12 _ idDataset
 
 			String prefix = "";
-			if (getConfigData() != null && CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(getConfigData().getSubtype()))
+			if (getConfigData() != null && (CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(getConfigData().getSubtype()) || CONFIG_DATA_SUBTYPE_SOCIAL_DATASET.equals(getConfigData().getSubtype())))
 				prefix = "ds_";
 			else if (getConfigData() != null && CONFIG_DATA_SUBTYPE_BINARY_DATASET.equals(getConfigData().getSubtype()))
 				prefix = "bn_";
+			
+			
 
 			String datasetNameSafe = "";
 			if (getInfo() != null)

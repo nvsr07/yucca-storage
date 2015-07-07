@@ -21,46 +21,50 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 
 public class MetadataFiller {
 
-
 	static public Metadata fillMetadata(Stream stream) {
 
 		System.out.println("FILL METADATA OBJECT");
 
 		Metadata myMeta = new Metadata();
 
-		//		String datasetCode = "ds_"+stream.getCodiceStream()+"_"; calculation on insert
-		//		myMeta.setDatasetCode(datasetCode);
+		// String datasetCode = "ds_"+stream.getCodiceStream()+"_"; calculation
+		// on insert
+		// myMeta.setDatasetCode(datasetCode);
 		myMeta.setDatasetVersion(stream.getDeploymentVersion());
 		ConfigData cf = new ConfigData();
 		cf.setCurrent(1);
 		cf.setType("dataset");
-		cf.setSubtype("streamDataset");
-		//		cf.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+".");
+		if (stream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID) {
+			cf.setSubtype(Metadata.CONFIG_DATA_SUBTYPE_SOCIAL_DATASET);
+			cf.setCollection(Metadata.CONFIG_DATA_DEFAULT_COLLECTION_SOCIAL);
+		} else
+			cf.setSubtype(Metadata.CONFIG_DATA_SUBTYPE_STREAM_DATASET);
+		// cf.setEntityNameSpace("it.csi.smartdata.odata."+stream.getCodiceTenant()+".");
 		cf.setDatasetStatus(stream.getDeploymentStatusCode());
 		cf.setIdTenant(stream.getIdTenant());
 		cf.setTenantCode(stream.getCodiceTenant());
 
-		myMeta.setConfigData(cf );
+		myMeta.setConfigData(cf);
 
-		Info info= new Info();
+		Info info = new Info();
 		info.setCopyright(stream.getCopyright());
 		info.setDataDomain(stream.getDomainStream());
 		info.setDatasetName(stream.getCodiceStream());
-		info.setDescription("Dataset " +stream.getNomeStream());
+		info.setDescription("Dataset " + stream.getNomeStream());
 		info.setDisclaimer(stream.getDisclaimer());
 		info.setIcon(stream.getStreamIcon());
 
 		info.setFps(stream.getFps());
 		info.setLicense(stream.getLicence());
 
-		Date date=null;
-		if(stream.getRegistrationDate()!=null){		
+		Date date = null;
+		if (stream.getRegistrationDate() != null) {
 			try {
 				date = new SimpleDateFormat(Constants.DATE_FORMAT).parse(stream.getRegistrationDate());
 			} catch (ParseException e) {
 				date = new Date();
 			}
-		}else{
+		} else {
 			date = new Date();
 		}
 		info.setRegistrationDate(date);
@@ -69,17 +73,16 @@ public class MetadataFiller {
 		info.setRequestorSurname(stream.getCognomeRichiedente());
 		info.setVisibility(stream.getVisibility());
 
-
 		Tenantssharing tenantsShare = new Tenantssharing();
 		List<Tenantsharing> listaTenant = new ArrayList<Tenantsharing>();
-		if(stream.getTenantssharing()!=null){
+		if (stream.getTenantssharing() != null) {
 			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing> lista = stream.getTenantssharing().getTenantsharing();
-			if(lista!=null){
+			if (lista != null) {
 				Set<String> tenantSet = new TreeSet<String>();
-				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenant : lista){
+				for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenant : lista) {
 
-					if(!tenant.getTenantCode().equals(stream.getCodiceTenant()) && !tenantSet.contains(tenant.getTenantCode())  && tenant.getIsOwner()!=1){
-						
+					if (!tenant.getTenantCode().equals(stream.getCodiceTenant()) && !tenantSet.contains(tenant.getTenantCode()) && tenant.getIsOwner() != 1) {
+
 						Tenantsharing newTen = new Tenantsharing();
 						newTen.setIdTenant(tenant.getIdTenant().longValue());
 						newTen.setIsOwner(tenant.getIsOwner());
@@ -87,49 +90,49 @@ public class MetadataFiller {
 						newTen.setTenantDescription(tenant.getTenantDescription());
 						newTen.setTenantName(tenant.getTenantName());
 						tenantSet.add(tenant.getTenantCode());
-						listaTenant.add(newTen);					
+						listaTenant.add(newTen);
 					}
 				}
 			}
 		}
-		
-		//Insert owner
+
+		// Insert owner
 		Tenantsharing newTen = new Tenantsharing();
 		newTen.setIdTenant(stream.getIdTenant());
 		newTen.setIsOwner(1);
 		newTen.setTenantCode(stream.getCodiceTenant());
-		newTen.setTenantName(stream.getNomeTenant());					
-		listaTenant.add(newTen);	
+		newTen.setTenantName(stream.getNomeTenant());
+		listaTenant.add(newTen);
 
 		Tenantsharing arrayTenant[] = new Tenantsharing[listaTenant.size()];
-		arrayTenant= listaTenant.toArray(arrayTenant);
+		arrayTenant = listaTenant.toArray(arrayTenant);
 		tenantsShare.setTenantsharing(arrayTenant);
-		
+
 		info.setTenantssharing(tenantsShare);
 
 		Componenti comp = stream.getComponenti();
-		if(comp!=null){
+		if (comp != null) {
 			List<Element> elem = comp.getElement();
-			if(elem!=null){
+			if (elem != null) {
 				List<Field> fields = new ArrayList<Field>();
 
-				for(Element el : elem){
+				for (Element el : elem) {
 
-					Field f = new Field();	
+					Field f = new Field();
 					f.setFieldAlias(el.getPhenomenon());
 					f.setFieldName(el.getNome());
 					f.setIsKey(0);
 					f.setDataType(el.getDataType());
 					f.setMeasureUnit(el.getMeasureUnit());
-					fields.add(f );
+					fields.add(f);
 				}
 				info.setFields(fields.toArray(new Field[0]));
-			}			
+			}
 		}
 
 		List<Tag> tags = new ArrayList<Tag>();
-		if(stream.getStreamTags()!=null && stream.getStreamTags().getTag()!=null){
-			for(  org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag t : stream.getStreamTags().getTag()){
+		if (stream.getStreamTags() != null && stream.getStreamTags().getTag() != null) {
+			for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag t : stream.getStreamTags().getTag()) {
 				Tag tag = new Tag();
 				tag.setTagCode(t.getTagCode());
 				tags.add(tag);
