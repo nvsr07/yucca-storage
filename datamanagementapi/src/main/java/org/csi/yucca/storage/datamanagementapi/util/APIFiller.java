@@ -29,6 +29,10 @@ public class APIFiller {
 		configData.setTenantCode(stream.getCodiceTenant());
 		configData.setType("api");
 		configData.setSubtype("apiMultiStream");
+		if (stream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID) {
+			configData.setSubtype("apiMultiSocial");
+		} else
+			configData.setSubtype("apiMultiStream");
 		//configData.setEntityNameSpace("it.csi.smartdata.odata." + stream.getCodiceTenant() + "." + apiCode);
 		
 

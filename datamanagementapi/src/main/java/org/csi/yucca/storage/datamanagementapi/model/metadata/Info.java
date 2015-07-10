@@ -1,6 +1,8 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
@@ -33,6 +35,8 @@ public class Info extends AbstractEntity {
 	private Field fields[];
 
 	private Tenantssharing tenantssharing;
+
+	private Map<String, List<String>> tagsTranslated;
 
 	public Info() {
 	}
@@ -209,5 +213,14 @@ public class Info extends AbstractEntity {
 	public void setBinaryDatasetVersion(Integer binaryDatasetVersion) {
 		this.binaryDatasetVersion = binaryDatasetVersion;
 	}
+
+	public Map<String, List<String>> getTagsTranslated() {
+		return tagsTranslated;
+	}
+
+	public void setTagsTranslated(Map<String, List<String>> tagsTranslated) {
+		this.tagsTranslated = tagsTranslated;
+	}
+
 
 }

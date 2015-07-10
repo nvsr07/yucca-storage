@@ -15,7 +15,7 @@ public class ImageProcessor {
 
 
 
-	public void doProcessOdata(String imageBase64,String path,String fileName) throws IOException{
+	public void doProcessOdata(String imageBase64,String path,String fileName, boolean addTwitter) throws IOException{
 		// TODO Auto-generated method stub
 		//		String appPath = getServletContext().getRealPath("");
 		// constructs path of the directory to save uploaded file
@@ -40,11 +40,14 @@ public class ImageProcessor {
 		}
 		convertImage(savePath, fileName, imageBase64Clean);
 
-		mergeImages(savePath, fileName);
+		if(addTwitter)
+			mergeImages(savePath, fileName, Constants.DEFAULT_ODATA_TWITTER_IMAGE);
+		else		
+			mergeImages(savePath, fileName, Constants.DEFAULT_ODATA_IMAGE);
 		System.out.println("Done");
 	}
 
-	public void doProcessStream(String imageBase64,String path,String fileName) throws IOException{
+	public void doProcessStream(String imageBase64,String path,String fileName, boolean addTwitter) throws IOException{
 		//		String appPath = getServletContext().getRealPath("");
 		// constructs path of the directory to save uploaded file
 		String savePath = path;
@@ -66,6 +69,12 @@ public class ImageProcessor {
 			}
 		}
 		convertImage(savePath, fileName, imageBase64Clean);
+		if(addTwitter){
+			mergeImages(savePath, fileName, Constants.DEFAULT_STREAM_TWITTER_IMAGE);
+		}
+		else{	
+			mergeImages(savePath, fileName, Constants.DEFAULT_STREAM_IMAGE);
+		}
 		System.out.println("Done");
 		//		mergeImages(savePath, imageFileName);
 
@@ -91,12 +100,12 @@ public class ImageProcessor {
 		ImageIO.write(combined, "png", new File(savePath, imageFileName));
 	}
 
-	private boolean mergeImages(String savePath, String baseImageName) throws IOException {
+	private boolean mergeImages(String savePath, String baseImageName, String overlayImage) throws IOException {
 		File path = new File(savePath);
 
 		// load source images
 		BufferedImage image = ImageIO.read(new File(path, baseImageName));
-		BufferedImage overlay = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_ODATA_IMAGE));
+		BufferedImage overlay = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(overlayImage));
 
 		// create the new image, canvas size is the max. of both image sizes
 		int w = Math.min(image.getWidth(), overlay.getWidth());

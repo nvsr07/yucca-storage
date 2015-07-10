@@ -1,6 +1,9 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streaminput;
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.annotations.Expose;
 
 
@@ -90,6 +93,10 @@ public class Stream {
     private VirtualEntityPositions virtualEntityPositions;
     @Expose
     private Tenantssharing tenantssharing;
+
+    @Expose
+	private Map<String, List<String>> tagsTranslated;
+  
     
 
     /**
@@ -819,4 +826,11 @@ public class Stream {
 		this.tenantssharing = tenantssharing;
 	}
 
+	public Map<String, List<String>> getTagsTranslated() {
+		return tagsTranslated;
+	}
+
+	public void setTagsTranslated(Map<String, List<String>> tagsTranslated) {
+		this.tagsTranslated = tagsTranslated;
+	}
 }

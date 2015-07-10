@@ -1,6 +1,12 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -13,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
-import org.csi.yucca.storage.datamanagementapi.apimanager.store.CallApiManagerUtil;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.QSPStore;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
@@ -22,6 +27,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
@@ -44,7 +50,7 @@ public class StoreService {
 
 		Gson gson = JSonHelper.getInstance();
 		// match @nil elements
-		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); 
+		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null");
 		try {
 			POJOStreams pojoStreams = gson.fromJson(json, POJOStreams.class);
 			if (pojoStreams != null && pojoStreams.getStreams() != null && pojoStreams.getStreams().getStream() != null) {
@@ -98,7 +104,7 @@ public class StoreService {
 	public String apiCreateStreamStore(final String datasetInput) throws UnknownHostException {
 
 		Gson gson = JSonHelper.getInstance();
-		
+
 		// match @nil elements
 		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null");
 		try {
@@ -115,7 +121,7 @@ public class StoreService {
 				try {
 					createStream(newStream, false, json);
 				} catch (Exception duplicate) {
-					log.error("Error on createStream (maybe duplicate...)",duplicate);
+					log.error("Error on createStream (maybe duplicate...)", duplicate);
 					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 						createStream(newStream, true, json);
 					} else
@@ -170,7 +176,7 @@ public class StoreService {
 	public static String createApiforStream(Stream newStream, String apiName, boolean update, String json) throws Exception {
 
 		String apiFinalName = apiName + "_odata";
-		
+
 		AddStream objStream = new AddStream();
 		objStream.setProperties(update);
 
@@ -180,7 +186,8 @@ public class StoreService {
 		String path = "images/";
 		String fileName = newStream.getCodiceStream() + ".png";
 
-		processor.doProcessOdata(imageBase64, path, fileName);
+		boolean addTwitter = newStream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
+		processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(newStream.getVisibility())) {
@@ -246,16 +253,17 @@ public class StoreService {
 			tags += newStream.getDomainStream();
 		}
 		if (newStream.getStreamTags() != null && newStream.getStreamTags().getTag() != null) {
-			for (Tag t : newStream.getStreamTags().getTag())
+			for (Tag t : newStream.getStreamTags().getTag()) {
 				tags += "," + t.getTagCode();
+			}
 		}
 
 		objStream.setVar("tags", tags);
-		
-		//DT Add document
+
+		// DT Add document
 		String datasetInput = extractContentForDocument(json);
 		objStream.setVar("content", datasetInput);
-		
+
 		objStream.run();
 
 		return apiFinalName;
@@ -265,7 +273,54 @@ public class StoreService {
 		Gson gson = JSonHelper.getInstance();
 		POJOStreams pojoStreams2 = gson.fromJson(json, POJOStreams.class);
 		pojoStreams2.getStreams().getStream().setStreamIcon("");
+
+		System.out.println("AAAAAAAAAAAAAAAAAAA  - tags " + pojoStreams2.getStreams().getStream().getStreamTags());
+
+		if (pojoStreams2.getStreams().getStream().getStreamTags() != null) {
+			System.out.println("AAAAAAAAAAAAAAAAA entro");
+			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
+			for (String lang : Constants.LANGUAGES_SUPPORTED) {
+				ResourceBundle messages = getMessages(lang);
+
+				List<String> translatedTags = new LinkedList<String>();
+				for (Tag tag : pojoStreams2.getStreams().getStream().getStreamTags().getTag()) {
+					translatedTags.add(messages.getString(tag.getTagCode()));
+				}
+
+				if (pojoStreams2.getStreams().getStream().getDomainStream() != null)
+					translatedTags.add(messages.getString(pojoStreams2.getStreams().getStream().getDomainStream()));
+
+				tagsTranslated.put(lang, translatedTags);
+				pojoStreams2.getStreams().getStream().setTagsTranslated(tagsTranslated);
+			}
+
+		}
+
 		return gson.toJson(pojoStreams2);
+	}
+
+	private static String extractMetadataContentForDocument(String jsonMetadata) {
+		Gson gson = JSonHelper.getInstance();
+		Metadata metadata = Metadata.fromJson(jsonMetadata);
+
+		if (metadata.getInfo().getTags() != null) {
+			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
+			for (String lang : Constants.LANGUAGES_SUPPORTED) {
+				ResourceBundle messages = getMessages(lang);
+				List<String> translatedTags = new LinkedList<String>();
+				for (org.csi.yucca.storage.datamanagementapi.model.metadata.Tag tag : metadata.getInfo().getTags()) {
+					translatedTags.add(messages.getString(tag.getTagCode()));
+				}
+				if (metadata.getInfo().getDataDomain() != null)
+					translatedTags.add(messages.getString(metadata.getInfo().getDataDomain()));
+
+				tagsTranslated.put(lang, translatedTags);
+				metadata.getInfo().setTagsTranslated(tagsTranslated);
+			}
+		}
+
+		return gson.toJson(metadata);
+
 	}
 
 	public static String createApiforBulk(Metadata metadata, boolean update, String jsonFile) throws Exception {
@@ -282,7 +337,11 @@ public class StoreService {
 		String path = "images/";
 		String fileName = metadata.getDatasetCode() + ".png";
 
-		processor.doProcessOdata(imageBase64, path, fileName);
+		boolean addTwitter = false;
+		if (metadata.getConfigData() != null && metadata.getConfigData().getSubtype() == Metadata.CONFIG_DATA_SUBTYPE_SOCIAL_DATASET)
+			addTwitter = true;
+
+		processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(metadata.getInfo().getVisibility())) {
@@ -343,18 +402,25 @@ public class StoreService {
 		addStream.setVar("virtualEntityDescription", "");
 
 		String tags = "";
+
 		if (metadata.getInfo().getDataDomain() != null) {
 			tags += metadata.getInfo().getDataDomain();
 		}
+		List<String> tagCodes = null;
 		if (metadata.getInfo().getTags() != null) {
-			for (org.csi.yucca.storage.datamanagementapi.model.metadata.Tag t : metadata.getInfo().getTags())
+			tagCodes = new LinkedList<String>();
+			for (org.csi.yucca.storage.datamanagementapi.model.metadata.Tag t : metadata.getInfo().getTags()) {
 				tags += "," + t.getTagCode();
+				tagCodes.add(t.getTagCode());
+			}
 		}
 
 		addStream.setVar("tags", tags);
-		
-		//DT Add document
-		addStream.setVar("content", jsonFile);
+
+		// DT Add document
+		String contentJson = extractMetadataContentForDocument(jsonFile);
+		addStream.setVar("content", contentJson);
+
 		addStream.run();
 
 		return apiFinalName;
@@ -373,7 +439,8 @@ public class StoreService {
 		String imageBase64 = newStream.getStreamIcon();
 		String path = "images/";
 		String fileName = newStream.getCodiceStream() + ".png";
-		processor.doProcessStream(imageBase64, path, fileName);
+		boolean addTwitter = newStream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
+		processor.doProcessStream(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(newStream.getVisibility())) {
@@ -439,18 +506,31 @@ public class StoreService {
 			tags += newStream.getDomainStream();
 		}
 		if (newStream.getStreamTags() != null && newStream.getStreamTags().getTag() != null) {
-			for (Tag t : newStream.getStreamTags().getTag())
+			for (Tag t : newStream.getStreamTags().getTag()) {
 				tags += "," + t.getTagCode();
+			}
 		}
 
 		addStream.setVar("tags", tags);
-		
+
 		String datasetInput = extractContentForDocument(json);
 		addStream.setVar("content", datasetInput);
-		
-		
+
 		addStream.run();
 		return true;
+	}
+
+	private static Map<String, ResourceBundle> messagesMap = new HashMap<String, ResourceBundle>();
+
+	private static ResourceBundle getMessages(String lang) {
+
+		if (messagesMap.get(lang) == null) {
+			Locale locale = new Locale(lang);
+
+			messagesMap.put(lang, ResourceBundle.getBundle("/i18n/MessagesBundle", locale));
+
+		}
+		return messagesMap.get(lang);
 	}
 
 	@POST

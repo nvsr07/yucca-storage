@@ -102,6 +102,10 @@
 					<resource>
 						<directory>src/main/resources/local</directory>
 					</resource>
+					<resource>
+						<directory>conf</directory>
+						<targetPath>.</targetPath>
+					</resource>
 				</resources>
 			</build>
 			<properties>
@@ -114,6 +118,10 @@
 				<resources>
 					<resource>
 						<directory>src/main/resources/dev</directory>
+					</resource>
+					<resource>
+						<directory>conf</directory>
+						<targetPath>.</targetPath>
 					</resource>
 				</resources>
 			</build>
@@ -129,12 +137,8 @@
 						<directory>src/main/resources/int</directory>
 					</resource>
 					<resource>
-						<directory>vars</directory>
-						<targetPath>vars</targetPath>
-					</resource>
-					<resource>
 						<directory>conf</directory>
-						<targetPath>conf</targetPath>
+						<targetPath>.</targetPath>
 					</resource>
 				</resources>
 			</build>
@@ -148,6 +152,10 @@
 				<resources>
 					<resource>
 						<directory>src/main/resources/prod</directory>
+					</resource>
+					<resource>
+						<directory>conf</directory>
+						<targetPath>.</targetPath>
 					</resource>
 				</resources>
 			</build>
