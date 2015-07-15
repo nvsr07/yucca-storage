@@ -8,7 +8,7 @@
     
     <title>Cluster Backup Strategy &mdash; CSI MongoDB 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,8 +27,8 @@
     <link rel="next" title="Code Review MongoDBOutEventAdaptorType" href="reviewMongoDBOutEventAdaptorType.html" />
     <link rel="prev" title="Collections Shard Keys" href="shardkeys.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,14 +40,14 @@
         <li class="right" >
           <a href="shardkeys.html" title="Collections Shard Keys"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="cluster-backup-strategy">
 <h1>Cluster Backup Strategy<a class="headerlink" href="#cluster-backup-strategy" title="Permalink to this headline">¶</a></h1>
@@ -65,7 +65,7 @@ superato quel tempo i nodi che sono backuppati non potranno più riagganciarsi a
 ed andranno riallineati.</p>
 <p>In base alla mail del <em>2014-12-22</em> in cui si stimavano 500 FPS per 30 progetti si può dedurre
 un throughput di dati pari a 15.000 documenti al secondo. Stimando ogni documento di dimensione
-~256 bytes (La stima è fatta sulla base del dump fornito che ha <tt class="docutils literal"><span class="pre">&quot;avgObjSize&quot;</span> <span class="pre">:</span> <span class="pre">240</span></tt>) si
+~256 bytes (La stima è fatta sulla base del dump fornito che ha <code class="docutils literal"><span class="pre">&quot;avgObjSize&quot;</span> <span class="pre">:</span> <span class="pre">240</span></code>) si
 può evincere che in questo scenario l&#8217;oplog deve avere dimensione pari a <strong>225MB al minuto</strong>.</p>
 </div>
 <div class="section" id="replica-per-backup">
@@ -75,8 +75,8 @@ predisporre all&#8217;interno di tutti i <strong>replica set che fanno parte del
 atto solo allo scopo di effettuare i backup.</p>
 <p>Se ad esempio il nostro cluster ha due shard, e quindi due replica set ci saranno due nodi
 di backup. Uno per ogni replica set.</p>
-<p>Questo nodo va impostato a <tt class="docutils literal"><span class="pre">priority:</span> <span class="pre">0</span></tt> in modo che non sia eletto come Primary Node
-all&#8217;interno del replicat set e <tt class="docutils literal"><span class="pre">hidden:</span> <span class="pre">true</span></tt> in modo che i client non lo usino per
+<p>Questo nodo va impostato a <code class="docutils literal"><span class="pre">priority:</span> <span class="pre">0</span></code> in modo che non sia eletto come Primary Node
+all&#8217;interno del replicat set e <code class="docutils literal"><span class="pre">hidden:</span> <span class="pre">true</span></code> in modo che i client non lo usino per
 effettuare queries.</p>
 <p>Il fatto che non sia mai toccato dai client né usato dal replica set come primario permette
 di spegnere il nodo in qualsiasi momento per poterne effettuare il backup senza alcun
@@ -127,28 +127,28 @@ poi a ripristinare il backup.</p>
 <p>Prima di procedere all&#8217;effetivo backup dei nodi è necessario effettuare il backup di un config
 server. Dato che i config server replicano tutti gli stessi dati è sufficiente backupparne
 uno qualsiasi di quelli disponibili.</p>
-<p>Per procedere al backup del config server il metodo più sicuro è lanciare <tt class="docutils literal"><span class="pre">mongodump</span></tt>
-direttamente sul config server con l&#8217;opzione <tt class="docutils literal"><span class="pre">--oplog</span></tt>:</p>
+<p>Per procedere al backup del config server il metodo più sicuro è lanciare <code class="docutils literal"><span class="pre">mongodump</span></code>
+direttamente sul config server con l&#8217;opzione <code class="docutils literal"><span class="pre">--oplog</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongodump --oplog
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">E` importante specificare l&#8217;opzione <tt class="docutils literal"><span class="pre">--oplog</span></tt> al fine di essere certi che anche eventuali
+<p class="last">E` importante specificare l&#8217;opzione <code class="docutils literal"><span class="pre">--oplog</span></code> al fine di essere certi che anche eventuali
 modifiche che avvengono durante il backup stesso non possano portare ad un backup in stato
 corrotto.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Durante l&#8217;esecuzione di <tt class="docutils literal"><span class="pre">mongodump</span></tt> non deve essere stata lanciato il comando
-<tt class="docutils literal"><span class="pre">db.fsyncLock()</span></tt> che viene invece usato per il backup delle repliche di backup.
+<p class="last">Durante l&#8217;esecuzione di <code class="docutils literal"><span class="pre">mongodump</span></code> non deve essere stata lanciato il comando
+<code class="docutils literal"><span class="pre">db.fsyncLock()</span></code> che viene invece usato per il backup delle repliche di backup.
 Altrimenti impedirà a mongodump di leggere il database e procedere con il dump.</p>
 </div>
 </div>
 <div class="section" id="backup-shard-members">
 <h3>Backup Shard Members<a class="headerlink" href="#backup-shard-members" title="Permalink to this headline">¶</a></h3>
-<p>Questa procedura va effetuata <em>per ognuno dei nodi di</em> <a class="reference internal" href="#backup-replica"><em>Replica per Backup</em></a>.</p>
-<p>Collegandosi ad ogni nodo di <a class="reference internal" href="#backup-replica"><em>Replica per Backup</em></a> è necessario procedere
+<p>Questa procedura va effetuata <em>per ognuno dei nodi di</em> <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a>.</p>
+<p>Collegandosi ad ogni nodo di <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a> è necessario procedere
 allo stop dei nodi con:</p>
 <div class="highlight-python"><div class="highlight"><pre>use admin
 db.shutdownServer({timeoutSecs: 60})
@@ -159,14 +159,14 @@ lanciando sul server il comando:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongodump --journal --dbpath /data/db/ --out /data/backup/
 </pre></div>
 </div>
-<p>Dove <tt class="docutils literal"><span class="pre">/data/db</span></tt> è la directory ove il nodo salva i dati effettivi e <tt class="docutils literal"><span class="pre">/data/backup</span></tt> è
+<p>Dove <code class="docutils literal"><span class="pre">/data/db</span></code> è la directory ove il nodo salva i dati effettivi e <code class="docutils literal"><span class="pre">/data/backup</span></code> è
 la directory ove si vuole venga generato il backup.</p>
 <p>Una volta terminato il backup si può procedere semplicemente al riavvio del processo
 mongodb sul nodo.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">E` importante che il tempo speso per il backup sia inferiore del tempo massimo reso
-disponibile dalla <a class="reference internal" href="#oplog-size"><em>OpLog Size</em></a> altrimenti il nodo non sarà più in grado
+disponibile dalla <a class="reference internal" href="#oplog-size"><span>OpLog Size</span></a> altrimenti il nodo non sarà più in grado
 di riagganciarsi al replica set una volta terminato il backup.</p>
 </div>
 </div>
@@ -224,8 +224,8 @@ ad albero sul file system corrispondente alla struttura che hanno nel DBMS stess
 │   └── tenant.metadata.json
 </pre></div>
 </div>
-<p>Ad ogni directory corrisponde un <tt class="docutils literal"><span class="pre">db</span></tt>, ad ogni file corrisponde una <tt class="docutils literal"><span class="pre">collection</span></tt>.
-Avendo accesso al dump del database in formato <tt class="docutils literal"><span class="pre">mongodump</span></tt> è possibile visualizzare
+<p>Ad ogni directory corrisponde un <code class="docutils literal"><span class="pre">db</span></code>, ad ogni file corrisponde una <code class="docutils literal"><span class="pre">collection</span></code>.
+Avendo accesso al dump del database in formato <code class="docutils literal"><span class="pre">mongodump</span></code> è possibile visualizzare
 lo stato di un singolo documento all&#8217;interno del dump con il comando:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ bsondump tenant.bson --filter &#39;{&quot;idTenant&quot;: 20}&#39;
 { &quot;_id&quot; : ObjectId( &quot;547ee7cd84aed9afa0584cfc&quot; ), &quot;idTenant&quot; : 20, &quot;tenantName&quot; : &quot;ondeuwc&quot;, &quot;tenantDescription&quot; : &quot;ondeuwc&quot;, &quot;tenantCode&quot; : &quot;ondeuwc&quot;, &quot;dataCollectionName&quot; : &quot;data&quot;, &quot;dataCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;measuresCollectionName&quot; : &quot;measures&quot;, &quot;measuresCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;socialCollectionName&quot; : &quot;social&quot;, &quot;socialCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;mediaCollectionName&quot; : &quot;media&quot;, &quot;mediaCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;archiveDataCollectionName&quot; : &quot;archivedata&quot;, &quot;archiveDataCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;archiveMeasuresCollectionName&quot; : &quot;archivemeasures&quot;, &quot;archiveMeasuresCollectionDb&quot; : &quot;DB_ondeuwc&quot; }
@@ -233,7 +233,7 @@ lo stato di un singolo documento all&#8217;interno del dump con il comando:</p>
 1 objects processed
 </pre></div>
 </div>
-<p>All&#8217;interno del parametro <tt class="docutils literal"><span class="pre">filter</span></tt> è possibile specificare la query da eseguire
+<p>All&#8217;interno del parametro <code class="docutils literal"><span class="pre">filter</span></code> è possibile specificare la query da eseguire
 per filtrare i documenti all&#8217;interno del dump e recuperare solo il documento corretto.</p>
 <p>Nel caso in cui si trattasse di un nodo di uno <strong>shard</strong> il documento potrebbe non essere
 presente nel dump e bisogna procedere a cercarno anche nei backup degli altri nodi.</p>
@@ -244,7 +244,7 @@ ripristino dell&#8217;intero database.</p>
 <span id="recover-replicaset"></span><h3>Restore del ReplicaSet<a class="headerlink" href="#restore-del-replicaset" title="Permalink to this headline">¶</a></h3>
 <p>Qualora si volesse procedere al restore dell&#8217;intero replicaSet è necessario procedere alla
 configurazione da 0 del nodo primario in cui poi vanno importati i dati con il comando
-<tt class="docutils literal"><span class="pre">mongorestore</span></tt>.</p>
+<code class="docutils literal"><span class="pre">mongorestore</span></code>.</p>
 <p>Una volta completata l&#8217;importazione dei dati, <strong>avviare il nodo come replica singola</strong>:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongod --replSet REPLICASET_NAME
 </pre></div>
@@ -262,7 +262,7 @@ da cui copiare i dati per gli sltri nodi del replicaset.</p>
 </pre></div>
 </div>
 <p>A questo punto si può procedere alla copia della directory in cui il nodo salva il dati
-(di default <tt class="docutils literal"><span class="pre">/data/db</span></tt>) su ognuno dei sistemi che saranno membri dello stesso replica set.</p>
+(di default <code class="docutils literal"><span class="pre">/data/db</span></code>) su ognuno dei sistemi che saranno membri dello stesso replica set.</p>
 <p>Una volta completata la copia sui nodi secondary procedere allo sblocco del nodo da
 cui si sono copiati i dati con il comando:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt; db.fsyncUnlock()
@@ -286,7 +286,7 @@ cui si sono copiati i dati con il comando:</p>
 richiede la modifica manuale dell&#8217;OpLog.</p>
 <p>Per questa ragione si consiglia di non procedere dal backup, ma di copiare i dati da uno
 dei nodi <strong>secondary</strong> ancora funzionanti tramite gli step descritti nel
-<a class="reference internal" href="#recover-replica-secondaries"><em>Restore dei nodi Secondary</em></a>.</p>
+<a class="reference internal" href="#recover-replica-secondaries"><span>Restore dei nodi Secondary</span></a>.</p>
 </div>
 <div class="section" id="restore-dei-configserver">
 <h3>Restore dei ConfigServer<a class="headerlink" href="#restore-dei-configserver" title="Permalink to this headline">¶</a></h3>
@@ -296,29 +296,29 @@ dei nodi <strong>secondary</strong> ancora funzionanti tramite gli step descritt
 consigliato procedere copiando i dati da un altro config server tramite il processo:</p>
 <blockquote>
 <div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">db.fsyncUnlock()</span></tt></li>
-<li>copia di <tt class="docutils literal"><span class="pre">/data/db</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">db.fsyncUnlock()</span></tt></li>
+<li><code class="docutils literal"><span class="pre">db.fsyncUnlock()</span></code></li>
+<li>copia di <code class="docutils literal"><span class="pre">/data/db</span></code></li>
+<li><code class="docutils literal"><span class="pre">db.fsyncUnlock()</span></code></li>
 </ul>
 </div></blockquote>
-<p>come descritto in <a class="reference internal" href="#recover-replica-secondaries"><em>Restore dei nodi Secondary</em></a>.</p>
+<p>come descritto in <a class="reference internal" href="#recover-replica-secondaries"><span>Restore dei nodi Secondary</span></a>.</p>
 <p>Prima di effettuare la procedura è consiglibile spegnere il bilanciatore con i comandi descritti
-in <a class="reference internal" href="#stop-balancer"><em>Stop Balancer</em></a> e successivamente riaccenderlo con i comandi descritti in
-<a class="reference internal" href="#start-balancer"><em>Start Balancer</em></a>. Comunque il bilanciamento non sarebbe potuto procedere a causa del
-comando <tt class="docutils literal"><span class="pre">db.fsyncLock()</span></tt> che viene lanciato sul config server da cui si vogliono copiare i dati.</p>
+in <a class="reference internal" href="#stop-balancer"><span>Stop Balancer</span></a> e successivamente riaccenderlo con i comandi descritti in
+<a class="reference internal" href="#start-balancer"><span>Start Balancer</span></a>. Comunque il bilanciamento non sarebbe potuto procedere a causa del
+comando <code class="docutils literal"><span class="pre">db.fsyncLock()</span></code> che viene lanciato sul config server da cui si vogliono copiare i dati.</p>
 <p>Successivamente se è cambiato l&#8217;indirizza delle macchina andrà aggiornata anche l&#8217;opzione
-<tt class="docutils literal"><span class="pre">configDB</span></tt> nella configurazione dei <em>mongos</em> sostituendo il nuovo config.</p>
+<code class="docutils literal"><span class="pre">configDB</span></code> nella configurazione dei <em>mongos</em> sostituendo il nuovo config.</p>
 </div>
 <div class="section" id="restore-di-tutti-i-config">
 <h4>Restore di tutti i config<a class="headerlink" href="#restore-di-tutti-i-config" title="Permalink to this headline">¶</a></h4>
 <p>Se invece devono essere ripristinati tutti e tre i config server si può procedere all&#8217;import
-dei dati dal backup effettuato con <tt class="docutils literal"><span class="pre">mongodump</span></tt> per ognuno dei config server lanciando
+dei dati dal backup effettuato con <code class="docutils literal"><span class="pre">mongodump</span></code> per ognuno dei config server lanciando
 suoi config server stessi:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongorestore --port 63000 --oplogReplay config_backup
 </pre></div>
 </div>
 <p>Successivamente se è cambiato l&#8217;indirizzo delle macchine andrà aggiornata anche l&#8217;opzione
-<tt class="docutils literal"><span class="pre">configDB</span></tt> nella configurazione dei <em>mongos</em> sostituendo il nuovo config.</p>
+<code class="docutils literal"><span class="pre">configDB</span></code> nella configurazione dei <em>mongos</em> sostituendo il nuovo config.</p>
 </div>
 </div>
 <div class="section" id="restore-del-cluster">
@@ -331,19 +331,19 @@ suoi config server stessi:</p>
 </ul>
 </div></blockquote>
 <p>Supponendo che i backup dei tutti i nodi siano stati ottenuti con la procedura descritta
-in questo documento e quindi con il comando <tt class="docutils literal"><span class="pre">mongodump</span> <span class="pre">--oplog</span></tt> è possibile ripristinare
+in questo documento e quindi con il comando <code class="docutils literal"><span class="pre">mongodump</span> <span class="pre">--oplog</span></code> è possibile ripristinare
 lo stato di tutto il cluster procedendo nel seguente modo:</p>
 <blockquote>
 <div><ol class="arabic">
 <li><p class="first">Ripristinare dal backup del <em>replicaSet1</em> il primo replicaset seguendo le
-istruzioni indicate in <a class="reference internal" href="#recover-replicaset"><em>Restore del ReplicaSet</em></a>.</p>
+istruzioni indicate in <a class="reference internal" href="#recover-replicaset"><span>Restore del ReplicaSet</span></a>.</p>
 </li>
 <li><p class="first">Ripristinare dal backup del <em>replicaSet2</em> il secondo replicaset seguendo le
-istruzioni indicate in <a class="reference internal" href="#recover-replicaset"><em>Restore del ReplicaSet</em></a>.</p>
+istruzioni indicate in <a class="reference internal" href="#recover-replicaset"><span>Restore del ReplicaSet</span></a>.</p>
 </li>
 <li><p class="first">Se ci sono ulteriori shard per ognuno di essi ripete i punti 1/2</p>
 </li>
-<li><p class="first">Procedere al ripristino di <em>1 configserver</em> tramite <tt class="docutils literal"><span class="pre">mongorestore</span></tt>:</p>
+<li><p class="first">Procedere al ripristino di <em>1 configserver</em> tramite <code class="docutils literal"><span class="pre">mongorestore</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongod --configsvr --port 63000
 $ mongorestore --port 63000 --oplogReplay config_backup
 </pre></div>
@@ -371,13 +371,13 @@ WriteResult({ &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModifi
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">al posto di <tt class="docutils literal"><span class="pre">127.0.0.1:61000</span></tt> sarà necessario indicare gli ip dei membri del
-replicaSet nel formato: <tt class="docutils literal"><span class="pre">replicaSetName/IP1:PORT1,IP2:PORT2,IP3:PORT3</span></tt></p>
+<p class="last">al posto di <code class="docutils literal"><span class="pre">127.0.0.1:61000</span></code> sarà necessario indicare gli ip dei membri del
+replicaSet nel formato: <code class="docutils literal"><span class="pre">replicaSetName/IP1:PORT1,IP2:PORT2,IP3:PORT3</span></code></p>
 </div>
 </li>
 <li><p class="first">A questo punto è possibile copiare i dati del config server su altri 2 nodi
 così da tornare nello stato in cui sono presenti 3 config server seguendo le
-istruzioni indicate su <a class="reference internal" href="#recover-replica-secondaries"><em>Restore dei nodi Secondary</em></a>.</p>
+istruzioni indicate su <a class="reference internal" href="#recover-replica-secondaries"><span>Restore dei nodi Secondary</span></a>.</p>
 </li>
 <li><p class="first">Una volta terminato il ripristino dei config server e delle repliche è possibile
 avviare i mongos affinché si aggancino ai nuovi config server e riprendere l&#8217;uso
@@ -391,7 +391,7 @@ del cluster.</p>
 <p>Nal claso in cui si voglia ripristinare l&#8217;intero cluster su una singola istanza è necessario:</p>
 <blockquote>
 <div><ol class="arabic">
-<li><p class="first">avviare una nuova istanza <tt class="docutils literal"><span class="pre">mongod</span></tt>:</p>
+<li><p class="first">avviare una nuova istanza <code class="docutils literal"><span class="pre">mongod</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongod --dbpath /data/tmp_bkp/ --port 30000
 </pre></div>
 </div>
@@ -413,7 +413,7 @@ $ mongorestore --port 30000 speed3bkp/
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -453,12 +453,14 @@ $ mongorestore --port 30000 speed3bkp/
   <h4>Next topic</h4>
   <p class="topless"><a href="reviewMongoDBOutEventAdaptorType.html"
                         title="next chapter">Code Review MongoDBOutEventAdaptorType</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/backup.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/backup.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -475,7 +477,7 @@ $ mongorestore --port 30000 speed3bkp/
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -487,12 +489,12 @@ $ mongorestore --port 30000 speed3bkp/
         <li class="right" >
           <a href="shardkeys.html" title="Collections Shard Keys"
              >previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, AXANT.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -135,7 +135,6 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
 
         streams = curtenant_info.get('streams')
         db_support = get_support_db()
-        streamSubtype = 'streamDataset'
         tenant_streams_measures_data = {}
         for stream in streams:
             stream_data = {}
@@ -145,8 +144,7 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             stream_data['total'] = measures_col.find({'idDataset': idDataset,
                                                       'datasetVersion': datasetVersion}).count()
             stream_data['visibility'] = db_support['metadata'].find_one(
-                {'configData.subtype': streamSubtype,
-                 'idDataset': idDataset,
+                {'idDataset': idDataset,
                  'datasetVersion': datasetVersion}
             )['info']['visibility']
 
@@ -513,7 +511,6 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
     tenant_streams_data = {}
     streams = tenant_info.get('streams')
     db_support = get_support_db()
-    streamSubtype = 'streamDataset'
 
     for stream in streams:
         stream_data = {}
@@ -524,8 +521,7 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
             {'_id': {'$gte': origin_id}, 'idDataset': idDataset, 'datasetVersion': datasetVersion}
         ).count()
         stream_data['visibility'] = db_support['metadata'].find_one(
-            {'configData.subtype': streamSubtype,
-             'idDataset': idDataset,
+            {'idDataset': idDataset,
              'datasetVersion': datasetVersion}
         )['info']['visibility']
         stream_info = stream['streams']['stream']

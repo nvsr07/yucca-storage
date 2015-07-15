@@ -8,7 +8,7 @@
     
     <title>Analisi tempi prolungati esecuzione query &mdash; CSI MongoDB 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,8 +27,8 @@
     <link rel="next" title="Java driver assessment" href="upgrade_java_driver.html" />
     <link rel="prev" title="Note per la gestione del cluster MongoDB" href="sysadminnotes.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,30 +40,30 @@
         <li class="right" >
           <a href="sysadminnotes.html" title="Note per la gestione del cluster MongoDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="analisi-tempi-prolungati-esecuzione-query">
 <h1>Analisi tempi prolungati esecuzione query<a class="headerlink" href="#analisi-tempi-prolungati-esecuzione-query" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduzione">
 <h2>Introduzione<a class="headerlink" href="#introduzione" title="Permalink to this headline">¶</a></h2>
-<p>Analisi sulla lentezza in lettura utilizzando un filtro indicizzato nella collection <tt class="docutils literal"><span class="pre">measures</span></tt>
-appartenente al <tt class="docutils literal"><span class="pre">DB_smartlab</span></tt>, precedentemente shardato all&#8217;interno di un cluster virtuale
-avente la stessa configurazione del cluster di INT, utilizzando come <tt class="docutils literal"><span class="pre">shard</span> <span class="pre">key</span></tt>
-<tt class="docutils literal"><span class="pre">{idDataset:</span> <span class="pre">1,</span> <span class="pre">datasetVersion:</span> <span class="pre">1,</span> <span class="pre">time:</span> <span class="pre">1}</span></tt>:</p>
+<p>Analisi sulla lentezza in lettura utilizzando un filtro indicizzato nella collection <code class="docutils literal"><span class="pre">measures</span></code>
+appartenente al <code class="docutils literal"><span class="pre">DB_smartlab</span></code>, precedentemente shardato all&#8217;interno di un cluster virtuale
+avente la stessa configurazione del cluster di INT, utilizzando come <code class="docutils literal"><span class="pre">shard</span> <span class="pre">key</span></code>
+<code class="docutils literal"><span class="pre">{idDataset:</span> <span class="pre">1,</span> <span class="pre">datasetVersion:</span> <span class="pre">1,</span> <span class="pre">time:</span> <span class="pre">1}</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre>db.measures.find({$and: [{idDataset:161},{datasetVersion:1}]}).sort({time:-1}).limit(1)
 </pre></div>
 </div>
 </div>
 <div class="section" id="execution-stats-della-query">
 <h2>Execution Stats della Query<a class="headerlink" href="#execution-stats-della-query" title="Permalink to this headline">¶</a></h2>
-<p>Utilizzando il comando <tt class="docutils literal"><span class="pre">.explain(&quot;executionStats&quot;)</span></tt> si ottongono statistiche sull&#8217; esecuzione
+<p>Utilizzando il comando <code class="docutils literal"><span class="pre">.explain(&quot;executionStats&quot;)</span></code> si ottongono statistiche sull&#8217; esecuzione
 della query:</p>
 <div class="highlight-python"><div class="highlight"><pre>db.measures.find({$and: [{idDataset:161},{datasetVersion:1}]}).sort({time:-1}).limit(1).explain(&quot;executionStats&quot;)
 {
@@ -252,7 +252,7 @@ della query:</p>
 }
 </pre></div>
 </div>
-<p>la query risulta utilizzare in modo corretto gli indici, non <tt class="docutils literal"><span class="pre">indexOnly</span></tt> in quanto non viene
+<p>la query risulta utilizzare in modo corretto gli indici, non <code class="docutils literal"><span class="pre">indexOnly</span></code> in quanto non viene
 fatta una proiezione richiedendo solo valori presenti nell&#8217;indice:</p>
 <div class="highlight-python"><div class="highlight"><pre>&quot;cursor&quot; : &quot;BtreeCursor idDataset_1_datasetVersion_1_time_1 reverse&quot;,
 &quot;isMultiKey&quot; : false,
@@ -269,7 +269,7 @@ fatta una proiezione richiedendo solo valori presenti nell&#8217;indice:</p>
 </div>
 <div class="section" id="statistiche-collection">
 <h2>Statistiche Collection<a class="headerlink" href="#statistiche-collection" title="Permalink to this headline">¶</a></h2>
-<p>utilizzando il il comando <tt class="docutils literal"><span class="pre">.stats()</span></tt> si ottengono statistiche sulla collection in uso:</p>
+<p>Utilizzando il il comando <code class="docutils literal"><span class="pre">.stats()</span></code> si ottengono statistiche sulla collection in uso:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="o">.</span><span class="n">measures</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="s">&quot;sharded&quot;</span> <span class="p">:</span> <span class="n">true</span><span class="p">,</span>
@@ -355,8 +355,8 @@ fatta una proiezione richiedendo solo valori presenti nell&#8217;indice:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>analizzando le statistiche della collezione si evince che la mole di dati è molto elevata e il
-problema di rallentamento potrebbe essere dovuto al <tt class="docutils literal"><span class="pre">pagefault</span></tt>, problema che è stato ridotto
+<p>Analizzando le statistiche della collezione si evince che la mole di dati è molto elevata e il
+problema di rallentamento potrebbe essere dovuto al <code class="docutils literal"><span class="pre">page</span> <span class="pre">fault</span></code>, problema che è stato eliminato
 con il passaggio allo Storage Engine System wiredTiger</p>
 <p><a class="reference external" href="http://docs.mongodb.org/manual/core/storage/#storage-wiredtiger">http://docs.mongodb.org/manual/core/storage/#storage-wiredtiger</a></p>
 <p><a class="reference external" href="http://docs.mongodb.org/manual/faq/storage/">http://docs.mongodb.org/manual/faq/storage/</a></p>
@@ -364,8 +364,10 @@ con il passaggio allo Storage Engine System wiredTiger</p>
 <div class="section" id="conclusioni">
 <h2>Conclusioni<a class="headerlink" href="#conclusioni" title="Permalink to this headline">¶</a></h2>
 <p>Visto il recente passaggio a mongoDB 3.0 e viste le recenti migliorie apportate dove il sistema
-poteva presentare dei problemi si rimanda ad un test successivo e nel caso in cui la query
-analizzata continuasse a risultare lenta, ad una verifica giornaliera delle statistiche contestualmente ad una analisi utilizzando il tool</p>
+poteva presentare dei problemi si rimanda ad un test successivo nel caso in cui la query
+analizzata continuasse a risultare lenta, con una verifica giornaliera delle statistiche
+contestualmente ad una analisi utilizzando il tool <code class="docutils literal"><span class="pre">mongostat</span></code>
+<a class="reference external" href="http://docs.mongodb.org/manual/reference/program/mongostat/">http://docs.mongodb.org/manual/reference/program/mongostat/</a></p>
 </div>
 </div>
 
@@ -373,7 +375,7 @@ analizzata continuasse a risultare lenta, ad una verifica giornaliera delle stat
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -392,12 +394,14 @@ analizzata continuasse a risultare lenta, ad una verifica giornaliera delle stat
   <h4>Next topic</h4>
   <p class="topless"><a href="upgrade_java_driver.html"
                         title="next chapter">Java driver assessment</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/query_delay_analysis.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/query_delay_analysis.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -414,7 +418,7 @@ analizzata continuasse a risultare lenta, ad una verifica giornaliera delle stat
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -426,12 +430,12 @@ analizzata continuasse a risultare lenta, ad una verifica giornaliera delle stat
         <li class="right" >
           <a href="sysadminnotes.html" title="Note per la gestione del cluster MongoDB"
              >previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, AXANT.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>
