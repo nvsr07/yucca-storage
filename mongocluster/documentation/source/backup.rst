@@ -49,16 +49,16 @@ impatto sul cluster che continuerà a funzionare come prima.
 Al fine di impostare un nodo come replica per il backup bisogna *connettersi al primary*
 del replica set (in caso ci sia più replica set va fatto per ognuno) e lanciato il comando::
 
-    rs.conf()
+    > rs.conf()
 
 Il comando stamperà l'array con l'elenco dei nodi membri del replica set. Una volta identificato
 l'indice all'interno dell'array del nodo che si vuole rendere di backup lo si può impostare come
 modo di backup tramite::
 
-    cfg = rs.conf()
-    cfg.members[2].priority = 0
-    cfg.members[2].hidden = true
-    rs.reconfig(cfg)
+    > cfg = rs.conf()
+    > cfg.members[2].priority = 0
+    > cfg.members[2].hidden = true
+    > rs.reconfig(cfg)
 
 .. note::
     Al posto di **2** è necessario usare l'indice effettivo del nodo identificato precedentemente.
@@ -77,18 +77,35 @@ prima di effettuare il backup.
 
 Il balancer può essere fermato connettendosi al cluster tramite mongos::
 
-    use config
-    sh.setBalancerState(false)
-    sh.stopBalancer()
+    > use config
+    > sh.setBalancerState(false)
+    > sh.stopBalancer()
 
 Prima di procedere al backup è necessario verificare che il balancer sia effettivamente
 fermo con::
 
-    !sh.getBalancerState() && !sh.isBalancerRunning()
+    > !sh.getBalancerState() && !sh.isBalancerRunning()
 
 **Fermare il balancer è obbligatorio** per poter ottenere un backup corretto, se il balancer
 non è stato fermato c'è la possibilità di salvare dei dati duplicati e quindi non riuscire
 poi a ripristinare il backup.
+
+In alternativa è possibile schedulare l'attività del balancer in modo che venga disattivato nella
+finestra temporale necessaria al backup::
+
+    > use config
+    > db.settings.update( { _id : "balancer" }, { $set : { activeWindow : { start : "6:00", stop : "23:00" } } }, true )
+
+Lock dei membri del replica set
+-------------------------------
+
+Dopo aver stoppato il balancer è necessario fermare il propagarsi delle repliche in modo da 
+ottenere un backup coerente.
+Per farlo è necessario eseguire *per ognuno dei nodi di* :ref:`backup-replica` il comando::
+
+    > db.fsyncLock()
+    
+una volta bloccate le repliche si può procedere con il backup dei vari elementi del cluster.
 
 Backup Config Server
 --------------------
@@ -108,39 +125,36 @@ direttamente sul config server con l'opzione ``--oplog``::
     modifiche che avvengono durante il backup stesso non possano portare ad un backup in stato
     corrotto.
 
-.. note::
-
-    Durante l'esecuzione di ``mongodump`` non deve essere stata lanciato il comando
-    ``db.fsyncLock()`` che viene invece usato per il backup delle repliche di backup.
-    Altrimenti impedirà a mongodump di leggere il database e procedere con il dump.
-
 Backup Shard Members
 --------------------
 
-Questa procedura va effetuata *per ognuno dei nodi di* :ref:`backup-replica`.
+Questa procedura va effettuata *per ognuno dei nodi di* :ref:`backup-replica`.
 
-Collegandosi ad ogni nodo di :ref:`backup-replica` è necessario procedere
-allo stop dei nodi con::
+Collegandosi ad ogni nodo di :ref:`backup-replica` è necessario procedere allo stop dei nodi con::
     
-    use admin
-    db.shutdownServer({timeoutSecs: 60})
+    > use admin
+    > db.shutdownServer({timeoutSecs: 60})
 
-A questo punto una volta terminato lo shutdown si può procedere al backup dei dati stessi
-lanciando sul server il comando::
+Successivvamente, una volta confermato lo spegnimento del nodo effetuare la copia della cartella 
+contenente i dati::
 
-    $ mongodump --journal --dbpath /data/db/ --out /data/backup/
-
-Dove ``/data/db`` è la directory ove il nodo salva i dati effettivi e ``/data/backup`` è
-la directory ove si vuole venga generato il backup.
-
-Una volta terminato il backup si può procedere semplicemente al riavvio del processo
-mongodb sul nodo.
+    $ cp -r /data/db/ /data/backup/
+    
+Dove ``/data/db`` è la directory contenente i dati.
 
 .. note::
 
     E` importante che il tempo speso per il backup sia inferiore del tempo massimo reso
     disponibile dalla :ref:`oplog-size` altrimenti il nodo non sarà più in grado
     di riagganciarsi al replica set una volta terminato il backup.
+    
+Unlock dei membri del replica set
+---------------------------------
+
+Una volta terminata la procedurra di backup è necessario rilanciare *ognuno dei nodi di* 
+:ref:`backup-replica`::
+
+    $ etc/init.d/mongod start
 
 .. _start-balancer:
 
@@ -149,8 +163,8 @@ Start Balancer
 
 Al termine del backup è necessario ricordarsi di riavviare il balancer con::
 
-    sh.setBalancerState(true)
-    sh.startBalancer()
+    > sh.setBalancerState(true)
+    > sh.startBalancer()
 
 Se il balancer non viene riavviato il sistema continuerà a funzionare, ma lo sharding
 sarà di fatto disattivato.
@@ -161,62 +175,10 @@ Restore dei Dati
 Restore di un singolo dato
 --------------------------
 
-Il dump del database salva lo stato di tutti i DB e le collections in una struttura
-ad albero sul file system corrispondente alla struttura che hanno nel DBMS stesso::
+Per restorare un singolo dato è necessario avviare un'istanza mongod facendo puntare il dbpath alla
+cartella precedentemente copiata::
 
-    .
-    ├── admin
-    │   ├── system.indexes.bson
-    │   ├── system.users.bson
-    │   ├── system.users.metadata.json
-    │   ├── system.version.bson
-    │   └── system.version.metadata.json
-    ├── DB_smartowear
-    │   ├── archivedata.bson
-    │   ├── archivedata.metadata.json
-    │   ├── archivemeasures.bson
-    │   ├── archivemeasures.metadata.json
-    │   ├── data.bson
-    │   ├── data.metadata.json
-    │   ├── measures.bson
-    │   ├── measures.metadata.json
-    │   ├── media.bson
-    │   ├── media.metadata.json
-    │   ├── social.bson
-    │   ├── social.metadata.json
-    │   └── system.indexes.bson
-    ├── DB_SUPPORT
-    │   ├── allineamento.bson
-    │   ├── allineamento.metadata.json
-    │   ├── api.bson
-    │   ├── api.metadata.json
-    │   ├── metadata.bson
-    │   ├── metadata.metadata.json
-    │   ├── statistics.bson
-    │   ├── statistics.metadata.json
-    │   ├── stream.bson
-    │   ├── stream.metadata.json
-    │   ├── system.indexes.bson
-    │   ├── tenant.bson
-    │   └── tenant.metadata.json
-
-Ad ogni directory corrisponde un ``db``, ad ogni file corrisponde una ``collection``.
-Avendo accesso al dump del database in formato ``mongodump`` è possibile visualizzare
-lo stato di un singolo documento all'interno del dump con il comando::
-
-    $ bsondump tenant.bson --filter '{"idTenant": 20}'
-    { "_id" : ObjectId( "547ee7cd84aed9afa0584cfc" ), "idTenant" : 20, "tenantName" : "ondeuwc", "tenantDescription" : "ondeuwc", "tenantCode" : "ondeuwc", "dataCollectionName" : "data", "dataCollectionDb" : "DB_ondeuwc", "measuresCollectionName" : "measures", "measuresCollectionDb" : "DB_ondeuwc", "socialCollectionName" : "social", "socialCollectionDb" : "DB_ondeuwc", "mediaCollectionName" : "media", "mediaCollectionDb" : "DB_ondeuwc", "archiveDataCollectionName" : "archivedata", "archiveDataCollectionDb" : "DB_ondeuwc", "archiveMeasuresCollectionName" : "archivemeasures", "archiveMeasuresCollectionDb" : "DB_ondeuwc" }
-    17 objects found
-    1 objects processed
-
-All'interno del parametro ``filter`` è possibile specificare la query da eseguire
-per filtrare i documenti all'interno del dump e recuperare solo il documento corretto.
-
-Nel caso in cui si trattasse di un nodo di uno **shard** il documento potrebbe non essere
-presente nel dump e bisogna procedere a cercarno anche nei backup degli altri nodi.
-
-Questo procedimento permette il ripristino di uno o più documenti senza bisogno di procedere al
-ripristino dell'intero database.
+    $ mongod --dbpath /data/backup
 
 .. _recover-replicaset:
 
@@ -224,8 +186,10 @@ Restore del ReplicaSet
 ----------------------
 
 Qualora si volesse procedere al restore dell'intero replicaSet è necessario procedere alla
-configurazione da 0 del nodo primario in cui poi vanno importati i dati con il comando
-``mongorestore``.
+configurazione da 0 del nodo primario in cui poi vanno importati i dati ripristinando la cartella 
+di backup::
+
+    $ cp -r /data/backup /data/db
 
 Una volta completata l'importazione dei dati, **avviare il nodo come replica singola**::
 
@@ -236,27 +200,17 @@ E collegandosi al nodo, inizializzare quindi il replicaSet::
     > rs.initiate()
 
 Questo inizializzerà un *oplog* e ci permetterà di usare il nodo come sorgente
-da cui copiare i dati per gli sltri nodi del replicaset.
+da cui copiare i dati per gli altri nodi del replicaset.
 
 .. _recover-replica-secondaries:
 
 Restore dei nodi Secondary
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Successivamente procedere al lock del nodo da cui si copiano i dati tramite il comando::
-
-    > db.fsyncLock()
-
-A questo punto si può procedere alla copia della directory in cui il nodo salva il dati
+A questo punto si può procedere alla copia della directory in cui il nodo salva i dati
 (di default ``/data/db``) su ognuno dei sistemi che saranno membri dello stesso replica set.
 
-Una volta completata la copia sui nodi secondary procedere allo sblocco del nodo da
-cui si sono copiati i dati con il comando::
-
-    > db.fsyncUnlock()
-    { "ok" : 1, "info" : "unlock completed" }
-
-A questo punto si può procedere all'avvio del nuovo nodo::
+Una volta completata la copia si può procedere all'avvio del nuovo nodo::
 
     $ mongod --replSet REPLICASET_NAME
 
@@ -264,6 +218,7 @@ e collegandosi al primary, alla loro aggiunta al replica set::
 
     > rs.add("LPulsar:27019")
     { "ok" : 1 }
+
 
 Restore di un Nodo del replicaSet
 ---------------------------------
@@ -366,7 +321,7 @@ lo stato di tutto il cluster procedendo nel seguente modo:
 Restore del cluster su una singola istanza
 ------------------------------------------
 
-Nal claso in cui si voglia ripristinare l'intero cluster su una singola istanza è necessario:
+Nel caso in cui si voglia ripristinare l'intero cluster su una singola istanza è necessario:
 
     1. avviare una nuova istanza ``mongod``::
     
@@ -374,8 +329,6 @@ Nal claso in cui si voglia ripristinare l'intero cluster su una singola istanza 
         
     2. ripristinare ogni dump (1 per shard)::
     
-        $ mongorestore --port 30000 speed1bkp/
-        $ mongorestore --port 30000 speed2bkp/
-        $ mongorestore --port 30000 speed3bkp/
+        $ $ cp -r /data/backup /data/db
         
         

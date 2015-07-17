@@ -83,16 +83,16 @@ di spegnere il nodo in qualsiasi momento per poterne effettuare il backup senza 
 impatto sul cluster che continuerà a funzionare come prima.</p>
 <p>Al fine di impostare un nodo come replica per il backup bisogna <em>connettersi al primary</em>
 del replica set (in caso ci sia più replica set va fatto per ognuno) e lanciato il comando:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">rs</span><span class="o">.</span><span class="n">conf</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre>&gt; rs.conf()
 </pre></div>
 </div>
 <p>Il comando stamperà l&#8217;array con l&#8217;elenco dei nodi membri del replica set. Una volta identificato
 l&#8217;indice all&#8217;interno dell&#8217;array del nodo che si vuole rendere di backup lo si può impostare come
 modo di backup tramite:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">cfg</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">conf</span><span class="p">()</span>
-<span class="n">cfg</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">priority</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">cfg</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="n">true</span>
-<span class="n">rs</span><span class="o">.</span><span class="n">reconfig</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre>&gt; cfg = rs.conf()
+&gt; cfg.members[2].priority = 0
+&gt; cfg.members[2].hidden = true
+&gt; rs.reconfig(cfg)
 </pre></div>
 </div>
 <div class="admonition note">
@@ -108,19 +108,35 @@ modo di backup tramite:</p>
 copia delle macchine Virtuali, etc...) è sempre necessario procedere allo stop del balancer
 prima di effettuare il backup.</p>
 <p>Il balancer può essere fermato connettendosi al cluster tramite mongos:</p>
-<div class="highlight-python"><div class="highlight"><pre>use config
-sh.setBalancerState(false)
-sh.stopBalancer()
+<div class="highlight-python"><div class="highlight"><pre>&gt; use config
+&gt; sh.setBalancerState(false)
+&gt; sh.stopBalancer()
 </pre></div>
 </div>
 <p>Prima di procedere al backup è necessario verificare che il balancer sia effettivamente
 fermo con:</p>
-<div class="highlight-python"><div class="highlight"><pre>!sh.getBalancerState() &amp;&amp; !sh.isBalancerRunning()
+<div class="highlight-python"><div class="highlight"><pre>&gt; !sh.getBalancerState() &amp;&amp; !sh.isBalancerRunning()
 </pre></div>
 </div>
 <p><strong>Fermare il balancer è obbligatorio</strong> per poter ottenere un backup corretto, se il balancer
 non è stato fermato c&#8217;è la possibilità di salvare dei dati duplicati e quindi non riuscire
 poi a ripristinare il backup.</p>
+<p>In alternativa è possibile schedulare l&#8217;attività del balancer in modo che venga disattivato nella
+finestra temporale necessaria al backup:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; use config
+&gt; db.settings.update( { _id : &quot;balancer&quot; }, { $set : { activeWindow : { start : &quot;6:00&quot;, stop : &quot;23:00&quot; } } }, true )
+</pre></div>
+</div>
+</div>
+<div class="section" id="lock-dei-membri-del-replica-set">
+<h3>Lock dei membri del replica set<a class="headerlink" href="#lock-dei-membri-del-replica-set" title="Permalink to this headline">¶</a></h3>
+<p>Dopo aver stoppato il balancer è necessario fermare il propagarsi delle repliche in modo da
+ottenere un backup coerente.
+Per farlo è necessario eseguire <em>per ognuno dei nodi di</em> <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a> il comando:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; db.fsyncLock()
+</pre></div>
+</div>
+<p>una volta bloccate le repliche si può procedere con il backup dei vari elementi del cluster.</p>
 </div>
 <div class="section" id="backup-config-server">
 <h3>Backup Config Server<a class="headerlink" href="#backup-config-server" title="Permalink to this headline">¶</a></h3>
@@ -138,31 +154,21 @@ direttamente sul config server con l&#8217;opzione <code class="docutils literal
 modifiche che avvengono durante il backup stesso non possano portare ad un backup in stato
 corrotto.</p>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Durante l&#8217;esecuzione di <code class="docutils literal"><span class="pre">mongodump</span></code> non deve essere stata lanciato il comando
-<code class="docutils literal"><span class="pre">db.fsyncLock()</span></code> che viene invece usato per il backup delle repliche di backup.
-Altrimenti impedirà a mongodump di leggere il database e procedere con il dump.</p>
-</div>
 </div>
 <div class="section" id="backup-shard-members">
 <h3>Backup Shard Members<a class="headerlink" href="#backup-shard-members" title="Permalink to this headline">¶</a></h3>
-<p>Questa procedura va effetuata <em>per ognuno dei nodi di</em> <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a>.</p>
-<p>Collegandosi ad ogni nodo di <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a> è necessario procedere
-allo stop dei nodi con:</p>
-<div class="highlight-python"><div class="highlight"><pre>use admin
-db.shutdownServer({timeoutSecs: 60})
+<p>Questa procedura va effettuata <em>per ognuno dei nodi di</em> <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a>.</p>
+<p>Collegandosi ad ogni nodo di <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a> è necessario procedere allo stop dei nodi con:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; use admin
+&gt; db.shutdownServer({timeoutSecs: 60})
 </pre></div>
 </div>
-<p>A questo punto una volta terminato lo shutdown si può procedere al backup dei dati stessi
-lanciando sul server il comando:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ mongodump --journal --dbpath /data/db/ --out /data/backup/
+<p>Successivvamente, una volta confermato lo spegnimento del nodo effetuare la copia della cartella
+contenente i dati:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cp -r /data/db/ /data/backup/
 </pre></div>
 </div>
-<p>Dove <code class="docutils literal"><span class="pre">/data/db</span></code> è la directory ove il nodo salva i dati effettivi e <code class="docutils literal"><span class="pre">/data/backup</span></code> è
-la directory ove si vuole venga generato il backup.</p>
-<p>Una volta terminato il backup si può procedere semplicemente al riavvio del processo
-mongodb sul nodo.</p>
+<p>Dove <code class="docutils literal"><span class="pre">/data/db</span></code> è la directory contenente i dati.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">E` importante che il tempo speso per il backup sia inferiore del tempo massimo reso
@@ -170,11 +176,19 @@ disponibile dalla <a class="reference internal" href="#oplog-size"><span>OpLog S
 di riagganciarsi al replica set una volta terminato il backup.</p>
 </div>
 </div>
+<div class="section" id="unlock-dei-membri-del-replica-set">
+<h3>Unlock dei membri del replica set<a class="headerlink" href="#unlock-dei-membri-del-replica-set" title="Permalink to this headline">¶</a></h3>
+<p>Una volta terminata la procedurra di backup è necessario rilanciare <em>ognuno dei nodi di</em>
+<a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ etc/init.d/mongod start
+</pre></div>
+</div>
+</div>
 <div class="section" id="start-balancer">
 <span id="id3"></span><h3>Start Balancer<a class="headerlink" href="#start-balancer" title="Permalink to this headline">¶</a></h3>
 <p>Al termine del backup è necessario ricordarsi di riavviare il balancer con:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">sh</span><span class="o">.</span><span class="n">setBalancerState</span><span class="p">(</span><span class="n">true</span><span class="p">)</span>
-<span class="n">sh</span><span class="o">.</span><span class="n">startBalancer</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre>&gt; sh.setBalancerState(true)
+&gt; sh.startBalancer()
 </pre></div>
 </div>
 <p>Se il balancer non viene riavviato il sistema continuerà a funzionare, ma lo sharding
@@ -185,66 +199,20 @@ sarà di fatto disattivato.</p>
 <h2>Restore dei Dati<a class="headerlink" href="#restore-dei-dati" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="restore-di-un-singolo-dato">
 <h3>Restore di un singolo dato<a class="headerlink" href="#restore-di-un-singolo-dato" title="Permalink to this headline">¶</a></h3>
-<p>Il dump del database salva lo stato di tutti i DB e le collections in una struttura
-ad albero sul file system corrispondente alla struttura che hanno nel DBMS stesso:</p>
-<div class="highlight-python"><div class="highlight"><pre>.
-├── admin
-│   ├── system.indexes.bson
-│   ├── system.users.bson
-│   ├── system.users.metadata.json
-│   ├── system.version.bson
-│   └── system.version.metadata.json
-├── DB_smartowear
-│   ├── archivedata.bson
-│   ├── archivedata.metadata.json
-│   ├── archivemeasures.bson
-│   ├── archivemeasures.metadata.json
-│   ├── data.bson
-│   ├── data.metadata.json
-│   ├── measures.bson
-│   ├── measures.metadata.json
-│   ├── media.bson
-│   ├── media.metadata.json
-│   ├── social.bson
-│   ├── social.metadata.json
-│   └── system.indexes.bson
-├── DB_SUPPORT
-│   ├── allineamento.bson
-│   ├── allineamento.metadata.json
-│   ├── api.bson
-│   ├── api.metadata.json
-│   ├── metadata.bson
-│   ├── metadata.metadata.json
-│   ├── statistics.bson
-│   ├── statistics.metadata.json
-│   ├── stream.bson
-│   ├── stream.metadata.json
-│   ├── system.indexes.bson
-│   ├── tenant.bson
-│   └── tenant.metadata.json
+<p>Per restorare un singolo dato è necessario avviare un&#8217;istanza mongod facendo puntare il dbpath alla
+cartella precedentemente copiata:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mongod --dbpath /data/backup
 </pre></div>
 </div>
-<p>Ad ogni directory corrisponde un <code class="docutils literal"><span class="pre">db</span></code>, ad ogni file corrisponde una <code class="docutils literal"><span class="pre">collection</span></code>.
-Avendo accesso al dump del database in formato <code class="docutils literal"><span class="pre">mongodump</span></code> è possibile visualizzare
-lo stato di un singolo documento all&#8217;interno del dump con il comando:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ bsondump tenant.bson --filter &#39;{&quot;idTenant&quot;: 20}&#39;
-{ &quot;_id&quot; : ObjectId( &quot;547ee7cd84aed9afa0584cfc&quot; ), &quot;idTenant&quot; : 20, &quot;tenantName&quot; : &quot;ondeuwc&quot;, &quot;tenantDescription&quot; : &quot;ondeuwc&quot;, &quot;tenantCode&quot; : &quot;ondeuwc&quot;, &quot;dataCollectionName&quot; : &quot;data&quot;, &quot;dataCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;measuresCollectionName&quot; : &quot;measures&quot;, &quot;measuresCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;socialCollectionName&quot; : &quot;social&quot;, &quot;socialCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;mediaCollectionName&quot; : &quot;media&quot;, &quot;mediaCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;archiveDataCollectionName&quot; : &quot;archivedata&quot;, &quot;archiveDataCollectionDb&quot; : &quot;DB_ondeuwc&quot;, &quot;archiveMeasuresCollectionName&quot; : &quot;archivemeasures&quot;, &quot;archiveMeasuresCollectionDb&quot; : &quot;DB_ondeuwc&quot; }
-17 objects found
-1 objects processed
-</pre></div>
-</div>
-<p>All&#8217;interno del parametro <code class="docutils literal"><span class="pre">filter</span></code> è possibile specificare la query da eseguire
-per filtrare i documenti all&#8217;interno del dump e recuperare solo il documento corretto.</p>
-<p>Nel caso in cui si trattasse di un nodo di uno <strong>shard</strong> il documento potrebbe non essere
-presente nel dump e bisogna procedere a cercarno anche nei backup degli altri nodi.</p>
-<p>Questo procedimento permette il ripristino di uno o più documenti senza bisogno di procedere al
-ripristino dell&#8217;intero database.</p>
 </div>
 <div class="section" id="restore-del-replicaset">
 <span id="recover-replicaset"></span><h3>Restore del ReplicaSet<a class="headerlink" href="#restore-del-replicaset" title="Permalink to this headline">¶</a></h3>
 <p>Qualora si volesse procedere al restore dell&#8217;intero replicaSet è necessario procedere alla
-configurazione da 0 del nodo primario in cui poi vanno importati i dati con il comando
-<code class="docutils literal"><span class="pre">mongorestore</span></code>.</p>
+configurazione da 0 del nodo primario in cui poi vanno importati i dati ripristinando la cartella
+di backup:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cp -r /data/backup /data/db
+</pre></div>
+</div>
 <p>Una volta completata l&#8217;importazione dei dati, <strong>avviare il nodo come replica singola</strong>:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongod --replSet REPLICASET_NAME
 </pre></div>
@@ -254,22 +222,12 @@ configurazione da 0 del nodo primario in cui poi vanno importati i dati con il c
 </pre></div>
 </div>
 <p>Questo inizializzerà un <em>oplog</em> e ci permetterà di usare il nodo come sorgente
-da cui copiare i dati per gli sltri nodi del replicaset.</p>
+da cui copiare i dati per gli altri nodi del replicaset.</p>
 <div class="section" id="restore-dei-nodi-secondary">
 <span id="recover-replica-secondaries"></span><h4>Restore dei nodi Secondary<a class="headerlink" href="#restore-dei-nodi-secondary" title="Permalink to this headline">¶</a></h4>
-<p>Successivamente procedere al lock del nodo da cui si copiano i dati tramite il comando:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt; db.fsyncLock()
-</pre></div>
-</div>
-<p>A questo punto si può procedere alla copia della directory in cui il nodo salva il dati
+<p>A questo punto si può procedere alla copia della directory in cui il nodo salva i dati
 (di default <code class="docutils literal"><span class="pre">/data/db</span></code>) su ognuno dei sistemi che saranno membri dello stesso replica set.</p>
-<p>Una volta completata la copia sui nodi secondary procedere allo sblocco del nodo da
-cui si sono copiati i dati con il comando:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt; db.fsyncUnlock()
-{ &quot;ok&quot; : 1, &quot;info&quot; : &quot;unlock completed&quot; }
-</pre></div>
-</div>
-<p>A questo punto si può procedere all&#8217;avvio del nuovo nodo:</p>
+<p>Una volta completata la copia si può procedere all&#8217;avvio del nuovo nodo:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mongod --replSet REPLICASET_NAME
 </pre></div>
 </div>
@@ -388,7 +346,7 @@ del cluster.</p>
 </div>
 <div class="section" id="restore-del-cluster-su-una-singola-istanza">
 <h3>Restore del cluster su una singola istanza<a class="headerlink" href="#restore-del-cluster-su-una-singola-istanza" title="Permalink to this headline">¶</a></h3>
-<p>Nal claso in cui si voglia ripristinare l&#8217;intero cluster su una singola istanza è necessario:</p>
+<p>Nel caso in cui si voglia ripristinare l&#8217;intero cluster su una singola istanza è necessario:</p>
 <blockquote>
 <div><ol class="arabic">
 <li><p class="first">avviare una nuova istanza <code class="docutils literal"><span class="pre">mongod</span></code>:</p>
@@ -397,9 +355,7 @@ del cluster.</p>
 </div>
 </li>
 <li><p class="first">ripristinare ogni dump (1 per shard):</p>
-<div class="highlight-python"><div class="highlight"><pre>$ mongorestore --port 30000 speed1bkp/
-$ mongorestore --port 30000 speed2bkp/
-$ mongorestore --port 30000 speed3bkp/
+<div class="highlight-python"><div class="highlight"><pre>$ $ cp -r /data/backup /data/db
 </pre></div>
 </div>
 </li>
@@ -422,8 +378,10 @@ $ mongorestore --port 30000 speed3bkp/
 <li><a class="reference internal" href="#replica-per-backup">Replica per Backup</a></li>
 <li><a class="reference internal" href="#processo-di-backup">Processo di Backup</a><ul>
 <li><a class="reference internal" href="#stop-balancer">Stop Balancer</a></li>
+<li><a class="reference internal" href="#lock-dei-membri-del-replica-set">Lock dei membri del replica set</a></li>
 <li><a class="reference internal" href="#backup-config-server">Backup Config Server</a></li>
 <li><a class="reference internal" href="#backup-shard-members">Backup Shard Members</a></li>
+<li><a class="reference internal" href="#unlock-dei-membri-del-replica-set">Unlock dei membri del replica set</a></li>
 <li><a class="reference internal" href="#start-balancer">Start Balancer</a></li>
 </ul>
 </li>
