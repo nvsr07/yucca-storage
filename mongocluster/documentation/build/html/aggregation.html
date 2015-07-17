@@ -8,7 +8,7 @@
     
     <title>Aggregation &mdash; CSI MongoDB 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,8 +27,8 @@
     <link rel="next" title="Script di avvio" href="start_script.html" />
     <link rel="prev" title="Code Review MongoDBOutEventAdaptorType" href="reviewMongoDBOutEventAdaptorType.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,14 +40,14 @@
         <li class="right" >
           <a href="reviewMongoDBOutEventAdaptorType.html" title="Code Review MongoDBOutEventAdaptorType"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="aggregation">
 <h1>Aggregation<a class="headerlink" href="#aggregation" title="Permalink to this headline">¶</a></h1>
@@ -74,25 +74,25 @@ esterno che va a leggere dai profiler dei singoli nodi.
 sul time prima della group avrà il benificio di usare gli indici per cui avrebbe
 molto senso farlo, se fatta dopo la group non utilizzerà gli indici per cui sarà
 sicuramente più lenta.</li>
-<li>Per quanto riguarda la possibilità di inserire la <tt class="docutils literal"><span class="pre">sort</span></tt> prima di una <tt class="docutils literal"><span class="pre">group</span></tt>
+<li>Per quanto riguarda la possibilità di inserire la <code class="docutils literal"><span class="pre">sort</span></code> prima di una <code class="docutils literal"><span class="pre">group</span></code>
 all&#8217;interno di una pipeline: Il funzionamento della group di mongodb non è in realtà
 un&#8217;effettivo raggruppamento nel senso classico, ma il comportamento dipende dalla
 funzione associata. Quindi non beneficia particolarmente dall&#8217;adiacenza degli elementi
 simili. In ogni caso l&#8217;output della group non è stabile, quindi non mantiene
 eventuali ordinamenti precedentemente fatti.</li>
-<li>Per quanto riguarda l&#8217;efficienza di fare 2 query <tt class="docutils literal"><span class="pre">count</span></tt> + <tt class="docutils literal"><span class="pre">aggregate</span></tt> per
+<li>Per quanto riguarda l&#8217;efficienza di fare 2 query <code class="docutils literal"><span class="pre">count</span></code> + <code class="docutils literal"><span class="pre">aggregate</span></code> per
 paginare una aggregazione (avendo quindi il count totale dei risultati) sono state
-fatte varie prove visibili nella sezione <a class="reference internal" href="#paginate"><em>Paginazione in Aggregation VS 2 Query</em></a>.</li>
-<li>Per quanto riguarda l&#8217;efficienza di effettuare il raggruppamento usando <tt class="docutils literal"><span class="pre">aggregate</span></tt>
+fatte varie prove visibili nella sezione <a class="reference internal" href="#paginate"><span>Paginazione in Aggregation VS 2 Query</span></a>.</li>
+<li>Per quanto riguarda l&#8217;efficienza di effettuare il raggruppamento usando <code class="docutils literal"><span class="pre">aggregate</span></code>
 e poi sortare e limitare applicativamente si può fare riferimento alla sezione
-<a class="reference internal" href="#group-paginate"><em>Paginazione con $group</em></a>.</li>
+<a class="reference internal" href="#group-paginate"><span>Paginazione con $group</span></a>.</li>
 </ul>
 </div></blockquote>
 <div class="section" id="paginazione-in-aggregation-vs-2-query">
 <span id="paginate"></span><h3>Paginazione in Aggregation VS 2 Query<a class="headerlink" href="#paginazione-in-aggregation-vs-2-query" title="Permalink to this headline">¶</a></h3>
 <p>La soluzione che permetterebbe di unificare il processo di conteggio con quello
 di ritorno dei risultati sarebbe quella basata sull&#8217;aggregation framework.</p>
-<p>Sfruttando <tt class="docutils literal"><span class="pre">$group</span></tt> è possibile contare i risultati totali e poi limitarli:</p>
+<p>Sfruttando <code class="docutils literal"><span class="pre">$group</span></code> è possibile contare i risultati totali e poi limitarli:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="o">.</span><span class="n">measures</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s">&#39;idDataset&#39;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;datasetVersion&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;time&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;$lt&#39;</span><span class="p">:</span> <span class="n">ISODate</span><span class="p">(</span><span class="s">&quot;2014-10-02T14:00:00Z&quot;</span><span class="p">)}})</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
 <span class="n">db</span><span class="o">.</span><span class="n">measures</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s">&#39;idDataset&#39;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;datasetVersion&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;time&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;$lt&#39;</span><span class="p">:</span> <span class="n">ISODate</span><span class="p">(</span><span class="s">&quot;2014-10-02T14:00:00Z&quot;</span><span class="p">)}})</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
@@ -113,18 +113,18 @@ inefficiente:</p>
 sfruttando i contatori scritti direttamente nei BTree degli indici. Quindi se
 la query include un indice è molto veloce effettuarne l&#8217;operazione di conteggio.</p>
 <p>In ogni caso, anche se la query non fosse indicizzata, per portare dietro il set
-di risultati e poi poterlo limitare è necessario ricorrere alla chiamata <tt class="docutils literal"><span class="pre">$push</span></tt>
+di risultati e poi poterlo limitare è necessario ricorrere alla chiamata <code class="docutils literal"><span class="pre">$push</span></code>
 che effettuando l&#8217;inserimento in un <em>array dinamico in memoria</em> richiede la riallocazione
 dell&#8217;array per gli inserimenti.</p>
 </div>
 <div class="section" id="paginazione-con-group">
 <span id="group-paginate"></span><h3>Paginazione con $group<a class="headerlink" href="#paginazione-con-group" title="Permalink to this headline">¶</a></h3>
-<p>Al momento l&#8217;applicazione esegue lato MongoDB solo la <tt class="docutils literal"><span class="pre">$group</span></tt>, poi sul
+<p>Al momento l&#8217;applicazione esegue lato MongoDB solo la <code class="docutils literal"><span class="pre">$group</span></code>, poi sul
 risultato viene effettuato <em>ordinamento</em>, <em>conteggio</em> e <em>limit</em> lato applicativo.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Non è chiaro perché l&#8217;ordinamento avvenga lato applicativo, esso potrebbe
-essere introdotto nella pipeline di aggregazione con <tt class="docutils literal"><span class="pre">$sort</span></tt> in modo da lasciare
+essere introdotto nella pipeline di aggregazione con <code class="docutils literal"><span class="pre">$sort</span></code> in modo da lasciare
 lato applicativo solo il <em>conteggio</em> e <em>limit</em>.</p>
 </div>
 <p>Sfruttando lo stesso procedimento precedente, è possibile unificare in una sola
@@ -159,11 +159,11 @@ direttamente lato aggragazione:</p>
 <div><ul class="simple">
 <li>Al fine di inviare i risultati nel lato applicativo il cursore dovrà essere srotolato
 e quindi il costo è lineare al numero di risultati, uguale all&#8217;operazione lato server
-di <tt class="docutils literal"><span class="pre">$group</span></tt>.</li>
+di <code class="docutils literal"><span class="pre">$group</span></code>.</li>
 <li>Al fine di ricostruire il set dei dati ricevuti lato applicativo i dati dovranno essere
 inseriti uno ad uno in un contenitore dal driver mongodb, nuovamente una operazione di
-complessità lineare al pari della <tt class="docutils literal"><span class="pre">$unwind</span></tt>.</li>
-<li>Il costo della <tt class="docutils literal"><span class="pre">$push</span></tt> nella group potrebbe essere equivalente al costo dell&#8217;inserimento
+complessità lineare al pari della <code class="docutils literal"><span class="pre">$unwind</span></code>.</li>
+<li>Il costo della <code class="docutils literal"><span class="pre">$push</span></code> nella group potrebbe essere equivalente al costo dell&#8217;inserimento
 dei risultati nell&#8217;array che li conterrà lato applicativo, quindi dipendentemente dal
 container usato lato applicativo potrebbe risultare parimenti veloce.</li>
 <li>Nel caso in cui il set di risultati venga interamente passato all&#8217;applicazione c&#8217;è da
@@ -182,7 +182,7 @@ in cui invece sono passati solo i 10 risultati già limitati.</li>
 <img alt="_images/aggregation_group.png" src="_images/aggregation_group.png" />
 <p>Dal grafico si evince in modo interessante che al crescere dei gruppi, il costro
 di trasferimento e del driver mongodb supera sensibilmente il guadagno ottenuto dall&#8217;eliminazione
-dei processi di <tt class="docutils literal"><span class="pre">$group</span></tt>, <tt class="docutils literal"><span class="pre">$push</span></tt> e <tt class="docutils literal"><span class="pre">$unwind</span></tt>. Quindi ne caso in cui ci siano
+dei processi di <code class="docutils literal"><span class="pre">$group</span></code>, <code class="docutils literal"><span class="pre">$push</span></code> e <code class="docutils literal"><span class="pre">$unwind</span></code>. Quindi ne caso in cui ci siano
 centinaia di migliaia di gruppi diversi la soluzione intermanete in pipeline risulta più
 efficiente.</p>
 <p>Nei casi con bassi numero di gruppi invece la soluzione che effettua le operazioni in app
@@ -201,10 +201,10 @@ meglio tenere in considerazione alcuni accorgimenti:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Nella pipeline di aggregazione mettere sempre al primo posto <em>match</em> di campi
-indicizzati (<tt class="docutils literal"><span class="pre">idDataset</span></tt>, <tt class="docutils literal"><span class="pre">datasetVersion</span></tt>, <tt class="docutils literal"><span class="pre">time</span></tt>) in modo che sia
+indicizzati (<code class="docutils literal"><span class="pre">idDataset</span></code>, <code class="docutils literal"><span class="pre">datasetVersion</span></code>, <code class="docutils literal"><span class="pre">time</span></code>) in modo che sia
 toccato solo il nodo contenente effettivamente i dati.</li>
-<li>Immediatamente dopo è bene inserire <em>sort</em> su campi indicizzati(<tt class="docutils literal"><span class="pre">idDataset</span></tt>,
-<tt class="docutils literal"><span class="pre">datasetVersion</span></tt>, <tt class="docutils literal"><span class="pre">time</span></tt>)</li>
+<li>Immediatamente dopo è bene inserire <em>sort</em> su campi indicizzati(<code class="docutils literal"><span class="pre">idDataset</span></code>,
+<code class="docutils literal"><span class="pre">datasetVersion</span></code>, <code class="docutils literal"><span class="pre">time</span></code>)</li>
 <li>Una volta fatti <em>match</em> e <em>sort</em> indicizzati vanno fatti gli altri match e gli
 altri sort</li>
 <li>In ogni caso le operazioni di <em>sort</em> e <em>group</em> vengono eseguite direttamente
@@ -220,7 +220,7 @@ sono migliori di <em>sort</em> + <em>first</em> o <em>last</em></li>
 <div class="section" id="opzioni">
 <h3>Opzioni<a class="headerlink" href="#opzioni" title="Permalink to this headline">¶</a></h3>
 <p>Di seguito sono riportate le opzioni che più comunemente influenzano l&#8217;aggregation framework.
-Esse possono essere passate direttamente alla chiamata <tt class="docutils literal"><span class="pre">.aggregate</span></tt> per cambiarne
+Esse possono essere passate direttamente alla chiamata <code class="docutils literal"><span class="pre">.aggregate</span></code> per cambiarne
 il comportamento:</p>
 <blockquote>
 <div><ul class="simple">
@@ -241,7 +241,7 @@ si può verificare la presenza di errori senza caricare il server di lavoro.</li
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -267,12 +267,14 @@ si può verificare la presenza di errori senza caricare il server di lavoro.</li
   <h4>Next topic</h4>
   <p class="topless"><a href="start_script.html"
                         title="next chapter">Script di avvio</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/aggregation.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/aggregation.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -289,7 +291,7 @@ si può verificare la presenza di errori senza caricare il server di lavoro.</li
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -301,12 +303,12 @@ si può verificare la presenza di errori senza caricare il server di lavoro.</li
         <li class="right" >
           <a href="reviewMongoDBOutEventAdaptorType.html" title="Code Review MongoDBOutEventAdaptorType"
              >previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, AXANT.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

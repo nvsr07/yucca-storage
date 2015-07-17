@@ -8,7 +8,7 @@
     
     <title>Code Review MongoDBOutEventAdaptorType &mdash; CSI MongoDB 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,8 +27,8 @@
     <link rel="next" title="Aggregation" href="aggregation.html" />
     <link rel="prev" title="Cluster Backup Strategy" href="backup.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,14 +40,14 @@
         <li class="right" >
           <a href="backup.html" title="Cluster Backup Strategy"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="code-review-mongodbouteventadaptortype">
 <h1>Code Review MongoDBOutEventAdaptorType<a class="headerlink" href="#code-review-mongodbouteventadaptortype" title="Permalink to this headline">¶</a></h1>
@@ -100,8 +100,8 @@ operazioni di scrittura senza aspettare la risposta dal server</p>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<table border="1" class="docutils">
-<caption><strong>No Review</strong> (default <tt class="docutils literal"><span class="pre">WriteConcern.AKNOWLEDGE</span></tt>):</caption>
+<table border="1" class="docutils" id="id1">
+<caption><span class="caption-text"><strong>No Review</strong> (default <code class="docutils literal"><span class="pre">WriteConcern.AKNOWLEDGE</span></code>):</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="50%" />
 <col width="50%" />
@@ -124,8 +124,8 @@ operazioni di scrittura senza aspettare la risposta dal server</p>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<table border="1" class="docutils">
-<caption><strong>writeConcern</strong> <tt class="docutils literal"><span class="pre">WriteConcern.UNACKNOWLEDGE</span></tt></caption>
+<table border="1" class="docutils" id="id2">
+<caption><span class="caption-text"><strong>writeConcern</strong> <code class="docutils literal"><span class="pre">WriteConcern.UNACKNOWLEDGE</span></code></span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="50%" />
 <col width="50%" />
@@ -157,8 +157,8 @@ come parametro alla chiamata insert del documento, che incrementa di circa il
 <div class="highlight-python"><div class="highlight"><pre><span class="n">coll</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dbo</span><span class="p">,</span> <span class="n">WriteConcern</span><span class="o">.</span><span class="n">UNACKNOWLEDGE</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Utilizzando <tt class="docutils literal"><span class="pre">WriteConcern.UNACKNOWLEDGE</span></tt>, invece che il valore di default
-<tt class="docutils literal"><span class="pre">WriteConcern.ACKNOWLEDGE</span></tt>, si otteniene un throughput di inserimento
+<p>Utilizzando <code class="docutils literal"><span class="pre">WriteConcern.UNACKNOWLEDGE</span></code>, invece che il valore di default
+<code class="docutils literal"><span class="pre">WriteConcern.ACKNOWLEDGE</span></code>, si otteniene un throughput di inserimento
 migliorato del 100%,
 d&#8217;altra parte in lettura i dati non saranno disponibili in tempo reale ma ci
 sarà qualche ms di ritardo, inoltre non si avrà la certezza assoluta della
@@ -170,7 +170,7 @@ corretta scrittura.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -190,12 +190,14 @@ corretta scrittura.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="aggregation.html"
                         title="next chapter">Aggregation</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/reviewMongoDBOutEventAdaptorType.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/reviewMongoDBOutEventAdaptorType.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -212,7 +214,7 @@ corretta scrittura.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -224,12 +226,12 @@ corretta scrittura.</p>
         <li class="right" >
           <a href="backup.html" title="Cluster Backup Strategy"
              >previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, AXANT.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

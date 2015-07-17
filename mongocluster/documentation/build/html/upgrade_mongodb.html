@@ -8,7 +8,7 @@
     
     <title>Procedura di Upgrade per MongoDB versione 3.0 &mdash; CSI MongoDB 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -26,8 +26,8 @@
     <link rel="top" title="CSI MongoDB 1.0 documentation" href="index.html" />
     <link rel="prev" title="Java driver assessment" href="upgrade_java_driver.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -36,14 +36,14 @@
         <li class="right" >
           <a href="upgrade_java_driver.html" title="Java driver assessment"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="procedura-di-upgrade-per-mongodb-versione-3-0">
 <h1>Procedura di Upgrade per MongoDB versione 3.0<a class="headerlink" href="#procedura-di-upgrade-per-mongodb-versione-3-0" title="Permalink to this headline">¶</a></h1>
@@ -126,7 +126,7 @@
 <h2>Upgrade binari config e mongos<a class="headerlink" href="#upgrade-binari-config-e-mongos" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">spegnere il bilanciatore, lanciando dalla macchina sdnet-speed-restore.sdp.csi.it lo script
-presente nella cartella <tt class="docutils literal"><span class="pre">/root/backup</span></tt>:</p>
+presente nella cartella <code class="docutils literal"><span class="pre">/root/backup</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre>./stop_balancer.sh
 </pre></div>
 </div>
@@ -267,10 +267,10 @@ cyrus-sasl-plain-2.1.23-15.el6_6.2.x86_64.rpm
 </pre></div>
 </div>
 </li>
-<li><p class="first">nel file <tt class="docutils literal"><span class="pre">/etc/init.d/mongod</span></tt> modificare i valori di ulimit prendendoli dalla nuova copia
+<li><p class="first">nel file <code class="docutils literal"><span class="pre">/etc/init.d/mongod</span></code> modificare i valori di ulimit prendendoli dalla nuova copia
 installata</p>
 </li>
-<li><p class="first">ripristinare i 2 file copiati in precedenza (<tt class="docutils literal"><span class="pre">/etc/init.d/mongod</span></tt> <tt class="docutils literal"><span class="pre">/etc/sysconfig/mongod</span></tt>)</p>
+<li><p class="first">ripristinare i 2 file copiati in precedenza (<code class="docutils literal"><span class="pre">/etc/init.d/mongod</span></code> <code class="docutils literal"><span class="pre">/etc/sysconfig/mongod</span></code>)</p>
 </li>
 <li><p class="first">avviare uno alla volta i nodi e attendere che riprendano lo status di SECONDARY:</p>
 <div class="highlight-python"><div class="highlight"><pre>/etc/init.d/mongod start
@@ -300,10 +300,10 @@ cyrus-sasl-plain-2.1.23-15.el6_6.2.x86_64.rpm
 </pre></div>
 </div>
 </li>
-<li><p class="first">nel file <tt class="docutils literal"><span class="pre">/etc/init.d/mongod</span></tt> modificare i valori di ulimit prendendoli dalla nuova copia
+<li><p class="first">nel file <code class="docutils literal"><span class="pre">/etc/init.d/mongod</span></code> modificare i valori di ulimit prendendoli dalla nuova copia
 installata</p>
 </li>
-<li><p class="first">ripristinare i 2 file copiati in precedenza (<tt class="docutils literal"><span class="pre">/etc/init.d/mongod</span></tt> <tt class="docutils literal"><span class="pre">/etc/sysconfig/mongod</span></tt>)</p>
+<li><p class="first">ripristinare i 2 file copiati in precedenza (<code class="docutils literal"><span class="pre">/etc/init.d/mongod</span></code> <code class="docutils literal"><span class="pre">/etc/sysconfig/mongod</span></code>)</p>
 </li>
 <li><p class="first">avviare uno alla volta i nodi e attendere che riprendano lo status di SECONDARY:</p>
 <div class="highlight-python"><div class="highlight"><pre>/etc/init.d/mongod start
@@ -358,7 +358,7 @@ spegnerli:</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">modificare il file di configurazione <tt class="docutils literal"><span class="pre">/etc/mongod.conf</span></tt>, cambiando il dbpath con il path della
+<li><p class="first">modificare il file di configurazione <code class="docutils literal"><span class="pre">/etc/mongod.conf</span></code>, cambiando il dbpath con il path della
 cartella creata in precedenza, inoltre abilitare il nuovo storage system:</p>
 <div class="highlight-python"><div class="highlight"><pre>storageEngine=wiredTiger
 dbpath=/data/mongodb/data/wiredTiger-mongod
@@ -385,7 +385,7 @@ facendo attenzione che siano diventati secondary:</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">modificare il file di configurazione <tt class="docutils literal"><span class="pre">/etc/mongod.conf</span></tt>, cambiando il dbpath con il path della
+<li><p class="first">modificare il file di configurazione <code class="docutils literal"><span class="pre">/etc/mongod.conf</span></code>, cambiando il dbpath con il path della
 cartella creata in precedenza, inoltre abilitare il nuovo storage system:</p>
 <div class="highlight-python"><div class="highlight"><pre>storageEngine=wiredTiger
 dbpath=/data/mongodb/data/wiredTiger-mongod
@@ -443,7 +443,7 @@ mongodump --port 27017 --out dump/
 </pre></div>
 </div>
 </li>
-<li><p class="first">modificare il file di configurazione <tt class="docutils literal"><span class="pre">/etc/mongoconf.conf</span></tt>, cambiando il dbpath con il path
+<li><p class="first">modificare il file di configurazione <code class="docutils literal"><span class="pre">/etc/mongoconf.conf</span></code>, cambiando il dbpath con il path
 della cartella creata in precedenza, inoltre abilitare il nuovo storage system:</p>
 <div class="highlight-python"><div class="highlight"><pre>storageEngine=wiredTiger
 dbpath=/data/mongodb/data/wiredTiger-mongod
@@ -486,7 +486,7 @@ mongodump --port 27017 --out dump/
 </pre></div>
 </div>
 </li>
-<li><p class="first">modificare il file di configurazione <tt class="docutils literal"><span class="pre">/etc/mongoconf.conf</span></tt>, cambiando il dbpath con il path
+<li><p class="first">modificare il file di configurazione <code class="docutils literal"><span class="pre">/etc/mongoconf.conf</span></code>, cambiando il dbpath con il path
 della cartella creata in precedenza, inoltre abilitare il nuovo storage system:</p>
 <div class="highlight-python"><div class="highlight"><pre>storageEngine=wiredTiger
 dbpath=/data/mongodb/data/wiredTiger-mongod
@@ -519,7 +519,7 @@ mongodump --port 27017 --out dump/
 </pre></div>
 </div>
 </li>
-<li><p class="first">modificare il file di configurazione <tt class="docutils literal"><span class="pre">/etc/mongoconf.conf</span></tt>, cambiando il dbpath con il path
+<li><p class="first">modificare il file di configurazione <code class="docutils literal"><span class="pre">/etc/mongoconf.conf</span></code>, cambiando il dbpath con il path
 della cartella creata in precedenza, inoltre abilitare il nuovo storage system:</p>
 <div class="highlight-python"><div class="highlight"><pre>storageEngine=wiredTiger
 dbpath=/data/mongodb/data/wiredTiger-mongod
@@ -557,7 +557,7 @@ dbpath=/data/mongodb/data/wiredTiger-mongod
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -580,12 +580,14 @@ dbpath=/data/mongodb/data/wiredTiger-mongod
   <h4>Previous topic</h4>
   <p class="topless"><a href="upgrade_java_driver.html"
                         title="previous chapter">Java driver assessment</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/upgrade_mongodb.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/upgrade_mongodb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -602,7 +604,7 @@ dbpath=/data/mongodb/data/wiredTiger-mongod
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -611,12 +613,12 @@ dbpath=/data/mongodb/data/wiredTiger-mongod
         <li class="right" >
           <a href="upgrade_java_driver.html" title="Java driver assessment"
              >previous</a> |</li>
-        <li><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, AXANT.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

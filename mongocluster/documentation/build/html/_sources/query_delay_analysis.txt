@@ -225,7 +225,7 @@ si conclude che il problema non è riguardante gli indici o l'esecuzione della q
 Statistiche Collection
 ======================
 
-utilizzando il il comando ``.stats()`` si ottengono statistiche sulla collection in uso::
+Utilizzando il il comando ``.stats()`` si ottengono statistiche sulla collection in uso::
 
     db.measures.stats()
     {
@@ -311,8 +311,8 @@ utilizzando il il comando ``.stats()`` si ottengono statistiche sulla collection
         "ok" : 1
     }
     
-analizzando le statistiche della collezione si evince che la mole di dati è molto elevata e il 
-problema di rallentamento potrebbe essere dovuto al ``pagefault``, problema che è stato ridotto
+Analizzando le statistiche della collezione si evince che la mole di dati è molto elevata e il 
+problema di rallentamento potrebbe essere dovuto al ``page fault``, problema che è stato eliminato
 con il passaggio allo Storage Engine System wiredTiger
 
 http://docs.mongodb.org/manual/core/storage/#storage-wiredtiger
@@ -324,5 +324,7 @@ Conclusioni
 ===========
 
 Visto il recente passaggio a mongoDB 3.0 e viste le recenti migliorie apportate dove il sistema
-poteva presentare dei problemi si rimanda ad un test successivo e nel caso in cui la query 
-analizzata continuasse a risultare lenta, ad una verifica giornaliera delle statistiche contestualmente ad una analisi utilizzando il tool 
+poteva presentare dei problemi si rimanda ad un test successivo nel caso in cui la query 
+analizzata continuasse a risultare lenta, con una verifica giornaliera delle statistiche 
+contestualmente ad una analisi utilizzando il tool ``mongostat``
+http://docs.mongodb.org/manual/reference/program/mongostat/
