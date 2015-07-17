@@ -274,11 +274,9 @@ public class StoreService {
 		POJOStreams pojoStreams2 = gson.fromJson(json, POJOStreams.class);
 		pojoStreams2.getStreams().getStream().setStreamIcon("");
 
-		System.out.println("AAAAAAAAAAAAAAAAAAA  - tags " + pojoStreams2.getStreams().getStream().getStreamTags());
-
 		if (pojoStreams2.getStreams().getStream().getStreamTags() != null) {
-			System.out.println("AAAAAAAAAAAAAAAAA entro");
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
+			Map<String, String> domainTranslated = new HashMap<String, String>();
 			for (String lang : Constants.LANGUAGES_SUPPORTED) {
 				ResourceBundle messages = getMessages(lang);
 
@@ -286,12 +284,16 @@ public class StoreService {
 				for (Tag tag : pojoStreams2.getStreams().getStream().getStreamTags().getTag()) {
 					translatedTags.add(messages.getString(tag.getTagCode()));
 				}
-
-				if (pojoStreams2.getStreams().getStream().getDomainStream() != null)
-					translatedTags.add(messages.getString(pojoStreams2.getStreams().getStream().getDomainStream()));
-
 				tagsTranslated.put(lang, translatedTags);
 				pojoStreams2.getStreams().getStream().setTagsTranslated(tagsTranslated);
+
+				String translatedDomain = "";
+				if (pojoStreams2.getStreams().getStream().getDomainStream() != null)
+					translatedDomain = messages.getString(pojoStreams2.getStreams().getStream().getDomainStream());
+
+				domainTranslated.put(lang, translatedDomain);
+				pojoStreams2.getStreams().getStream().setDomainTranslated(domainTranslated);
+
 			}
 
 		}
@@ -305,6 +307,7 @@ public class StoreService {
 
 		if (metadata.getInfo().getTags() != null) {
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
+			Map<String, String> domainTranslated = new HashMap<String, String>();
 			for (String lang : Constants.LANGUAGES_SUPPORTED) {
 				ResourceBundle messages = getMessages(lang);
 				List<String> translatedTags = new LinkedList<String>();
@@ -316,6 +319,14 @@ public class StoreService {
 
 				tagsTranslated.put(lang, translatedTags);
 				metadata.getInfo().setTagsTranslated(tagsTranslated);
+
+				String translatedDomain = "";
+				if (metadata.getInfo().getDataDomain() != null)
+					translatedDomain = messages.getString(metadata.getInfo().getDataDomain());
+
+				domainTranslated.put(lang, translatedDomain);
+				metadata.getInfo().setDomainTranslated(domainTranslated);
+
 			}
 		}
 

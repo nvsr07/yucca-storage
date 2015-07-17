@@ -96,6 +96,8 @@ public class Stream {
 
     @Expose
 	private Map<String, List<String>> tagsTranslated;
+    @Expose
+	private Map<String, String> domainTranslated;
   
     
 
@@ -832,5 +834,13 @@ public class Stream {
 
 	public void setTagsTranslated(Map<String, List<String>> tagsTranslated) {
 		this.tagsTranslated = tagsTranslated;
+	}
+
+	public Map<String, String> getDomainTranslated() {
+		return domainTranslated;
+	}
+
+	public void setDomainTranslated(Map<String, String> domainTranslated) {
+		this.domainTranslated = domainTranslated;
 	}
 }

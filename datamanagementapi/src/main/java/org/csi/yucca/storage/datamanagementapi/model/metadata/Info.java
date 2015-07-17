@@ -37,6 +37,7 @@ public class Info extends AbstractEntity {
 	private Tenantssharing tenantssharing;
 
 	private Map<String, List<String>> tagsTranslated;
+	private Map<String, String> domainTranslated;
 
 	public Info() {
 	}
@@ -220,6 +221,14 @@ public class Info extends AbstractEntity {
 
 	public void setTagsTranslated(Map<String, List<String>> tagsTranslated) {
 		this.tagsTranslated = tagsTranslated;
+	}
+
+	public Map<String, String> getDomainTranslated() {
+		return domainTranslated;
+	}
+
+	public void setDomainTranslated(Map<String, String> domainTranslated) {
+		this.domainTranslated = domainTranslated;
 	}
 
 
