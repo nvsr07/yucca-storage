@@ -19,6 +19,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Tenantssharing
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Componenti;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Position;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
+import org.omg.CORBA.SetOverrideType;
 
 public class StreamFiller {
 
@@ -72,7 +73,32 @@ public class StreamFiller {
 		sti.setRequesterSurname(stream.getCognomeRichiedente());
 		sti.setSaveData(stream.getSaveData());
 
-		sti.setStreamStatus(stream.getStatoStream());		
+		sti.setStreamStatus(stream.getStatoStream());	
+		
+		sti.setTwtCount(stream.getTwtCount());
+		System.out.println("setTwtCount OK");
+		sti.setTwtGeolocLat(stream.getTwtGeolocLat());
+		System.out.println("setTwtGeolocLat OK");
+		sti.setTwtGeolocLon(stream.getTwtGeolocLon());
+		System.out.println("setTwtGeolocLon OK");
+		sti.setTwtGeolocRadius(stream.getTwtGeolocRadius());
+		System.out.println("setTwtGeolocRadius OK");
+		sti.setTwtGeolocUnit(stream.getTwtGeolocUnit());
+		System.out.println("setTwtGeolocUnit OK");
+		sti.setTwtLang(stream.getTwtLang());
+		System.out.println("setTwtLang OK");
+		sti.setTwtLocale(stream.getTwtLocale());
+		System.out.println("setTwtLocale OK");
+		sti.setTwtQuery(stream.getTwtQuery());
+		System.out.println("setTwtQuery OK");
+		sti.setTwtMaxStreamsOfVE(stream.getTwtMaxStreamsOfVE());
+		System.out.println("setTwtMaxStreamsOfVE OK");
+		sti.setTwtRatePercentage(stream.getTwtRatePercentage());
+		System.out.println("setTwtRatePercentage OK");
+		sti.setTwtResultType(stream.getTwtResultType());
+		System.out.println("setTwtResultType OK");
+		sti.setTwtUntil(stream.getTwtUntil());
+		System.out.println("setTwtUntil OK");
 
 
 		sti.setVirtualEntityCategory(stream.getCategoriaVirtualEntity());

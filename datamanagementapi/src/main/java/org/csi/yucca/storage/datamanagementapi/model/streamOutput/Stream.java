@@ -4,7 +4,31 @@ package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 import com.google.gson.annotations.Expose;
 
 public class Stream {
-
+	
+	@Expose
+    private Integer twtMaxStreamsOfVE;
+	@Expose
+    private Integer twtRatePercentage;
+	@Expose
+    private Integer twtCount;
+	@Expose
+    private String twtResultType;
+	@Expose
+    private String twtUntil;
+	@Expose
+    private String twtLocale;
+    @Expose
+    private String twtLang;
+	@Expose
+    private String twtGeolocUnit;
+	@Expose
+    private String twtQuery;
+	@Expose
+	private Double twtGeolocLat;
+	@Expose
+	private Double twtGeolocLon;
+	@Expose
+	private Double twtGeolocRadius;
     @Expose
     private Integer idVirtualEntity;
     @Expose
@@ -674,6 +698,102 @@ public class Stream {
 
 	public void setTenantssharing(Tenantssharing tenantssharing) {
 		this.tenantssharing = tenantssharing;
+	}
+
+	public Integer getTwtRatePercentage() {
+		return twtRatePercentage;
+	}
+
+	public void setTwtRatePercentage(Integer twtRatePercentage) {
+		this.twtRatePercentage = twtRatePercentage;
+	}
+
+	public Integer getTwtCount() {
+		return twtCount;
+	}
+
+	public void setTwtCount(Integer twtCount) {
+		this.twtCount = twtCount;
+	}
+
+	public String getTwtResultType() {
+		return twtResultType;
+	}
+
+	public void setTwtResultType(String twtResultType) {
+		this.twtResultType = twtResultType;
+	}
+
+	public String getTwtUntil() {
+		return twtUntil;
+	}
+
+	public void setTwtUntil(String twtUntil) {
+		this.twtUntil = twtUntil;
+	}
+
+	public String getTwtLocale() {
+		return twtLocale;
+	}
+
+	public void setTwtLocale(String twtLocale) {
+		this.twtLocale = twtLocale;
+	}
+
+	public String getTwtLang() {
+		return twtLang;
+	}
+
+	public void setTwtLang(String twtLang) {
+		this.twtLang = twtLang;
+	}
+
+	public String getTwtGeolocUnit() {
+		return twtGeolocUnit;
+	}
+
+	public void setTwtGeolocUnit(String twtGeolocUnit) {
+		this.twtGeolocUnit = twtGeolocUnit;
+	}
+
+	public String getTwtQuery() {
+		return twtQuery;
+	}
+
+	public void setTwtQuery(String twtQuery) {
+		this.twtQuery = twtQuery;
+	}
+
+	public Double getTwtGeolocLat() {
+		return twtGeolocLat;
+	}
+
+	public void setTwtGeolocLat(Double twtGeolocLat) {
+		this.twtGeolocLat = twtGeolocLat;
+	}
+
+	public Double getTwtGeolocLon() {
+		return twtGeolocLon;
+	}
+
+	public void setTwtGeolocLon(Double twtGeolocLon) {
+		this.twtGeolocLon = twtGeolocLon;
+	}
+
+	public Double getTwtGeolocRadius() {
+		return twtGeolocRadius;
+	}
+
+	public void setTwtGeolocRadius(Double twtGeolocRadius) {
+		this.twtGeolocRadius = twtGeolocRadius;
+	}
+
+	public Integer getTwtMaxStreamsOfVE() {
+		return twtMaxStreamsOfVE;
+	}
+
+	public void setTwtMaxStreamsOfVE(Integer twtMaxStreamsOfVE) {
+		this.twtMaxStreamsOfVE = twtMaxStreamsOfVE;
 	}
 
 }

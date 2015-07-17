@@ -103,7 +103,7 @@ public class MetadataService {
 	@Path("/download/{tenant}/{datasetCode}/{format}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @PathParam("format") String format)
-			throws NumberFormatException, UnknownHostException {
+			throws NumberFormatException, UnknownHostException, Exception {
 		log.debug("[MetadataService::downloadData] - START tenant: " + tenant + "|datasetCode: " + datasetCode + "|format: " + format);
 		final char separator = ';';
 
@@ -168,6 +168,43 @@ public class MetadataService {
 			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getFps()));
 			headerFixedColumn.add("Stream.TimeStamp");
 		}
+		
+		//TODO verifico che sia social ed eseguo il codice relativo sovrasciverndo collectionName
+		final boolean isSocial = metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_SOCIAL_DATASET.equals(metadata.getConfigData().getSubtype());
+		if (isSocial) {
+			collectionName = Config.getInstance().getCollectionTenantSocial();
+
+			// stream social
+			String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+
+			MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+			StreamOut stream = streamDAO.readStreamByMetadata(metadata);
+
+			headerFixedColumn.add("Tweet.Query");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtQuery()));
+			headerFixedColumn.add("Tweet.Latitudine");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtGeolocLat()));
+			headerFixedColumn.add("Tweet.Longitudine");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtGeolocLon()));
+			headerFixedColumn.add("Tweet.Radius");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtGeolocRadius()));
+			headerFixedColumn.add("Tweet.Unit");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtGeolocUnit()));
+			headerFixedColumn.add("Tweet.Lang");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtLang()));
+			headerFixedColumn.add("Tweet.Locale");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtLocale()));
+			headerFixedColumn.add("Tweet.ResultType");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtResultType()));
+			headerFixedColumn.add("Tweet.MaxStreamofVE");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtMaxStreamsOfVE()));
+			headerFixedColumn.add("Tweet.RatePercentage");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtRatePercentage()));
+			headerFixedColumn.add("Tweet.Count");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtCount()));
+			headerFixedColumn.add("Tweet.Until");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getTwtUntil()));
+		}
 
 		DBCollection dataCollection = mongo.getDB("DB_" + tenant).getCollection(collectionName);
 
@@ -193,6 +230,8 @@ public class MetadataService {
 																				// measureUnit,
 																				// dataType,
 																				// measure)
+				} else if (isSocial) {
+					totalColumn = headerFixedColumn.size() + fields.size();
 				}
 				String[] headerNames = new String[totalColumn];
 				int counter = 0;
@@ -209,6 +248,18 @@ public class MetadataService {
 						headerNames[counter] = field.getFieldName() + ".dataType";
 						counter++;
 						headerNames[counter] = field.getFieldName() + ".measure";
+						counter++;
+					} else if (isSocial) { 
+						if (field.getFieldName().equals("getText")){
+							headerNames[counter] = "Tweet.Text";
+						} else if (field.getFieldName().equals("createdAt")){
+							headerNames[counter] = "Tweet.CreatedDate";
+						} else if (field.getFieldName().equals("mediaCnt")){
+							headerNames[counter] = "Tweet.MediaCount";
+						} else {
+							String output = Character.toUpperCase(field.getFieldName().charAt(0)) + field.getFieldName().substring(1);
+							headerNames[counter] = "Tweet." + output;
+						}
 						counter++;
 					} else {
 						headerNames[counter] = Util.nvlt(field.getFieldAlias());
@@ -241,6 +292,9 @@ public class MetadataService {
 							counter++;
 							row[counter] = Util.nvlt(field.getDataType());
 							counter++;
+							row[counter] = Util.nvlt(doc.get(field.getFieldName()));
+							counter++;
+						} else if (isSocial) { 
 							row[counter] = Util.nvlt(doc.get(field.getFieldName()));
 							counter++;
 						} else {

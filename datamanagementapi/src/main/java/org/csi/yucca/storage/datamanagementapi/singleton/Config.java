@@ -20,6 +20,7 @@ public class Config {
 	public static final String MONGO_USERNAME = "MONGO_USERNAME";
 	public static final String MONGO_PASSWORD = "MONGO_PASSWORD";
 	public static final String MONGO_COLLECTION_TENANT_DATA = "MONGO_COLLECTION_TENANT_DATA";
+	public static final String MONGO_COLLECTION_TENANT_SOCIAL = "MONGO_COLLECTION_TENANT_SOCIAL";
 	public static final String MONGO_COLLECTION_TENANT_MEASURES = "MONGO_COLLECTION_TENANT_MEASURES";
 	public static final String BASE_API_URL = "BASE_API_URL";
 	public static final String DAMMI_INFO = "DAMMI_INFO";
@@ -52,6 +53,7 @@ public class Config {
 		params.put(MONGO_COLLECTION_SUPPORT_STREAM_STATS, rb.getString(MONGO_COLLECTION_SUPPORT_STREAM_STATS));		
 		params.put(BASE_API_URL, rb.getString(BASE_API_URL));
 		params.put(MONGO_COLLECTION_TENANT_DATA, rb.getString(MONGO_COLLECTION_TENANT_DATA));
+		params.put(MONGO_COLLECTION_TENANT_SOCIAL, rb.getString(MONGO_COLLECTION_TENANT_SOCIAL));
 		params.put(MONGO_COLLECTION_TENANT_MEASURES, rb.getString(MONGO_COLLECTION_TENANT_MEASURES));
 		params.put(DAMMI_INFO, rb.getString(DAMMI_INFO));
 		params.put(CONSOLE_ADDRESS, rb.getString(CONSOLE_ADDRESS));
@@ -115,9 +117,12 @@ public class Config {
 		return params.get(MONGO_COLLECTION_SUPPORT_STREAM_STATS);
 	}
 	
-	
 	public String getCollectionTenantData() {
 		return params.get(MONGO_COLLECTION_TENANT_DATA);
+	}
+
+	public String getCollectionTenantSocial() {
+		return params.get(MONGO_COLLECTION_TENANT_SOCIAL);
 	}
 
 	public String getCollectionTenantMeasures() {
