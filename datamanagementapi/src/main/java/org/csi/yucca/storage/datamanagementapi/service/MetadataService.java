@@ -212,7 +212,7 @@ public class MetadataService {
 		searchQuery.put("idDataset", metadata.getIdDataset());
 
 		final DBCursor cursor = dataCollection.find(searchQuery).limit(Constants.MAX_NUM_ROW_DATA_DOWNLOAD);
-
+		
 		StreamingOutput streamResponse = new StreamingOutput() {
 
 			public void write(OutputStream os) throws IOException, WebApplicationException {

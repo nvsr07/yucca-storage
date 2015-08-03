@@ -16,6 +16,7 @@ public class ConfigData extends AbstractEntity {
 	private String datasetStatus;
 	private Integer current;
 	private Archive archive;
+	private Integer deleted;
 
 	public ConfigData() {
 	}
@@ -103,6 +104,14 @@ public class ConfigData extends AbstractEntity {
 
 	public void setArchive(Archive archive) {
 		this.archive = archive;
+	}
+
+	public Integer getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Integer deleted) {
+		this.deleted = deleted;
 	}
 
 }

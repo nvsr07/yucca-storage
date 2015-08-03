@@ -35,4 +35,10 @@ public class Constants {
 		return isoDateFormat;
 	}
 
+	public static void main(String[] args) {
+		System.out.println(DEFAULT_FIELD_DATE_FORMAT);
+		DateFormat formatter = Constants.DEFAULT_FIELD_DATE_FORMAT;
+		formatter.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+		System.out.println(formatter.toString());
+	}
 }
