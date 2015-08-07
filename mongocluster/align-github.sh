@@ -1,2 +1,2 @@
 #!/bin/bash
-cp --parents -r `hg locate | xargs` $1
+rsync -R `hg locate | xargs` $1

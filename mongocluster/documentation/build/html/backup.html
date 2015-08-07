@@ -128,16 +128,6 @@ finestra temporale necessaria al backup:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="lock-dei-membri-del-replica-set">
-<h3>Lock dei membri del replica set<a class="headerlink" href="#lock-dei-membri-del-replica-set" title="Permalink to this headline">¶</a></h3>
-<p>Dopo aver stoppato il balancer è necessario fermare il propagarsi delle repliche in modo da
-ottenere un backup coerente.
-Per farlo è necessario eseguire <em>per ognuno dei nodi di</em> <a class="reference internal" href="#backup-replica"><span>Replica per Backup</span></a> il comando:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt; db.fsyncLock()
-</pre></div>
-</div>
-<p>una volta bloccate le repliche si può procedere con il backup dei vari elementi del cluster.</p>
-</div>
 <div class="section" id="backup-config-server">
 <h3>Backup Config Server<a class="headerlink" href="#backup-config-server" title="Permalink to this headline">¶</a></h3>
 <p>Prima di procedere all&#8217;effetivo backup dei nodi è necessario effettuare il backup di un config
@@ -254,7 +244,7 @@ dei nodi <strong>secondary</strong> ancora funzionanti tramite gli step descritt
 consigliato procedere copiando i dati da un altro config server tramite il processo:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">db.fsyncUnlock()</span></code></li>
+<li><code class="docutils literal"><span class="pre">db.fsyncLock()</span></code></li>
 <li>copia di <code class="docutils literal"><span class="pre">/data/db</span></code></li>
 <li><code class="docutils literal"><span class="pre">db.fsyncUnlock()</span></code></li>
 </ul>
@@ -378,7 +368,6 @@ del cluster.</p>
 <li><a class="reference internal" href="#replica-per-backup">Replica per Backup</a></li>
 <li><a class="reference internal" href="#processo-di-backup">Processo di Backup</a><ul>
 <li><a class="reference internal" href="#stop-balancer">Stop Balancer</a></li>
-<li><a class="reference internal" href="#lock-dei-membri-del-replica-set">Lock dei membri del replica set</a></li>
 <li><a class="reference internal" href="#backup-config-server">Backup Config Server</a></li>
 <li><a class="reference internal" href="#backup-shard-members">Backup Shard Members</a></li>
 <li><a class="reference internal" href="#unlock-dei-membri-del-replica-set">Unlock dei membri del replica set</a></li>

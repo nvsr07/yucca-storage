@@ -96,17 +96,6 @@ finestra temporale necessaria al backup::
     > use config
     > db.settings.update( { _id : "balancer" }, { $set : { activeWindow : { start : "6:00", stop : "23:00" } } }, true )
 
-Lock dei membri del replica set
--------------------------------
-
-Dopo aver stoppato il balancer è necessario fermare il propagarsi delle repliche in modo da 
-ottenere un backup coerente.
-Per farlo è necessario eseguire *per ognuno dei nodi di* :ref:`backup-replica` il comando::
-
-    > db.fsyncLock()
-    
-una volta bloccate le repliche si può procedere con il backup dei vari elementi del cluster.
-
 Backup Config Server
 --------------------
 
@@ -239,7 +228,7 @@ Restore di un singolo config
 Nel caso di ripristino di un solo config server, come per il restore di un nodo del replicaSet è
 consigliato procedere copiando i dati da un altro config server tramite il processo:
 
-    * ``db.fsyncUnlock()``
+    * ``db.fsyncLock()``
     * copia di ``/data/db``
     * ``db.fsyncUnlock()``
 
