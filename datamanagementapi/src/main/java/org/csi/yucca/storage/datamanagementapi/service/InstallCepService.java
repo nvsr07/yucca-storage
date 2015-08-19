@@ -5,8 +5,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -33,6 +35,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 
 @Path("/metadata")
@@ -44,6 +47,98 @@ public class InstallCepService {
 	@Context
 	ServletContext context;
 	static Logger log = Logger.getLogger(InstallCepService.class);
+
+
+	@DELETE
+	@Path("/clearDataset/{tenant}/{idDataset}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String clearDataset(@PathParam("tenant") String tenant, @PathParam("idDataset") String idDataset) throws UnknownHostException {
+		return deleteDatasetData(tenant,idDataset,null);
+	}	
+
+
+	@DELETE
+	@Path("/clearDataset/{tenant}/{idDataset}/{datasetVersion}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String clearDatasetByVersion(@PathParam("tenant") String tenant, @PathParam("idDataset") String idDataset,@PathParam("datasetVersion") String datasetVersion) throws UnknownHostException {
+		return deleteDatasetData(tenant,idDataset,datasetVersion);
+	}	
+
+	private String deleteDatasetData(String tenant, String idDataset,String datasetVersion) throws UnknownHostException {
+		mongo = MongoSingleton.getMongoClient();
+		try{
+
+			//TODO controlli ed eccezioni
+			Long datasetVersionLng=null;
+			if (null!=datasetVersion) datasetVersionLng=new Long(Long.parseLong(datasetVersion));
+			DB db = mongo.getDB(Config.getInstance().getDbSupport());
+
+
+			//recupero DatasetType
+			DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+			BasicDBObject searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
+			if (null!=datasetVersionLng) searchQuery.put("datasetVersion",datasetVersionLng.longValue());
+
+
+			DBObject datasetMetaData = col.findOne(searchQuery);
+			Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(datasetMetaData));
+
+
+
+
+
+			DBCollection colTenant = db.getCollection(Config.getInstance().getCollectionSupportTenant());
+
+			searchQuery = new BasicDBObject();
+			searchQuery.put("tenantCode", tenant);
+
+
+
+			String dataDb=null;
+			String dataCollection=null;
+			DBObject tenantInfo = colTenant.findOne(searchQuery);
+			if ("streamDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+				dataDb=(String)tenantInfo.get("measuresCollectionDb");
+				dataCollection=(String)tenantInfo.get("measuresCollectionName");
+			} else if ("binaryDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+				//TODO
+throw new Exception("invalid data type, cannot delete a mediaDataset data");
+			} else if ("socialDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+				dataDb=(String)tenantInfo.get("measuresCollectionDb");
+				dataCollection=(String)tenantInfo.get("socialCollectionName");
+			} else if ("bulkDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+				dataDb=(String)tenantInfo.get("dataCollectionDb");
+				dataCollection=(String)tenantInfo.get("dataCollectionName");
+
+			}
+
+			DBCollection colDati=null;
+			if (db.getName().equals(dataDb)) colDati=db.getCollection(dataCollection);
+			else {
+				DB db1= mongo.getDB(dataDb);
+				colDati=db1.getCollection(dataCollection);
+			}
+
+
+			searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
+			if (null!=datasetVersionLng) searchQuery.put("datasetVersion",datasetVersionLng.longValue());
+
+
+			WriteResult wr= colDati.remove(searchQuery);
+
+			System.out.println(wr);
+
+		}catch (Exception e) {
+			e.printStackTrace();
+			System.err.println(e);
+			return JSON.parse("{KO:1}").toString();
+		}
+
+		return JSON.parse("{OK:1}").toString();
+
+	}
+
+
 
 	@POST
 	@Path("/insertFromStream")

@@ -134,16 +134,12 @@
 			<build>
 				<resources>
 					<resource>
-						<directory>src/main/resources/int</directory>
-					</resource>
-					<resource>
-						<directory>conf</directory>
-						<targetPath>.</targetPath>
+						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/int</directory>
 					</resource>
 				</resources>
 			</build>
 			<properties>
-				<webXmlPath>src/main/resources/int/</webXmlPath>
+				<webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/int/</webXmlPath>
 			</properties>
 		</profile>
 		<profile>
@@ -151,16 +147,12 @@
 			<build>
 				<resources>
 					<resource>
-						<directory>src/main/resources/prod</directory>
-					</resource>
-					<resource>
-						<directory>conf</directory>
-						<targetPath>.</targetPath>
+						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/prod</directory>
 					</resource>
 				</resources>
 			</build>
 			<properties>
-				<webXmlPath>src/main/resources/prod/</webXmlPath>
+				<webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/prod/</webXmlPath>
 			</properties>
 		</profile>
 	</profiles>
