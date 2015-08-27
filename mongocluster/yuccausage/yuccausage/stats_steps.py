@@ -150,6 +150,8 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
 
             stream_info = stream['streams']['stream']
             stream_data['streamName'] = stream['streamName']
+            stream_data['streamCode'] = stream.get('streamCode')
+            stream_data['virtualEntityCode'] = stream_info.get('virtualEntityCode')
             stream_data['virtualEntityDescription'] = stream_info.get('virtualEntityDescription')
             stream_data['streamTags'] = stream_info['streamTags']['tags']
             stream_data['components'] = [{'componentName': element['componentName'],
@@ -169,8 +171,7 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             dataset_data = tenant_data_datasets_data.get(str(idDataset), {})
             datasetVersion = metadata['datasetVersion']
             datasetVersion_data = {}
-            datasetVersion_data['total'] = data_col.find({'idDataset': idDataset,
-                                                   'datasetVersion': datasetVersion}).count()
+            datasetVersion_data['total'] = data_col.find({'idDataset': idDataset}).count()
             datasetVersion_data['visibility'] = metadata['info']['visibility']
             datasetVersion_data['datasetName'] = metadata['info']['datasetName']
             datasetVersion_data['description'] = metadata['info'].get('description')
@@ -526,6 +527,8 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
         )['info']['visibility']
         stream_info = stream['streams']['stream']
         stream_data['streamName'] = stream['streamName']
+        stream_data['streamCode'] = stream.get('streamCode')
+        stream_data['virtualEntityCode'] = stream_info.get('virtualEntityCode')
         stream_data['virtualEntityDescription'] = stream_info.get('virtualEntityDescription')
         stream_data['streamTags'] = stream_info['streamTags']['tags']
         stream_data['components'] = [{'componentName': element['componentName'],

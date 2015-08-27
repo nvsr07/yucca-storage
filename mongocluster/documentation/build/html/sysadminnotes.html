@@ -109,9 +109,11 @@ di distribuire il carico tra i nodi senza dover rinunciare alla consistenza.</p>
 </div>
 <div class="section" id="monitoraggio-cluster">
 <h2>Monitoraggio Cluster<a class="headerlink" href="#monitoraggio-cluster" title="Permalink to this headline">¶</a></h2>
-<p>Di seguito sono riportati i valori rilevanti monitorati da Nagios,
-per ognuno di essi è indicato il significato, quale è il loro valore
-all&#8217;interno del monitoraggio e la soglia di attenzione:</p>
+<p>Per quanto riguarda il monitoraggio del cluster è stato scelto di utilizzare nagios tramite
+l&#8217;apposito plugin (<a class="reference external" href="https://github.com/mzupan/nagios-plugin-mongodb">https://github.com/mzupan/nagios-plugin-mongodb</a>) già presente con il supporto
+alla versione 3.0 di mongodb</p>
+<p>Di seguito sono riportati i valori rilevanti monitorati da Nagios, per ognuno di essi è indicato
+il significato, quale è il loro valore all&#8217;interno del monitoraggio e la soglia di attenzione:</p>
 <blockquote>
 <div><ul>
 <li><p class="first"><strong>Load Average</strong>
@@ -129,42 +131,43 @@ La directory <code class="docutils literal"><span class="pre">/data</span></code
 è importante monitorarne l&#8217;occupazione in quanto in caso di necessità di riparare
 il DB sarà necessario che la sua occupazione non superi il 50%.</p>
 </li>
-<li><p class="first"><strong>Connect Check</strong>
+<li><p class="first"><strong>check_connect_primary</strong>
 Riporta se il nodo monitorato riesce a collegarsi al primary del replica set
 a cui appartiene in tempi rapidi. E` utile a monitorare la qualità di connessione
 verso il primary node del replicat, cosa che influenza la velocità di replicazione.
 Qualora il nodo sia il primary stesso non da informazioni utili.</p>
 </li>
-<li><p class="first"><strong>Page Faults</strong>
+<li><p class="first"><strong>check_page_faults</strong>
 Riporta il numero di page fault effettuati durante l&#8217;uso del database, qualora il
 numero sia significativo significa che il database non ha sufficiente memoria per
-gestire il carico di lavoro.</p>
+gestire il carico di lavoro, con il passaggio a wiredTiger questo warning dovrebbe
+presentarsi con molta meno frequenza.</p>
 </li>
-<li><p class="first"><strong>Flush Average</strong>
+<li><p class="first"><strong>check_flushing</strong>
 Riporta il tempo richiesto per la scrittura su disco degli inserimenti, se questo valore
 è troppo alto può rallentare la scrittura e replicazione dell&#8217;oplog a causa del lock che
 viene posto sulle operazione. Se la soglia di errore viene raggiunta può essere necessario
 operare per migliorare le prestazioni del disco. O aumentare la RAM per ridurre l&#8217;impatto
 sul disco.</p>
 </li>
-<li><p class="first"><strong>Free Connections</strong>
+<li><p class="first"><strong>check_connections</strong>
 Monitora il numero di connesisoni usate tra quelle disponibili per i client. Quando il
 massimo viene raggiunto non sarà più possibile connettersi per i client.</p>
 </li>
-<li><p class="first"><strong>Lock Percentage</strong>
+<li><p class="first"><strong>check_lock</strong>
 Monitora la % che il database spende bloccato sui lock delle operazioni. Questo valore
 dovrebbe essere sempre minimizzato in quanto impedisce a qualsiasi operazione di procedere
 inclusa la replicazione.</p>
 </li>
-<li><p class="first"><strong>Memory Usage</strong>
+<li><p class="first"><strong>check_memory</strong>
 Di questo valore è importante tenere presente i valori <code class="docutils literal"><span class="pre">mapped</span></code> che sta ad indicare la
 dimensione massima utile perché il DB lavori senza uso del disco e <code class="docutils literal"><span class="pre">resident</span></code> che indica
 quanta memoria è in uso effettivamente da MongoDB.</p>
 </li>
-<li><p class="first"><strong>Replicaset Master Monitor</strong>
+<li><p class="first"><strong>check_replica_primary</strong>
 Verifica se è cambiato il primary node del replica set.</p>
 </li>
-<li><p class="first"><strong>Replication Lag</strong>
+<li><p class="first"><strong>check_rep_lag</strong>
 Verifica la latenza di replicazione, quindi quanto i secondary node sono in ritardo rispetto
 al nodo primary. Eventuali backups andrebbero sempre effettuati quando i nodi sono in pari.
 Se la replicazione è molto in ritardo può essere dovuto alle seguenti cause:</p>
@@ -177,9 +180,23 @@ Se la replicazione è molto in ritardo può essere dovuto alle seguenti cause:</
 </ul>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>Updates per Second</strong>
-Questo valore sta ad indicare le scritture al secondo effettuate dal sistema, se è alto
-può avere effetto sulla <em>Replication Lag</em>.</p>
+<li><p class="first"><strong>check_queries_per_second</strong>
+Questo valore sta ad indicare le query al secondo effettuate dal sistema, se è alto
+può avere effetto sulla <em>check_rep_lag</em>.</p>
+</li>
+<li><dl class="first docutils">
+<dt><strong>check_oplog</strong></dt>
+<dd><p class="first last">Indica il tempo salvato nell&#8217;oplog, se diventa troppo basso richia di far andare i nodi
+out of sync e rendere necessario resync iniziale.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>chunks_balance</strong></dt>
+<dd><p class="first last">Verifica il corretto bilanciamento dei chunk nella shard, ad esempio se sono presenti jumbo
+chunk o se è presente quache problema al bilanciatore.</p>
+</dd>
+</dl>
 </li>
 </ul>
 </div></blockquote>

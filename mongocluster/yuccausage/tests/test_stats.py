@@ -353,7 +353,9 @@ class TestStatisticsSteps(object):
                         'streamTags': [
                             {'tagCode': 'AIR'},
                         ],
-                        'virtualEntityDescription': 'Arduino Reference'
+                        'virtualEntityDescription': 'Arduino Reference',
+                        'virtualEntityCode': None,
+                        'streamCode': 'temperature'
                     }
                 },
                 'test-csp': {
@@ -368,7 +370,9 @@ class TestStatisticsSteps(object):
                         'streamTags': [
                             {'tagCode': 'AIR'},
                         ],
-                        'virtualEntityDescription': 'Arduino Reference'
+                        'virtualEntityDescription': 'Arduino Reference',
+                        'virtualEntityCode': None,
+                        'streamCode': 'temperature'
                     }
                 }
             },
@@ -444,7 +448,9 @@ class TestStatisticsSteps(object):
                                                  'streamTags': [
                                                      {'tagCode': 'AIR'},
                                                  ],
-                                                 'virtualEntityDescription': 'Arduino Reference'
+                                                 'virtualEntityDescription': 'Arduino Reference',
+                                                 'virtualEntityCode': None,
+                                                 'streamCode': 'temperature'
                                              }
                                          },
                                          'test-csp': {
@@ -459,7 +465,9 @@ class TestStatisticsSteps(object):
                                                  'streamTags': [
                                                      {'tagCode': 'AIR'},
                                                  ],
-                                                 'virtualEntityDescription': 'Arduino Reference'
+                                                 'virtualEntityDescription': 'Arduino Reference',
+                                                 'virtualEntityCode': None,
+                                                 'streamCode': 'temperature'
                                              }
                                          }
                                      },
@@ -534,7 +542,9 @@ class TestStatisticsSteps(object):
                         'streamTags': [
                             {'tagCode': 'AIR'},
                         ],
-                        'virtualEntityDescription': 'Arduino Reference'
+                        'virtualEntityDescription': 'Arduino Reference',
+                        'virtualEntityCode': None,
+                        'streamCode': 'temperature'
                     }
                 },
                 'test-csp': {
@@ -549,7 +559,9 @@ class TestStatisticsSteps(object):
                         'streamTags': [
                             {'tagCode': 'AIR'},
                         ],
-                        'virtualEntityDescription': 'Arduino Reference'
+                        'virtualEntityDescription': 'Arduino Reference',
+                        'virtualEntityCode': None,
+                        'streamCode': 'temperature'
                     }
                 }
             },
@@ -627,7 +639,9 @@ class TestStatisticsSteps(object):
                         'streamTags': [
                             {'tagCode': 'AIR'},
                         ],
-                        'virtualEntityDescription': 'Arduino Reference'
+                        'virtualEntityDescription': 'Arduino Reference',
+                        'virtualEntityCode': None,
+                        'streamCode': 'temperature'
                     }
                 },
                 'test-csp': {
@@ -642,7 +656,9 @@ class TestStatisticsSteps(object):
                         'streamTags': [
                             {'tagCode': 'AIR'},
                         ],
-                        'virtualEntityDescription': 'Arduino Reference'
+                        'virtualEntityDescription': 'Arduino Reference',
+                        'virtualEntityCode': None,
+                        'streamCode': 'temperature'
                     }
                 }
             },
