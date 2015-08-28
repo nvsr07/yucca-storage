@@ -141,8 +141,7 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             idStream = stream['idStream']
             idDataset = stream['configData']['idDataset']
             datasetVersion = stream['configData']['datasetVersion']
-            stream_data['total'] = measures_col.find({'idDataset': idDataset,
-                                                      'datasetVersion': datasetVersion}).count()
+            stream_data['total'] = measures_col.find({'idDataset': idDataset}).count()
             stream_data['visibility'] = db_support['metadata'].find_one(
                 {'idDataset': idDataset,
                  'datasetVersion': datasetVersion}
@@ -519,8 +518,7 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
         idDataset = stream['configData']['idDataset']
         datasetVersion = stream['configData']['datasetVersion']
         stream_data['total'] = measure_collection.find(
-            {'_id': {'$gte': origin_id}, 'idDataset': idDataset, 'datasetVersion': datasetVersion}
-        ).count()
+            {'_id': {'$gte': origin_id}, 'idDataset': idDataset}).count()
         stream_data['visibility'] = db_support['metadata'].find_one(
             {'idDataset': idDataset,
              'datasetVersion': datasetVersion}
@@ -554,8 +552,7 @@ def _tenant_datasets_data_since(origin_id, tenant_info, data_collection):
         datasetVersion = metadata['datasetVersion']
         datasetVersion_data = {}
         datasetVersion_data['total'] = data_collection.find({'_id': {'$gte': origin_id},
-                                                      'idDataset': idDataset,
-                                                      'datasetVersion': datasetVersion}).count()
+                                                      'idDataset': idDataset}).count()
         datasetVersion_data['visibility'] = metadata['info']['visibility']
 
         datasetVersion_data['datasetName'] = metadata['info']['datasetName']
