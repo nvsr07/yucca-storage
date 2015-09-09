@@ -21,7 +21,7 @@ public class QSPStore extends CallApiManagerUtil implements CallBack {
 		exec();
 	}
 
-	@Override
+	
 	public void handler(CallApiManagerUtil test, String action) {
 		JsonMap jm = new JsonMap();
 	    String res =  test.getVar("result");
