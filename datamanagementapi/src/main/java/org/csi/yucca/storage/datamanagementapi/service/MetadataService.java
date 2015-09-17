@@ -42,6 +42,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Opendata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantssharing;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
@@ -473,6 +474,11 @@ public class MetadataService {
 				metadata.getInfo().setTenantssharing(tenantssharing);
 			}
 			metadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
+			
+			// opendata
+			if(!"public".equals(metadata.getInfo().getVisibility())){
+				metadata.setOpendata(null);
+			}
 
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 
@@ -632,6 +638,17 @@ public class MetadataService {
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
+			
+			if("public".equals(newMetadata.getInfo().getVisibility()) && inputMetadata.getOpendata()!=null && inputMetadata.getOpendata().isOpendata()){
+				Opendata opendata = new Opendata();
+				opendata.setOpendata(true);
+				opendata.setMetadaUpdateDate(new Date());
+				opendata.setSourceId(inputMetadata.getOpendata().getSourceId());
+				opendata.setLanguage(inputMetadata.getOpendata().getLanguage()==null?"it":inputMetadata.getOpendata().getLanguage());
+				opendata.setDataUpdateDate(inputMetadata.getOpendata().getDataUpdateDate());
+				newMetadata.setOpendata(opendata);
+			}
+
 
 			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
 			if (newMetadata.getInfo().getTenantssharing() != null) {

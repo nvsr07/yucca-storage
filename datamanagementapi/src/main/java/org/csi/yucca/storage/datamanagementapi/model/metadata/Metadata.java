@@ -27,6 +27,7 @@ public class Metadata extends AbstractEntity {
 
 	private ConfigData configData;
 	private Info info;
+	private Opendata opendata;
 
 	public static Metadata fromJson(String json) {
 		Gson gson = JSonHelper.getInstance();
@@ -212,6 +213,14 @@ public class Metadata extends AbstractEntity {
 
 		return new Field[] { idBinaryField, filenameBinaryField, aliasNameBinaryField, sizeBinaryField, insertDateBinaryField, lastUpdateDateBinaryField,
 				contentTypeBinaryField, pathBinaryField, metadataBinaryField };
+	}
+
+	public Opendata getOpendata() {
+		return opendata;
+	}
+
+	public void setOpendata(Opendata opendata) {
+		this.opendata = opendata;
 	}
 
 }
