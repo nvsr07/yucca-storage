@@ -27,8 +27,18 @@ public class Element {
     private Integer idDataType;
     @Expose
     private Integer idMeasureUnit;
+    @Expose
+    private Integer sinceVersion;
+    
+    public Integer getSinceVersion() {
+		return sinceVersion;
+	}
 
-    /**
+	public void setSinceVersion(Integer sinceVersion) {
+		this.sinceVersion = sinceVersion;
+	}
+
+	/**
      * 
      * @return
      *     The nome

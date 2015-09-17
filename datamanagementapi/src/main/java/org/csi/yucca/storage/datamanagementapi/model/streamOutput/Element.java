@@ -29,7 +29,16 @@ public class Element {
     private String dataType;
     @Expose
     private Integer idDataType;
+    @Expose
+    private Integer sinceVersion;
+    
+    public Integer getSinceVersion() {
+		return sinceVersion;
+	}
 
+	public void setSinceVersion(Integer sinceVersion) {
+		this.sinceVersion = sinceVersion;
+	}
     /**
      * 
      * @return
