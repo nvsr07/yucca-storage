@@ -137,6 +137,10 @@
 					<resource>
 						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/int</directory>
 					</resource>
+					<resource>
+						<directory>conf</directory>
+						<targetPath>.</targetPath>
+					</resource>
 				</resources>
 			</build>
 			<properties>
@@ -149,6 +153,10 @@
 				<resources>
 					<resource>
 						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/prod</directory>
+					</resource>
+					<resource>
+						<directory>conf</directory>
+						<targetPath>.</targetPath>
 					</resource>
 				</resources>
 			</build>

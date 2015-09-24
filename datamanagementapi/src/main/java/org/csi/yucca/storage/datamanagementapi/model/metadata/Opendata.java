@@ -10,6 +10,7 @@ public class Opendata {
 
 	private boolean isOpendata;
 	private String sourceId;
+	private String author;
 	private Long dataUpdateDate;
 	private Date metadaCreateDate;
 	private Date metadaUpdateDate;
@@ -75,6 +76,14 @@ public class Opendata {
 
 	public void setLanguage(String language) {
 		this.language = language;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
 	}
 
 }

@@ -3,6 +3,7 @@ package org.csi.yucca.storage.datamanagementapi.service.response;
 public class ErrorMessage {
 
 	public static final String GENERIC = "GENERIC_ERROR";
+	public static final String UNSUPPORTED_FORMAT = "UNSUPPORTED_FORMAT";
 	private String code;
 	private String message;
 	private String detail;

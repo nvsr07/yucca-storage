@@ -2,6 +2,7 @@ package org.csi.yucca.storage.datamanagementapi.dao;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -122,6 +123,57 @@ public class MongoDBMetadataDAO {
 		searchQuery.put("configData.current", 1);
 
 		DBObject data = collection.find(searchQuery).one();
+		ObjectId id = (ObjectId) data.get("_id");
+		Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(data));
+		metadataLoaded.setId(id.toString());
+		return metadataLoaded;
+	}
+	
+	public List<Metadata> readOpendataMetadata(List<String> tenantFilter) {
+		List<Metadata> data = new ArrayList<Metadata>();
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("opendata.isOpendata", true);
+		if(tenantFilter!=null && tenantFilter.size()>0)
+			searchQuery.append("configData.tenantCode", new BasicDBObject("$in", tenantFilter));
+		
+		DBCursor cursor = collection.find(searchQuery);
+		while (cursor.hasNext()) {
+			DBObject doc = cursor.next();
+			ObjectId id = (ObjectId) doc.get("_id");
+			Metadata metadata = Metadata.fromJson(JSON.serialize(doc));
+			metadata.setId(id.toString());
+			data.add(metadata);
+		}
+		return data;
+	}
+	
+	public static void main(String[] args) {
+		
+		String tenants  = "sandbox|smartlab|csp";
+		List<String >tenantFilter = new LinkedList<String>();
+		for (String t : tenants.split("[|]")) {
+			tenantFilter.add(t);
+		}
+		
+		String queryParam = "{ $in: [";
+		int counter = 0;
+		for (String tenant : tenantFilter) {
+			queryParam +="\""+tenant+"\"";
+			counter++;
+			if(counter<tenantFilter.size())
+				queryParam +=",";
+		}
+		queryParam += "]}";
+		System.out.println(queryParam);
+	}
+
+	public Metadata findFirstMetadataByDatasetId(Long idDataset, Integer datasetVersion) {
+		
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("idDataset", idDataset);
+		searchQuery.append("datasetVersion", datasetVersion);
+
+		DBObject data = this.collection.findOne(searchQuery);
 		ObjectId id = (ObjectId) data.get("_id");
 		Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(data));
 		metadataLoaded.setId(id.toString());
