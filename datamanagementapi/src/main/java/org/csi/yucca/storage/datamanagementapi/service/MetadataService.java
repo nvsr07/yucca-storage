@@ -1,6 +1,9 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -32,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -59,6 +64,7 @@ import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
+import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
@@ -449,8 +455,8 @@ public class MetadataService {
 	@GET
 	@Path("/opendata/{outputFormat}/tenant/{tenantCode}/{packageId}")
 	@Produces("application/json; charset=UTF-8")
-	public String getOpendataDatasetDetailWithTenant(@PathParam("outputFormat") String outputFormat, @PathParam("tenantCode") String tenantCode, @PathParam("packageId") String packageId)
-			throws NumberFormatException, UnknownHostException {
+	public String getOpendataDatasetDetailWithTenant(@PathParam("outputFormat") String outputFormat, @PathParam("tenantCode") String tenantCode,
+			@PathParam("packageId") String packageId) throws NumberFormatException, UnknownHostException {
 		return getOpendataDatasetDetail(outputFormat, packageId);
 	}
 
@@ -833,6 +839,49 @@ public class MetadataService {
 			e.printStackTrace();
 		}
 		return updateDatasetResponse.toJson();
+	}
+
+	@GET
+	@Path("/icon/{tenant}/{datasetCode}")
+	@Produces("image/png")
+	public Response datasetIcon(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException,
+			UnknownHostException, Exception {
+		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|datasetCode: " + datasetCode);
+
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+
+		String imageBase64 = metadata.getInfo().getIcon();
+		BufferedImage imag = null;
+
+		if (imageBase64 != null) {
+			String[] imageBase64Array = imageBase64.split(",");
+
+			String imageBase64Clean;
+			if (imageBase64Array.length > 1) {
+				imageBase64Clean = imageBase64Array[1];
+			} else {
+				imageBase64Clean = imageBase64Array[0];
+			}
+
+			byte[] bytearray = Base64.decodeBase64(imageBase64Clean.getBytes());
+			imag = ImageIO.read(new ByteArrayInputStream(bytearray));
+		}
+		if (imageBase64 == null || imag == null) {
+			imag = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_IMAGE));
+		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(imag, "png", baos);
+		baos.flush();
+		byte[] iconBytes = baos.toByteArray();
+		baos.close();
+
+		return Response.ok().entity(iconBytes).type("image/png").build();
 	}
 
 	@SuppressWarnings("unused")
