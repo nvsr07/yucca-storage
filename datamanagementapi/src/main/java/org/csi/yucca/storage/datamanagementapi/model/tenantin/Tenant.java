@@ -14,7 +14,51 @@ public class Tenant {
     @Expose
     private String codiceTenant;
 
+    @Expose
+    private Integer maxDatasetNum;
+    
+    @Expose
+    private Integer maxStreamsNum;
+    
+    
+    
+	/**
+     * 
+     * @return
+     *     The maxDatasetNum
+     */
+    public Integer getMaxDatasetNum() {
+		return maxDatasetNum;
+	}
+
     /**
+     * 
+     * @param maxDatasetNum
+     *     The maxDatasetNum
+     */
+	public void setMaxDatasetNum(Integer maxDatasetNum) {
+		this.maxDatasetNum = maxDatasetNum;
+	}
+
+	/**
+     * 
+     * @return
+     *     The maxStreamsNum
+     */
+	public Integer getMaxStreamsNum() {
+		return maxStreamsNum;
+	}
+
+    /**
+     * 
+     * @param maxStreamsNum
+     *     The maxStreamsNum
+     */
+	public void setMaxStreamsNum(Integer maxStreamsNum) {
+		this.maxStreamsNum = maxStreamsNum;
+	}
+
+	/**
      * 
      * @return
      *     The idTenant

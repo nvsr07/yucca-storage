@@ -1,6 +1,9 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,11 +13,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -29,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -42,8 +50,11 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Opendata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantssharing;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.ckan.Dataset;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.ckan.MetadataCkanFactory;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.service.response.ErrorMessage;
@@ -53,6 +64,7 @@ import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
+import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
@@ -150,7 +162,8 @@ public class MetadataService {
 			headerFixedColumn.add("Sensor.Category");
 			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityCategory()));
 
-			if (stream.getStreams().getStream().getVirtualEntityPositions() != null && stream.getStreams().getStream().getVirtualEntityPositions().getPosition() != null
+			if (stream.getStreams().getStream().getVirtualEntityPositions() != null
+					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition() != null
 					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition().size() > 0) {
 				headerFixedColumn.add("Sensor.Latitude");
 				fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityPositions().getPosition().get(0).getLat()));
@@ -168,8 +181,9 @@ public class MetadataService {
 			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getFps()));
 			headerFixedColumn.add("Stream.TimeStamp");
 		}
-		
-		//TODO verifico che sia social ed eseguo il codice relativo sovrasciverndo collectionName
+
+		// TODO verifico che sia social ed eseguo il codice relativo
+		// sovrasciverndo collectionName
 		final boolean isSocial = metadata.getConfigData() != null && Metadata.CONFIG_DATA_SUBTYPE_SOCIAL_DATASET.equals(metadata.getConfigData().getSubtype());
 		if (isSocial) {
 			collectionName = Config.getInstance().getCollectionTenantSocial();
@@ -212,7 +226,7 @@ public class MetadataService {
 		searchQuery.put("idDataset", metadata.getIdDataset());
 
 		final DBCursor cursor = dataCollection.find(searchQuery).limit(Constants.MAX_NUM_ROW_DATA_DOWNLOAD);
-		
+
 		StreamingOutput streamResponse = new StreamingOutput() {
 
 			public void write(OutputStream os) throws IOException, WebApplicationException {
@@ -249,12 +263,12 @@ public class MetadataService {
 						counter++;
 						headerNames[counter] = field.getFieldName() + ".measure";
 						counter++;
-					} else if (isSocial) { 
-						if (field.getFieldName().equals("getText")){
+					} else if (isSocial) {
+						if (field.getFieldName().equals("getText")) {
 							headerNames[counter] = "Tweet.Text";
-						} else if (field.getFieldName().equals("createdAt")){
+						} else if (field.getFieldName().equals("createdAt")) {
 							headerNames[counter] = "Tweet.CreatedDate";
-						} else if (field.getFieldName().equals("mediaCnt")){
+						} else if (field.getFieldName().equals("mediaCnt")) {
 							headerNames[counter] = "Tweet.MediaCount";
 						} else {
 							String output = Character.toUpperCase(field.getFieldName().charAt(0)) + field.getFieldName().substring(1);
@@ -294,7 +308,7 @@ public class MetadataService {
 							counter++;
 							row[counter] = Util.nvlt(doc.get(field.getFieldName()));
 							counter++;
-						} else if (isSocial) { 
+						} else if (isSocial) {
 							row[counter] = Util.nvlt(doc.get(field.getFieldName()));
 							counter++;
 						} else {
@@ -310,7 +324,8 @@ public class MetadataService {
 			}
 		};
 
-		Response build = Response.ok(streamResponse, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName).build();
+		Response build = Response.ok(streamResponse, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + fileName)
+				.build();
 		return build;
 	}
 
@@ -342,6 +357,107 @@ public class MetadataService {
 		StreamOut stream = streamDAO.readStreamByMetadata(metadata);
 
 		return new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl).toJson();
+	}
+
+	@GET
+	@Path("/opendata/{outputFormat}/tenant/{tenantCode}")
+	@Produces("application/json; charset=UTF-8")
+	public String getOpendataDatasetListForTenant(@PathParam("outputFormat") String outputFormat, @PathParam("tenantCode") String tenantCode)
+			throws NumberFormatException, UnknownHostException {
+		return getOpendataDatasetList(outputFormat, tenantCode);
+	}
+
+	@GET
+	@Path("/opendata/{outputFormat}")
+	@Produces("application/json; charset=UTF-8")
+	public String getOpendataDatasetListAll(@PathParam("outputFormat") String outputFormat) throws NumberFormatException, UnknownHostException {
+		return getOpendataDatasetList(outputFormat, null);
+	}
+
+	private String getOpendataDatasetList(String outputFormat, String tentatFilter) throws NumberFormatException, UnknownHostException {
+		// select
+		log.debug("[MetadataService::getDatasetOpendata] - START - outputFormat: " + outputFormat + " - tentatFilter " + tentatFilter);
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		List<String> tenantFilter = null;
+		if (tentatFilter != null && tentatFilter.length() > 0) {
+			tenantFilter = new LinkedList<String>();
+			for (String t : tentatFilter.split("[,]")) {
+				tenantFilter.add(t);
+			}
+		}
+
+		List<Metadata> metadataList = metadataDAO.readOpendataMetadata(tenantFilter);
+
+		Gson gson = JSonHelper.getInstance();
+		String responseJson = "";
+		if (Constants.OPENDATA_EXPORT_FORMAT_CKAN.equalsIgnoreCase(outputFormat)) {
+			List<String> result = createCkanPackageList(metadataList);
+			responseJson = gson.toJson(result);
+		} else {
+			ErrorMessage error = new ErrorMessage(ErrorMessage.UNSUPPORTED_FORMAT, "Unsupported output format - " + outputFormat, "Supported format: ckan");
+			responseJson = gson.toJson(error);
+		}
+
+		return responseJson;
+	}
+
+	private List<String> createCkanPackageList(List<Metadata> metadataList) {
+		List<String> result = new LinkedList<String>();
+		Map<Long, Integer> idVersionMap = new HashMap<Long, Integer>();
+		if (metadataList != null) {
+			for (Metadata metadata : metadataList) {
+				if (!idVersionMap.containsKey(metadata.getIdDataset()) || idVersionMap.get(metadata.getIdDataset()) < metadata.getDatasetVersion()) {
+					idVersionMap.put(metadata.getIdDataset(), metadata.getDatasetVersion());
+				}
+			}
+		}
+
+		for (Entry<Long, Integer> idVersion : idVersionMap.entrySet()) {
+			result.add(MetadataCkanFactory.createPackageId(idVersion.getKey(), idVersion.getValue()));
+		}
+		return result;
+
+	}
+
+	@GET
+	@Path("/opendata/{outputFormat}/{packageId}")
+	@Produces("application/json; charset=UTF-8")
+	public String getOpendataDatasetDetail(@PathParam("outputFormat") String outputFormat, @PathParam("packageId") String packageId)
+			throws NumberFormatException, UnknownHostException {
+		log.debug("[MetadataService::getOpendataDatasetDetail] - START - outputFormat: " + outputFormat + " - packageId " + packageId);
+
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		Long idDataset = MetadataCkanFactory.getDatasetDatasetIdFromPackageId(packageId);
+		Integer version = MetadataCkanFactory.getDatasetVersionFromPackageId(packageId);
+
+		Gson gson = JSonHelper.getInstance();
+		String responseJson = "";
+		if (Constants.OPENDATA_EXPORT_FORMAT_CKAN.equalsIgnoreCase(outputFormat)) {
+			Metadata metadata = metadataDAO.findFirstMetadataByDatasetId(idDataset, version);
+			Dataset datasetCkan = MetadataCkanFactory.createDataset(metadata);
+			responseJson = datasetCkan.toJson();
+		} else {
+			ErrorMessage error = new ErrorMessage(ErrorMessage.UNSUPPORTED_FORMAT, "Unsupported output format - " + outputFormat, "Supported format: ckan");
+			responseJson = gson.toJson(error);
+		}
+
+		return responseJson;
+	}
+
+	@GET
+	@Path("/opendata/{outputFormat}/tenant/{tenantCode}/{packageId}")
+	@Produces("application/json; charset=UTF-8")
+	public String getOpendataDatasetDetailWithTenant(@PathParam("outputFormat") String outputFormat, @PathParam("tenantCode") String tenantCode,
+			@PathParam("packageId") String packageId) throws NumberFormatException, UnknownHostException {
+		return getOpendataDatasetDetail(outputFormat, packageId);
 	}
 
 	@POST
@@ -451,8 +567,8 @@ public class MetadataService {
 			if (metadata.getInfo().getTenantssharing() != null) {
 				Set<String> tenantSet = new TreeSet<String>();
 				for (Tenantsharing tenantInList : metadata.getInfo().getTenantssharing().getTenantsharing()) {
-					if (!tenantInList.getTenantCode().equals(metadata.getConfigData().getTenantCode()) && !tenantSet.contains(metadata.getConfigData().getTenantCode())
-							&& tenantInList.getIsOwner() != 1) {
+					if (!tenantInList.getTenantCode().equals(metadata.getConfigData().getTenantCode())
+							&& !tenantSet.contains(metadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner() != 1) {
 						lista.add(tenantInList);
 						tenantSet.add(tenantInList.getTenantCode());
 					}
@@ -473,6 +589,11 @@ public class MetadataService {
 				metadata.getInfo().setTenantssharing(tenantssharing);
 			}
 			metadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
+
+			// opendata
+			if (!"public".equals(metadata.getInfo().getVisibility())) {
+				metadata.setOpendata(null);
+			}
 
 			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 
@@ -539,8 +660,8 @@ public class MetadataService {
 	@POST
 	@Path("/add/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request) throws NumberFormatException,
-			UnknownHostException {
+	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::addData] - START");
 
 		String encoding = null;
@@ -604,8 +725,8 @@ public class MetadataService {
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{tenant}/{datasetCode}")
-	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, final String metadataInput) throws NumberFormatException,
-			UnknownHostException {
+	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, final String metadataInput)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::updateMetadata] - START");
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 		try {
@@ -633,12 +754,23 @@ public class MetadataService {
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
 
+			if ("public".equals(newMetadata.getInfo().getVisibility()) && inputMetadata.getOpendata() != null && inputMetadata.getOpendata().isOpendata()) {
+				Opendata opendata = new Opendata();
+				opendata.setOpendata(true);
+				opendata.setMetadaUpdateDate(new Date());
+				opendata.setSourceId(inputMetadata.getOpendata().getSourceId());
+				opendata.setAuthor(inputMetadata.getOpendata().getAuthor());
+				opendata.setLanguage(inputMetadata.getOpendata().getLanguage() == null ? "it" : inputMetadata.getOpendata().getLanguage());
+				opendata.setDataUpdateDate(inputMetadata.getOpendata().getDataUpdateDate());
+				newMetadata.setOpendata(opendata);
+			}
+
 			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
 			if (newMetadata.getInfo().getTenantssharing() != null) {
 				Set<String> tenantSet = new TreeSet<String>();
 				for (Tenantsharing tenantInList : newMetadata.getInfo().getTenantssharing().getTenantsharing()) {
-					if (!tenantInList.getTenantCode().equals(newMetadata.getConfigData().getTenantCode()) && !tenantSet.contains(newMetadata.getConfigData().getTenantCode())
-							&& tenantInList.getIsOwner() != 1) {
+					if (!tenantInList.getTenantCode().equals(newMetadata.getConfigData().getTenantCode())
+							&& !tenantSet.contains(newMetadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner() != 1) {
 						lista.add(tenantInList);
 						tenantSet.add(tenantInList.getTenantCode());
 					}
@@ -690,13 +822,13 @@ public class MetadataService {
 					log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 				}
 			}
-			if (!updateOperation){
+			if (!updateOperation) {
 				try {
 					StoreService.publishStore("1.0", apiName, "admin");
-	
+
 					String appName = "userportal_" + newMetadata.getConfigData().getTenantCode();
 					StoreService.addSubscriptionForTenant(apiName, appName);
-	
+
 				} catch (Exception e) {
 					log.error("[MetadataService::updateMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}
@@ -707,6 +839,49 @@ public class MetadataService {
 			e.printStackTrace();
 		}
 		return updateDatasetResponse.toJson();
+	}
+
+	@GET
+	@Path("/icon/{tenant}/{datasetCode}")
+	@Produces("image/png")
+	public Response datasetIcon(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException,
+			UnknownHostException, Exception {
+		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|datasetCode: " + datasetCode);
+
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+
+		String imageBase64 = metadata.getInfo().getIcon();
+		BufferedImage imag = null;
+
+		if (imageBase64 != null) {
+			String[] imageBase64Array = imageBase64.split(",");
+
+			String imageBase64Clean;
+			if (imageBase64Array.length > 1) {
+				imageBase64Clean = imageBase64Array[1];
+			} else {
+				imageBase64Clean = imageBase64Array[0];
+			}
+
+			byte[] bytearray = Base64.decodeBase64(imageBase64Clean.getBytes());
+			imag = ImageIO.read(new ByteArrayInputStream(bytearray));
+		}
+		if (imageBase64 == null || imag == null) {
+			imag = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_IMAGE));
+		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(imag, "png", baos);
+		baos.flush();
+		byte[] iconBytes = baos.toByteArray();
+		baos.close();
+
+		return Response.ok().entity(iconBytes).type("image/png").build();
 	}
 
 	@SuppressWarnings("unused")
