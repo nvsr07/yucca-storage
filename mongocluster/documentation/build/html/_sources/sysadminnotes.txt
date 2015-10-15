@@ -63,9 +63,13 @@ di distribuire il carico tra i nodi senza dover rinunciare alla consistenza.
 Monitoraggio Cluster
 --------------------
 
-Di seguito sono riportati i valori rilevanti monitorati da Nagios,
-per ognuno di essi è indicato il significato, quale è il loro valore
-all'interno del monitoraggio e la soglia di attenzione:
+Per quanto riguarda il monitoraggio del cluster è stato scelto di utilizzare nagios tramite 
+l'apposito plugin (https://github.com/mzupan/nagios-plugin-mongodb) già presente con il supporto
+alla versione 3.0 di mongodb
+
+
+Di seguito sono riportati i valori rilevanti monitorati da Nagios, per ognuno di essi è indicato 
+il significato, quale è il loro valore all'interno del monitoraggio e la soglia di attenzione:
 
     * **Load Average**
       Se il load average è superiore al numero di CPU disponibili
@@ -79,35 +83,36 @@ all'interno del monitoraggio e la soglia di attenzione:
       La directory ``/data`` è dove MongoDB solitamente salva i file del database,
       è importante monitorarne l'occupazione in quanto in caso di necessità di riparare
       il DB sarà necessario che la sua occupazione non superi il 50%.
-    * **Connect Check**
+    * **check_connect_primary**
       Riporta se il nodo monitorato riesce a collegarsi al primary del replica set
       a cui appartiene in tempi rapidi. E` utile a monitorare la qualità di connessione
       verso il primary node del replicat, cosa che influenza la velocità di replicazione.
       Qualora il nodo sia il primary stesso non da informazioni utili.
-    * **Page Faults**
+    * **check_page_faults**
       Riporta il numero di page fault effettuati durante l'uso del database, qualora il
       numero sia significativo significa che il database non ha sufficiente memoria per
-      gestire il carico di lavoro.
-    * **Flush Average**
+      gestire il carico di lavoro, con il passaggio a wiredTiger questo warning dovrebbe 
+      presentarsi con molta meno frequenza.
+    * **check_flushing**
       Riporta il tempo richiesto per la scrittura su disco degli inserimenti, se questo valore
       è troppo alto può rallentare la scrittura e replicazione dell'oplog a causa del lock che
       viene posto sulle operazione. Se la soglia di errore viene raggiunta può essere necessario
       operare per migliorare le prestazioni del disco. O aumentare la RAM per ridurre l'impatto
       sul disco.
-    * **Free Connections**
+    * **check_connections**
       Monitora il numero di connesisoni usate tra quelle disponibili per i client. Quando il
       massimo viene raggiunto non sarà più possibile connettersi per i client.
-    * **Lock Percentage**
+    * **check_lock**
       Monitora la % che il database spende bloccato sui lock delle operazioni. Questo valore
       dovrebbe essere sempre minimizzato in quanto impedisce a qualsiasi operazione di procedere
       inclusa la replicazione.
-    * **Memory Usage**
+    * **check_memory**
       Di questo valore è importante tenere presente i valori ``mapped`` che sta ad indicare la
       dimensione massima utile perché il DB lavori senza uso del disco e ``resident`` che indica
       quanta memoria è in uso effettivamente da MongoDB.
-    * **Replicaset Master Monitor**
+    * **check_replica_primary**
       Verifica se è cambiato il primary node del replica set.
-    * **Replication Lag**
+    * **check_rep_lag**
       Verifica la latenza di replicazione, quindi quanto i secondary node sono in ritardo rispetto
       al nodo primary. Eventuali backups andrebbero sempre effettuati quando i nodi sono in pari.
       Se la replicazione è molto in ritardo può essere dovuto alle seguenti cause:
@@ -116,11 +121,17 @@ all'interno del monitoraggio e la soglia di attenzione:
         * Troppo carico di operazioni sul primary node
         * Operazioni che detengono il "lock" a lungo (verificabile con ``db.currentOp()``)
         * Secondary troppo lenti a scrivere
-
-    * **Updates per Second**
-      Questo valore sta ad indicare le scritture al secondo effettuate dal sistema, se è alto
-      può avere effetto sulla *Replication Lag*.
-
+    * **check_queries_per_second**
+      Questo valore sta ad indicare le query al secondo effettuate dal sistema, se è alto
+      può avere effetto sulla *check_rep_lag*.
+    * **check_oplog**
+	  Indica il tempo salvato nell'oplog, se diventa troppo basso richia di far andare i nodi
+	  out of sync e rendere necessario resync iniziale.
+    * **chunks_balance**
+	  Verifica il corretto bilanciamento dei chunk nella shard, ad esempio se sono presenti jumbo 
+	  chunk o se è presente quache problema al bilanciatore.
+	  
+	  
 Comandi Monitoraggio Cluster
 ----------------------------
 

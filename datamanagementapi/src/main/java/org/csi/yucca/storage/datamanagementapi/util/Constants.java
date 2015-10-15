@@ -27,6 +27,8 @@ public class Constants {
 	
 
 	public static final DateFormat DEFAULT_FIELD_DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.getDefault());
+	
+	public static final String OPENDATA_EXPORT_FORMAT_CKAN = "ckan";
 
 	public static final DateFormat ISO_DATE_FORMAT() {
 		TimeZone tz = TimeZone.getTimeZone("UTC");

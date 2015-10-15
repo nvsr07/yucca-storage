@@ -18,34 +18,34 @@ Introduzione
 ============
 
 La procedura si divide in 4 macro attività da eseguire in ordine::
-    * Upgrade dei binari dei mongoconf e dei mongos: 
-        * int-sdnet-config1.sdp.csi.it 
-        * int-sdnet-config2.sdp.csi.it 
-        * int-sdnet-config3.sdp.csi.it
+    * Upgrade dei binari dei mongod-config e dei mongos: 
+        * sdnet-config1.sdp.csi.it 
+        * sdnet-config2.sdp.csi.it 
+        * sdnet-config3.sdp.csi.it
     * Upgrade dei binari per quanto riguarda i Replica Set:
-        * int-sdnet-speed1.sdp.csi.it
-        * int-sdnet-speed2.sdp.csi.it
-        * int-sdnet-speed3.sdp.csi.it
-        * int-sdnet-speed11.sdp.csi.it
-        * int-sdnet-speed12.sdp.csi.it
-        * int-sdnet-speed13.sdp.csi.it
-        * int-sdnet-speed21.sdp.csi.it
-        * int-sdnet-speed22.sdp.csi.it
-        * int-sdnet-speed23.sdp.csi.it
-    * Upgrade dello Storage System Engine (wiredTiger) dei mongoconf:
-        * int-sdnet-config1.sdp.csi.it 
-        * int-sdnet-config2.sdp.csi.it 
-        * int-sdnet-config3.sdp.csi.it
+        * sdnet-speed1.sdp.csi.it
+        * sdnet-speed2.sdp.csi.it
+        * sdnet-speed3.sdp.csi.it
+        * sdnet-speed11.sdp.csi.it
+        * sdnet-speed12.sdp.csi.it
+        * sdnet-speed13.sdp.csi.it
+        * sdnet-speed21.sdp.csi.it
+        * sdnet-speed22.sdp.csi.it
+        * sdnet-speed23.sdp.csi.it
+    * Upgrade dello Storage System Engine (wiredTiger) dei mongod-config:
+        * sdnet-config1.sdp.csi.it 
+        * sdnet-config2.sdp.csi.it 
+        * sdnet-config3.sdp.csi.it
     * Upgrade dello Storage System Engine (wiredTiger) dei Replica Set:
-        * int-sdnet-speed1.sdp.csi.it
-        * int-sdnet-speed2.sdp.csi.it
-        * int-sdnet-speed3.sdp.csi.it
-        * int-sdnet-speed11.sdp.csi.it
-        * int-sdnet-speed12.sdp.csi.it
-        * int-sdnet-speed13.sdp.csi.it
-        * int-sdnet-speed21.sdp.csi.it
-        * int-sdnet-speed22.sdp.csi.it
-        * int-sdnet-speed23.sdp.csi.it
+        * sdnet-speed1.sdp.csi.it
+        * sdnet-speed2.sdp.csi.it
+        * sdnet-speed3.sdp.csi.it
+        * sdnet-speed11.sdp.csi.it
+        * sdnet-speed12.sdp.csi.it
+        * sdnet-speed13.sdp.csi.it
+        * sdnet-speed21.sdp.csi.it
+        * sdnet-speed22.sdp.csi.it
+        * sdnet-speed23.sdp.csi.it
         
 Upgrade binari config e mongos
 ==============================
@@ -61,8 +61,8 @@ Upgrade binari config e mongos
     
     
 * spegnere i mongos su tutti i nodi del cluster e sugli application server 
-  (int-sdnet-mb1.sdp.csi.it, int-sdnet-mb2.sdp.csi.it, int-sdnet-up1.sdp.csi.it, 
-  int-sdnet-up2.sdp.csi.it)::
+  (sdnet-mb1.sdp.csi.it, sdnet-mb2.sdp.csi.it, sdnet-up1.sdp.csi.it, 
+  sdnet-up2.sdp.csi.it)::
   
     /etc/init.d/mongos stop
     
@@ -100,7 +100,7 @@ Upgrade binari config e mongos
     <timestamp> I -        [mongosMain] Config database is at version v6
 
 
-* upgradare SOLO i mongos su tutti i nodi del cluster e sui nodi applicativi, i nodi dei mongoconf 
+* upgradare SOLO i mongos su tutti i nodi del cluster e sui nodi applicativi, i nodi dei mongod-config 
   non hanno mongos (copiarlo su tutti i nodi e su repository in rete)::
     
     rpm -Uvh mongodb-enterprise-mongos-3.0.4-1.el6.x86_64.rpm –nodeps
@@ -115,27 +115,27 @@ Upgrade binari config e mongos
     sh.status()
 
 * upgradare gli ultimi 2 config server (nell'ordine in cui sono presenti alla voce configdb nel file
-  di configurazione dei mongos) int-sdnet-config2.sdp.csi.it e int-sdnet-config3.sdp.csi.it::
+  di configurazione dei mongos) sdnet-config2.sdp.csi.it e sdnet-config3.sdp.csi.it::
     
-    /etc/init.d/mongoconf stop
+    /etc/init.d/mongod-config stop
     rpm -Uvh mongodb-enterprise-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-mongos-3.0.4-1.el6.x86_64.rpm 
     mongodb-enterprise-server-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-shell-3.0.4-1.el6.x86_64.rpm 
     mongodb-enterprise-tools-3.0.4-1.el6.x86_64.rpm cyrus-sasl-2.1.23-15.el6_6.2.x86_64.rpm 
     cyrus-sasl-gssapi-2.1.23-15.el6_6.2.x86_64.rpm cyrus-sasl-lib-2.1.23-15.el6_6.2.x86_64.rpm 
     cyrus-sasl-plain-2.1.23-15.el6_6.2.x86_64.rpm
     
-    /etc/init.d/mongoconf start
+    /etc/init.d/mongod-config start
 
-* upgradare il config server rimanente int-sdnet-config2.sdp.csi.it::
+* upgradare il config server rimanente sdnet-config1.sdp.csi.it::
     
-    /etc/init.d/mongoconf stop
+    /etc/init.d/mongod-config stop
     rpm -Uvh mongodb-enterprise-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-mongos-3.0.4-1.el6.x86_64.rpm 
     mongodb-enterprise-server-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-shell-3.0.4-1.el6.x86_64.rpm 
     mongodb-enterprise-tools-3.0.4-1.el6.x86_64.rpm cyrus-sasl-2.1.23-15.el6_6.2.x86_64.rpm 
     cyrus-sasl-gssapi-2.1.23-15.el6_6.2.x86_64.rpm cyrus-sasl-lib-2.1.23-15.el6_6.2.x86_64.rpm 
     cyrus-sasl-plain-2.1.23-15.el6_6.2.x86_64.rpm
     
-    /etc/init.d/mongoconf start
+    /etc/init.d/mongod-config start
     
 NON RIACCENDERE IL BILANCIATORE FINO A UPGRADE AVVENUTO ANCHE SUI BINARI DEI REPLICA SET
 
@@ -144,13 +144,13 @@ Upgrade binari Replica Set
 
 * collegarsi attraverso la shell a ciascuno dei nodi e autenticarsi::
     
-    mongo --port 27017
+    mongo --port 27018
     use admin
     db.auth('user', 'pass')
 
 * rendere primary i nodi "master", per farlo è necessario forzare tutti gli altri nodi a diventare 
-  secondary (int-sdnet-speed2.sdp.csi.it int-sdnet-speed3.sdp.csi.it int-sdnet-speed12.sdp.csi.it
-  int-sdnet-speed13.sdp.csi.it int-sdnet-speed22.sdp.csi.it int-sdnet-speed23.sdp.csi.it::
+  secondary (sdnet-speed2.sdp.csi.it sdnet-speed3.sdp.csi.it sdnet-speed12.sdp.csi.it
+  sdnet-speed13.sdp.csi.it sdnet-speed22.sdp.csi.it sdnet-speed23.sdp.csi.it::
 
     rs.freeze(120)
     rs.stepDown(120)
@@ -168,7 +168,7 @@ http://docs.mongodb.org/manual/tutorial/force-member-to-be-primary/
     /etc/init.d/mongod
     /etc/sysconfig/mongod
     
-* upgradare i binari::
+* upgradare i binari di tutti i secondary::
     
     rpm -Uvh mongodb-enterprise-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-mongos-3.0.4-1.el6.x86_64.rpm 
     mongodb-enterprise-server-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-shell-3.0.4-1.el6.x86_64.rpm
@@ -198,7 +198,7 @@ http://docs.mongodb.org/manual/tutorial/force-member-to-be-primary/
     db.shutdownServer()
 
     
-* upgradare i binari::
+* upgradare i binari nei nodi rimanenti, i 3 lasciati primary in precedenza::
 
     rpm -Uvh mongodb-enterprise-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-mongos-3.0.4-1.el6.x86_64.rpm 
     mongodb-enterprise-server-3.0.4-1.el6.x86_64.rpm mongodb-enterprise-shell-3.0.4-1.el6.x86_64.rpm
@@ -223,8 +223,8 @@ http://docs.mongodb.org/manual/tutorial/force-member-to-be-primary/
     sh.getBalancerState()
     sh.status()
 
-* procedere con l'upgrade sulle 4 macchine applicative (int-sdnet-mb1.sdp.csi.it, 
-  int-sdnet-mb2.sdp.csi.it, int-sdnet-up1.sdp.csi.it, int-sdnet-up2.sdp.csi.it)
+* procedere con l'upgrade sulle 4 macchine applicative (sdnet-mb1.sdp.csi.it, 
+  sdnet-mb2.sdp.csi.it, sdnet-up1.sdp.csi.it, sdnet-up2.sdp.csi.it)
     
     
 Upgrade Storage System replica set
@@ -233,8 +233,8 @@ Upgrade Storage System replica set
 * creare il nuovo repository su tutti i nodi del replicaset, cofigurare i permessi per l'utente 
   mongod::
   
-    /data/mongodb/data/wiredTiger-mongod
-    chown mongod:mongod /data/mongodb/data/wiredTiger-mongod
+    mkdir /data/mongodb/data/mongod-wiredTiger
+    chown mongod:mongod /data/mongodb/data/mongod-wiredTiger
     
 * spegnere il bilanciatore e verificare che sia spento::
     
@@ -242,8 +242,8 @@ Upgrade Storage System replica set
     sh.getBalancerState()
     
 * rendere primary i nodi "master", per farlo è necessario forzare tutti gli altri nodi a diventare 
-  secondary (int-sdnet-speed2.sdp.csi.it int-sdnet-speed3.sdp.csi.it int-sdnet-speed12.sdp.csi.it
-  int-sdnet-speed13.sdp.csi.it int-sdnet-speed22.sdp.csi.it int-sdnet-speed23.sdp.csi.it::
+  secondary (sdnet-speed2.sdp.csi.it sdnet-speed3.sdp.csi.it sdnet-speed12.sdp.csi.it
+  sdnet-speed13.sdp.csi.it sdnet-speed22.sdp.csi.it sdnet-speed23.sdp.csi.it::
 
     rs.freeze(120)
     rs.stepDown(120)
@@ -257,11 +257,11 @@ http://docs.mongodb.org/manual/tutorial/force-member-to-be-primary/
     db.shutdownServer()
     
 
-* modificare il file di configurazione ``/etc/mongod.conf``, cambiando il dbpath con il path della
+* modificare il file di configurazione ``/data/mongodb/conf/mongod.conf``, cambiando il dbpath con il path della
   cartella creata in precedenza, inoltre abilitare il nuovo storage system::
 
     storageEngine=wiredTiger
-    dbpath=/data/mongodb/data/wiredTiger-mongod
+    dbpath=/data/mongodb/data/mongod-wiredTiger
     
 * riavviare i secondary::
 
@@ -280,11 +280,11 @@ http://docs.mongodb.org/manual/tutorial/force-member-to-be-primary/
     rs.status()
     db.shutdownServer()
     
-* modificare il file di configurazione ``/etc/mongod.conf``, cambiando il dbpath con il path della
+* modificare il file di configurazione ``/data/mongodb/conf/mongod.conf``, cambiando il dbpath con il path della
   cartella creata in precedenza, inoltre abilitare il nuovo storage system::
 
     storageEngine=wiredTiger
-    dbpath=/data/mongodb/data/wiredTiger-mongod
+    dbpath=/data/mongodb/data/mongod-wiredTiger
 
 * riavviare i primary::
 
@@ -303,80 +303,80 @@ Upgrade Storage System Config server
 * creare il nuovo repository su tutti i nodi del replicaset, cofigurare i permessi per l'utente 
   mongod::
   
-    /data/mongodb/data/wiredTiger-mongoconf
-    chown mongod:mongod /data/mongodb/data/wiredTiger-mongoconf
+    mkdir /data/mongodb/data/mongod-config-wiredTiger
+    chown mongod:mongod /data/mongodb/data/mongod-config-wiredTiger
     
 * spegnere il bilanciatore e verificare che sia spento::
     
     sh.stopBalancer()
     sh.getBalancerState()
     
-* spegnere l'ultimo config server (int-sdnet-config3.sdp.csi.it)::
+* spegnere l'ultimo config server (sdnet-config3.sdp.csi.it)::
     
-    /etc/init.d/mongoconf stop
+    /etc/init.d/mongod-config stop
 
-azioni da effettuare sul secondo config server (int-sdnet-config2.sdp.csi.it)
+azioni da effettuare sul secondo config server (sdnet-config2.sdp.csi.it)
 -----------------------------------------------------------------------------
 
 * effettuare il backup del db utilizzando mongodump::
         
     mkdir dump
-    mongodump --port 27017 --out dump/
+    mongodump --port 27019 --out dump/
     
-* spegnere il servizio mongoconf::
+* spegnere il servizio mongod-config::
     
-    /etc/init.d/mongoconf stop
+    /etc/init.d/mongod-config stop
 
-* modificare il file di configurazione ``/etc/mongoconf.conf``, cambiando il dbpath con il path 
+* modificare il file di configurazione ``/data/mongodb/conf/mongod-config.conf``, cambiando il dbpath con il path 
   della cartella creata in precedenza, inoltre abilitare il nuovo storage system::
         
     storageEngine=wiredTiger
-    dbpath=/data/mongodb/data/wiredTiger-mongod
+    dbpath=/data/mongodb/data/mongod-config-wiredTiger
 
-* avviare il servizio mongoconf::
+* avviare il servizio mongod-config::
 
-    /etc/init.d/mongoconf start
+    /etc/init.d/mongod-config start
 
 * ripristinare il backup::
     
     mongorestore --port 27017 dump/
 
-* spegnere il servizio mongoconf::
+* spegnere il servizio mongod-config::
     
-    /etc/init.d/mongoconf stop
+    /etc/init.d/mongod-config stop
     
     
-azioni da effettuare solo sul terzo config server (int-sdnet-config3.sdp.csi.it)
+azioni da effettuare solo sul terzo config server (sdnet-config3.sdp.csi.it)
 --------------------------------------------------------------------------------
 
-* avviare il servizio mongoconf fermato in precedenza::
+* avviare il servizio mongod-config fermato in precedenza::
 
-    /etc/init.d/mongoconf start   
+    /etc/init.d/mongod-config start   
 
 * effettuare il backup del db utilizzando mongodump::
         
     mkdir dump
     mongodump --port 27017 --out dump/
     
-* spegnere il servizio mongoconf::
+* spegnere il servizio mongod-config::
     
-    /etc/init.d/mongoconf stop
+    /etc/init.d/mongod-config stop
 
-* modificare il file di configurazione ``/etc/mongoconf.conf``, cambiando il dbpath con il path 
+* modificare il file di configurazione ``/data/mongodb/conf/mongod-config.conf``, cambiando il dbpath con il path 
   della cartella creata in precedenza, inoltre abilitare il nuovo storage system::
         
     storageEngine=wiredTiger
-    dbpath=/data/mongodb/data/wiredTiger-mongod
+    dbpath=/data/mongodb/data/mongod-config-wiredTiger
 
-* avviare il servizio mongoconf::
+* avviare il servizio mongod-config::
 
-    /etc/init.d/mongoconf start
+    /etc/init.d/mongod-config start
 
 * ripristinare il backup::
   
     mongorestore --port 27017 dump/
     
-azioni da effettuare sul primo config server (int-sdnet-config1.sdp.csi.it)
+azioni da effettuare sul primo config server (sdnet-config1.sdp.csi.it)
 ---------------------------------------------------------------------------
 
 * effettuare il backup del db utilizzando mongodump::
@@ -384,27 +384,27 @@ azioni da effettuare sul primo config server (int-sdnet-config1.sdp.csi.it)
     mkdir dump
     mongodump --port 27017 --out dump/
     
-* spegnere il servizio mongoconf::
+* spegnere il servizio mongod-config::
     
-    /etc/init.d/mongoconf stop
+    /etc/init.d/mongod-config stop
 
-* modificare il file di configurazione ``/etc/mongoconf.conf``, cambiando il dbpath con il path 
+* modificare il file di configurazione ``/data/mongodb/conf/mongod-config.conf``, cambiando il dbpath con il path 
   della cartella creata in precedenza, inoltre abilitare il nuovo storage system::
         
     storageEngine=wiredTiger
-    dbpath=/data/mongodb/data/wiredTiger-mongod
+    dbpath=/data/mongodb/data/mongod-config-wiredTiger
 
-* avviare il servizio mongoconf::
+* avviare il servizio mongod-config::
 
-    /etc/init.d/mongoconf start
+    /etc/init.d/mongod-config start
 
 * ripristinare il backup::
   
     mongorestore --port 27017 dump/
         
-* rilanciare il secondo config server fermato in precedenza (int-sdnet-config2.sdp.csi.it)::
+* rilanciare il secondo config server fermato in precedenza (sdnet-config2.sdp.csi.it)::
     
-    sudo service mongoconf start
+    sudo service mongod-config start
     
 * riattivare il bilanciatore, verificare che sia acceso e verificare lo stato del cluster::
 
