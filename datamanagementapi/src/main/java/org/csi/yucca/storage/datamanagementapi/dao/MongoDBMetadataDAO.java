@@ -102,6 +102,20 @@ public class MongoDBMetadataDAO {
 		}
 		return data;
 	}
+	
+	
+	
+    public int countAllMetadata(String tenant, boolean onlyCurrent) {
+        BasicDBObject searchQuery = new BasicDBObject();
+        if (tenant != null)
+            searchQuery.put("configData.tenantCode", tenant);
+        searchQuery.put("configData.subtype", "bulkDataset");
+        if(onlyCurrent)
+            searchQuery.put("configData.current", 1);
+
+        DBCursor cursor = collection.find(searchQuery);
+        return cursor.count();
+    } 	
 
 	public void deleteMetadata(Metadata metadata) {
 		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(metadata.getId())).get();

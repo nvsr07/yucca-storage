@@ -545,6 +545,15 @@ public class MetadataService {
 			DBObject tenantData = tenantCollection.find(searchTenantQuery).one();
 			Long idTenant = ((Number) tenantData.get("idTenant")).longValue();
 
+			
+            int maxDatasetNum=((Number) tenantData.get("maxDatasetNum")).intValue();
+            
+            if (maxDatasetNum>0) {
+                int numCurrentDataset=metadataDAO.countAllMetadata(tenant, true);
+                //TODO
+                
+            }			
+			
 			metadata.getConfigData().setIdTenant(idTenant);
 
 			// binary metadata: create a metadata record specific for attachment
