@@ -22,6 +22,7 @@ public class Info extends AbstractEntity {
 	private String requestornEmail;
 	private String dataDomain;
 	private Double fps;
+	private String externalReference;
 
 	private Date startIngestionDate;
 	private Date endIngestionDate;
@@ -229,6 +230,14 @@ public class Info extends AbstractEntity {
 
 	public void setDomainTranslated(Map<String, String> domainTranslated) {
 		this.domainTranslated = domainTranslated;
+	}
+
+	public String getExternalReference() {
+		return externalReference;
+	}
+
+	public void setExternalReference(String externalReference) {
+		this.externalReference = externalReference;
 	}
 
 

@@ -4,6 +4,7 @@ public class ErrorMessage {
 
 	public static final String GENERIC = "GENERIC_ERROR";
 	public static final String UNSUPPORTED_FORMAT = "UNSUPPORTED_FORMAT";
+	public static final String UNAUTHORIZED_DATA = "UNAUTHORIZED_DATA";
 	private String code;
 	private String message;
 	private String detail;
