@@ -439,12 +439,19 @@ public class MetadataService {
 		Long idDataset = MetadataCkanFactory.getDatasetDatasetIdFromPackageId(packageId);
 		Integer version = MetadataCkanFactory.getDatasetVersionFromPackageId(packageId);
 
+
 		Gson gson = JSonHelper.getInstance();
 		String responseJson = "";
 		if (Constants.OPENDATA_EXPORT_FORMAT_CKAN.equalsIgnoreCase(outputFormat)) {
 			Metadata metadata = metadataDAO.findFirstMetadataByDatasetId(idDataset, version);
-			Dataset datasetCkan = MetadataCkanFactory.createDataset(metadata);
-			responseJson = datasetCkan.toJson();
+			if(metadata.getOpendata()== null || !metadata.getOpendata().isOpendata()){
+				ErrorMessage error = new ErrorMessage(ErrorMessage.UNAUTHORIZED_DATA, "Unauthorized request","The requested data is not an open data");
+				responseJson = gson.toJson(error);
+			}
+			else{
+				Dataset datasetCkan = MetadataCkanFactory.createDataset(metadata);
+				responseJson = datasetCkan.toJson();
+			}
 		} else {
 			ErrorMessage error = new ErrorMessage(ErrorMessage.UNSUPPORTED_FORMAT, "Unsupported output format - " + outputFormat, "Supported format: ckan");
 			responseJson = gson.toJson(error);
@@ -766,6 +773,7 @@ public class MetadataService {
 			Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
 			Metadata newMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
 
+			newMetadata.getInfo().setExternalReference(inputMetadata.getInfo().getExternalReference());
 			newMetadata.getInfo().setCopyright(inputMetadata.getInfo().getCopyright());
 			newMetadata.getInfo().setDataDomain(inputMetadata.getInfo().getDataDomain());
 			newMetadata.getInfo().setDescription(inputMetadata.getInfo().getDescription());

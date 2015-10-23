@@ -57,7 +57,7 @@ public class MetadataCkanFactory {
 		Resource resourceApiOdata = new Resource();
 		resourceApiOdata.setDescription("Api Odata");
 		resourceApiOdata.setFormat("ODATA");
-		String baseExposedApiUrl = Config.getInstance().getBaseExposedApiUrl() + "/";
+		String baseExposedApiUrl = Config.getInstance().getBaseExposedApiUrl();
 		String apiOdataUrl = baseExposedApiUrl + metadata.getDatasetCode();
 		resourceApiOdata.setUrl(apiOdataUrl);
 		ckanDataset.addResource(resourceApiOdata);
