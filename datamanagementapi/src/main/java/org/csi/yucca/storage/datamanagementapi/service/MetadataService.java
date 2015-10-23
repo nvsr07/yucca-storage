@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
+import org.csi.yucca.storage.datamanagementapi.exception.MaxDatasetNumException;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
@@ -235,15 +236,15 @@ public class MetadataService {
 				int totalColumn = fields.size();
 				if (isStream) {
 					totalColumn = headerFixedColumn.size() + fields.size() * 4;// 4
-																				// is
-																				// the
-																				// fields
-																				// column
-																				// exposed
-																				// (alias,
-																				// measureUnit,
-																				// dataType,
-																				// measure)
+					// is
+					// the
+					// fields
+					// column
+					// exposed
+					// (alias,
+					// measureUnit,
+					// dataType,
+					// measure)
 				} else if (isSocial) {
 					totalColumn = headerFixedColumn.size() + fields.size();
 				}
@@ -518,151 +519,163 @@ public class MetadataService {
 			}
 		}
 		metadata.getInfo().setRegistrationDate(new Date());
+		try {
 
-		List<SDPBulkInsertException> checkFileToWriteErrors = null;
-		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
-		if (csvData != null) {
-			checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
-		}
-
-		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
-			for (SDPBulkInsertException error : checkFileToWriteErrors) {
-				createDatasetResponse.addErrorMessage(new ErrorMessage(error.getErrorCode(), error.getErrorMessage(), error.getErrorDetail()));
+			List<SDPBulkInsertException> checkFileToWriteErrors = null;
+			MongoDBDataUpload dataUpload = new MongoDBDataUpload();
+			if (csvData != null) {
+				checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
 			}
-		} else {
-			MongoClient mongo = MongoSingleton.getMongoClient();
-			String supportDb = Config.getInstance().getDbSupport();
-			String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
-			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+			if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
+				for (SDPBulkInsertException error : checkFileToWriteErrors) {
+					createDatasetResponse.addErrorMessage(new ErrorMessage(error.getErrorCode(), error.getErrorMessage(), error.getErrorDetail()));
+				}
+			} else {
+				MongoClient mongo = MongoSingleton.getMongoClient();
+				String supportDb = Config.getInstance().getDbSupport();
+				String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
-			String supportApiCollection = Config.getInstance().getCollectionSupportApi();
-			MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+				MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-			BasicDBObject searchTenantQuery = new BasicDBObject();
-			searchTenantQuery.put("tenantCode", tenant);
-			DBCollection tenantCollection = mongo.getDB(supportDb).getCollection("tenant");
-			DBObject tenantData = tenantCollection.find(searchTenantQuery).one();
-			Long idTenant = ((Number) tenantData.get("idTenant")).longValue();
+				String supportApiCollection = Config.getInstance().getCollectionSupportApi();
+				MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
 
-			
-            int maxDatasetNum=((Number) tenantData.get("maxDatasetNum")).intValue();
-            
-            if (maxDatasetNum>0) {
-                int numCurrentDataset=metadataDAO.countAllMetadata(tenant, true);
-                //TODO
-                
-            }			
-			
-			metadata.getConfigData().setIdTenant(idTenant);
+				BasicDBObject searchTenantQuery = new BasicDBObject();
+				searchTenantQuery.put("tenantCode", tenant);
+				DBCollection tenantCollection = mongo.getDB(supportDb).getCollection("tenant");
+				DBObject tenantData = tenantCollection.find(searchTenantQuery).one();
+				Long idTenant = ((Number) tenantData.get("idTenant")).longValue();
 
-			// binary metadata: create a metadata record specific for attachment
-			Metadata binaryMetadata = null;
-			if (metadata.getInfo().getFields() != null) {
-				for (Field field : metadata.getInfo().getFields()) {
-					if (field.getDataType().equals("binary")) {
-						binaryMetadata = Metadata.createBinaryMetadata(metadata);
-						break;
+
+				int maxDatasetNum=((Number) tenantData.get("maxDatasetNum")).intValue();
+
+				if (maxDatasetNum>0) {
+					
+					
+
+					
+					int numCurrentDataset=metadataDAO.countAllMetadata(tenant, true);
+					log.info("[MetadataService::createMetadata] -  tenant="+tenant+"     maxDatasetNum="+maxDatasetNum + "        numCurrentDataset="+numCurrentDataset);
+					//TODO
+					if (numCurrentDataset>=maxDatasetNum) 
+						throw new MaxDatasetNumException("too many dataset");
+
+				}			
+
+				metadata.getConfigData().setIdTenant(idTenant);
+
+				// binary metadata: create a metadata record specific for attachment
+				Metadata binaryMetadata = null;
+				if (metadata.getInfo().getFields() != null) {
+					for (Field field : metadata.getInfo().getFields()) {
+						if (field.getDataType().equals("binary")) {
+							binaryMetadata = Metadata.createBinaryMetadata(metadata);
+							break;
+						}
 					}
 				}
-			}
-			if (binaryMetadata != null) {
-				Metadata binaryMetadataCreated = metadataDAO.createMetadata(binaryMetadata, null);
-				metadata.getInfo().setBinaryDatasetVersion(binaryMetadataCreated.getDatasetVersion());
-				metadata.getInfo().setBinaryIdDataset(binaryMetadataCreated.getIdDataset());
-			}
-
-			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
-			if (metadata.getInfo().getTenantssharing() != null) {
-				Set<String> tenantSet = new TreeSet<String>();
-				for (Tenantsharing tenantInList : metadata.getInfo().getTenantssharing().getTenantsharing()) {
-					if (!tenantInList.getTenantCode().equals(metadata.getConfigData().getTenantCode())
-							&& !tenantSet.contains(metadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner() != 1) {
-						lista.add(tenantInList);
-						tenantSet.add(tenantInList.getTenantCode());
-					}
+				if (binaryMetadata != null) {
+					Metadata binaryMetadataCreated = metadataDAO.createMetadata(binaryMetadata, null);
+					metadata.getInfo().setBinaryDatasetVersion(binaryMetadataCreated.getDatasetVersion());
+					metadata.getInfo().setBinaryIdDataset(binaryMetadataCreated.getIdDataset());
 				}
-			}
-			Tenantsharing owner = new Tenantsharing();
-			owner.setIdTenant(metadata.getConfigData().getIdTenant());
-			owner.setIsOwner(1);
-			owner.setTenantCode(metadata.getConfigData().getTenantCode());
-			owner.setTenantName(metadata.getConfigData().getTenantCode());
-			// owner.setTenantDescription(metadata.getConfigData().get);
 
-			lista.add(owner);
-			Tenantsharing arrayTenant[] = new Tenantsharing[lista.size()];
-			arrayTenant = lista.toArray(arrayTenant);
-			if (metadata.getInfo().getTenantssharing() == null) {
-				Tenantssharing tenantssharing = new Tenantssharing();
-				metadata.getInfo().setTenantssharing(tenantssharing);
-			}
-			metadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
-
-			// opendata
-			if (!"public".equals(metadata.getInfo().getVisibility())) {
-				metadata.setOpendata(null);
-			}
-
-			Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
-
-			MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
-			api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
-			api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
-
-			MyApi apiCreated = apiDAO.createApi(api);
-
-			createDatasetResponse.setMetadata(metadataCreated);
-			createDatasetResponse.setApi(apiCreated);
-
-			/*
-			 * Create api in the store
-			 */
-			String apiName = "";
-			try {
-				apiName = StoreService.createApiforBulk(metadata, false, datasetMetadata);
-			} catch (Exception duplicate) {
-				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
-					try {
-						apiName = StoreService.createApiforBulk(metadata, true, datasetMetadata);
-					} catch (Exception e) {
-						log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
-					}
-				} else {
-					log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
-				}
-			}
-			try {
-
-				StoreService.publishStore("1.0", apiName, "admin");
-				Set<String> tenantSet = new TreeSet<String>();
+				List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
 				if (metadata.getInfo().getTenantssharing() != null) {
-					for (Tenantsharing tenantSh : metadata.getInfo().getTenantssharing().getTenantsharing()) {
-						tenantSet.add(tenantSh.getTenantCode());
-						String appName = "userportal_" + tenantSh.getTenantCode();
+					Set<String> tenantSet = new TreeSet<String>();
+					for (Tenantsharing tenantInList : metadata.getInfo().getTenantssharing().getTenantsharing()) {
+						if (!tenantInList.getTenantCode().equals(metadata.getConfigData().getTenantCode())
+								&& !tenantSet.contains(metadata.getConfigData().getTenantCode()) && tenantInList.getIsOwner() != 1) {
+							lista.add(tenantInList);
+							tenantSet.add(tenantInList.getTenantCode());
+						}
+					}
+				}
+				Tenantsharing owner = new Tenantsharing();
+				owner.setIdTenant(metadata.getConfigData().getIdTenant());
+				owner.setIsOwner(1);
+				owner.setTenantCode(metadata.getConfigData().getTenantCode());
+				owner.setTenantName(metadata.getConfigData().getTenantCode());
+				// owner.setTenantDescription(metadata.getConfigData().get);
+
+				lista.add(owner);
+				Tenantsharing arrayTenant[] = new Tenantsharing[lista.size()];
+				arrayTenant = lista.toArray(arrayTenant);
+				if (metadata.getInfo().getTenantssharing() == null) {
+					Tenantssharing tenantssharing = new Tenantssharing();
+					metadata.getInfo().setTenantssharing(tenantssharing);
+				}
+				metadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
+
+				// opendata
+				if (!"public".equals(metadata.getInfo().getVisibility())) {
+					metadata.setOpendata(null);
+				}
+
+				Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
+
+				MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
+				api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
+				api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
+
+				MyApi apiCreated = apiDAO.createApi(api);
+
+				createDatasetResponse.setMetadata(metadataCreated);
+				createDatasetResponse.setApi(apiCreated);
+
+				/*
+				 * Create api in the store
+				 */
+				String apiName = "";
+				try {
+					apiName = StoreService.createApiforBulk(metadata, false, datasetMetadata);
+				} catch (Exception duplicate) {
+					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
+						try {
+							apiName = StoreService.createApiforBulk(metadata, true, datasetMetadata);
+						} catch (Exception e) {
+							log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+						}
+					} else {
+						log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
+					}
+				}
+				try {
+
+					StoreService.publishStore("1.0", apiName, "admin");
+					Set<String> tenantSet = new TreeSet<String>();
+					if (metadata.getInfo().getTenantssharing() != null) {
+						for (Tenantsharing tenantSh : metadata.getInfo().getTenantssharing().getTenantsharing()) {
+							tenantSet.add(tenantSh.getTenantCode());
+							String appName = "userportal_" + tenantSh.getTenantCode();
+							StoreService.addSubscriptionForTenant(apiName, appName);
+						}
+					}
+					if (!tenantSet.contains(metadata.getConfigData().getTenantCode())) {
+						String appName = "userportal_" + metadata.getConfigData().getTenantCode();
 						StoreService.addSubscriptionForTenant(apiName, appName);
 					}
-				}
-				if (!tenantSet.contains(metadata.getConfigData().getTenantCode())) {
-					String appName = "userportal_" + metadata.getConfigData().getTenantCode();
-					StoreService.addSubscriptionForTenant(apiName, appName);
-				}
 
-			} catch (Exception e) {
-				log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
-			}
-
-			if (csvData != null) {
-				try {
-					dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
 				} catch (Exception e) {
-					log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
-					createDatasetResponse.addErrorMessage(new ErrorMessage(e));
-					e.printStackTrace();
+					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+				}
+
+				if (csvData != null) {
+					try {
+						dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
+					} catch (Exception e) {
+						log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
+						createDatasetResponse.addErrorMessage(new ErrorMessage(e));
+						e.printStackTrace();
+					}
 				}
 			}
-		}
+		} catch (MaxDatasetNumException ex) {
+			log.error("[MetadataService::createMetadata] - MaxDatasetNumException ERROR: " ,ex);
+			createDatasetResponse.addErrorMessage(new ErrorMessage(ex));
 
+		}
 		return createDatasetResponse.toJson();
 	}
 
@@ -854,7 +867,7 @@ public class MetadataService {
 	@Path("/icon/{tenant}/{datasetCode}")
 	@Produces("image/png")
 	public Response datasetIcon(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException,
-			UnknownHostException, Exception {
+	UnknownHostException, Exception {
 		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|datasetCode: " + datasetCode);
 
 		MongoClient mongo = MongoSingleton.getMongoClient();
