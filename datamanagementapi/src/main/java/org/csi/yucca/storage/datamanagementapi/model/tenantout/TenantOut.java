@@ -37,8 +37,29 @@ public class TenantOut {
     private String archiveMeasuresCollectionName;
     @Expose
     private String archiveMeasuresCollectionDb;
+    @Expose
+    private Integer maxDatasetNum;
+    
+    @Expose
+    private Integer maxStreamsNum;
 
-    /**
+    public Integer getMaxDatasetNum() {
+		return maxDatasetNum;
+	}
+
+	public void setMaxDatasetNum(Integer maxDatasetNum) {
+		this.maxDatasetNum = maxDatasetNum;
+	}
+
+	public Integer getMaxStreamsNum() {
+		return maxStreamsNum;
+	}
+
+	public void setMaxStreamsNum(Integer maxStreamsNum) {
+		this.maxStreamsNum = maxStreamsNum;
+	}
+
+	/**
      * 
      * @return
      *     The idTenant
