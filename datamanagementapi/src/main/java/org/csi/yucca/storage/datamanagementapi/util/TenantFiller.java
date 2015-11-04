@@ -14,6 +14,8 @@ public class TenantFiller {
 		tout.setTenantName(tenant.getNomeTenant());
 		tout.setTenantDescription(tenant.getTenantDescription());
 		tout.setTenantCode(tenant.getCodiceTenant());
+		tout.setMaxDatasetNum(tenant.getMaxDatasetNum());
+		tout.setMaxStreamsNum(tenant.getMaxStreamsNum());
 		
 		
 		//dati di  default o aggregati
@@ -33,6 +35,8 @@ public class TenantFiller {
 		tout.setArchiveMeasuresCollectionDb(DBTenant);
 		tout.setArchiveDataCollectionName("archivedata");
 		tout.setArchiveMeasuresCollectionName("archivemeasures");
+		
+		
 		
 		return tout;
 	}
