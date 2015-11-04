@@ -402,7 +402,7 @@ public class StoreService {
 		addStream.setVar("copiright", metadata.getInfo().getCopyright() != null ? metadata.getInfo().getCopyright() : "");
 
 		addStream.setVar("extra_isApi", "false");
-		addStream.setVar("extra_apiDescription", metadata.getInfo().getDescription() != null ? metadata.getInfo().getDescription() : "");
+		addStream.setVar("extra_apiDescription", metadata.getInfo().getDatasetName() != null ? metadata.getInfo().getDatasetName() : "");
 		addStream.setVar("codiceTenant", metadata.getConfigData().getTenantCode() != null ? metadata.getConfigData().getTenantCode() : "");
 		addStream.setVar("codiceStream", "");
 		addStream.setVar("nomeStream", "");
