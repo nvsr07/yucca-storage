@@ -124,6 +124,9 @@ public class MetadataFiller {
 					f.setIsKey(0);
 					f.setDataType(el.getDataType());
 					f.setMeasureUnit(el.getMeasureUnit());
+					
+					f.setOrder(el.getOrder());
+					
 					fields.add(f);
 				}
 				info.setFields(fields.toArray(new Field[0]));

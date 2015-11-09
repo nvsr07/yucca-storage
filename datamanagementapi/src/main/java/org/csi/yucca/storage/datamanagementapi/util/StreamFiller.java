@@ -180,6 +180,8 @@ public class StreamFiller {
 					e.setPhenomenonCategory(el.getPhenomenonCategory());
 					e.setTolerance(el.getTolerance());
 					e.setSinceVersion(el.getSinceVersion());
+					
+					e.setOrder(el.getOrder());
 
 					elementList.add(e );
 

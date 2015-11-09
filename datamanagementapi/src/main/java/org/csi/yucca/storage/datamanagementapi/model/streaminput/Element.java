@@ -29,8 +29,21 @@ public class Element {
     private Integer idMeasureUnit;
     @Expose
     private Integer sinceVersion;
+
     
-    public Integer getSinceVersion() {
+    @Expose
+    private Integer order;
+    
+    
+    public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
+	}
+
+	public Integer getSinceVersion() {
 		return sinceVersion;
 	}
 

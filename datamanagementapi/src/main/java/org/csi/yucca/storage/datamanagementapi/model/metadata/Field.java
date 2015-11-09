@@ -13,6 +13,15 @@ public class Field extends AbstractEntity {
 	private Integer isKey;
 	private String measureUnit;
 	private String dateTimeFormat;
+	private Integer order;
+
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
+	}
 
 	public Field() {
 	}
