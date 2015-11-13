@@ -197,10 +197,20 @@ public class StreamFiller {
 			List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing> lista = stream.getTenantssharing().getTenantsharing();
 			if(lista!=null){
 				Set<String> tenantSet = new TreeSet<String>();
+				
+				//Insert owner
+				Tenantsharing newTen = new Tenantsharing();
+				newTen.setIdTenant(stream.getIdTenant().intValue());
+				newTen.setIsOwner(1);
+				newTen.setTenantCode(stream.getCodiceTenant());
+				newTen.setTenantName(stream.getNomeTenant());					
+				listaTenant.add(newTen);
+				tenantSet.add(stream.getCodiceTenant());
+				
 				for(org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenant : lista){
-					if(tenant.getTenantCode().equals(stream.getCodiceTenant()) && !tenantSet.contains(tenant.getTenantCode())  && tenant.getIsOwner() !=1){
+					if(!tenant.getTenantCode().equals(stream.getCodiceTenant()) && !tenantSet.contains(tenant.getTenantCode())  && tenant.getIsOwner() !=1){
 
-						Tenantsharing newTen = new Tenantsharing();
+						newTen = new Tenantsharing();
 						newTen.setIdTenant(tenant.getIdTenant());
 						newTen.setIsOwner(tenant.getIsOwner());
 						newTen.setTenantCode(tenant.getTenantCode());
@@ -212,14 +222,6 @@ public class StreamFiller {
 				}
 			}
 		}
-		
-		//Insert owner
-		Tenantsharing newTen = new Tenantsharing();
-		newTen.setIdTenant(stream.getIdTenant().intValue());
-		newTen.setIsOwner(1);
-		newTen.setTenantCode(stream.getCodiceTenant());
-		newTen.setTenantName(stream.getNomeTenant());					
-		listaTenant.add(newTen);	
 		
 		tenantsShare.setTenantsharing(listaTenant);
 	
