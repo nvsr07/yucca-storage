@@ -18,8 +18,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
-					<outputDirectory>D:\Portable\jboss-eap-6.2\standalone\deployments</outputDirectory>
-					<!-- <outputDirectory>C:\Users\Administrator\Documents\jboss-eap-6.0\standalone\deployments</outputDirectory>  -->
+					<outputDirectory>/usr/local/jboss-eap-6.0/standalone/deployments</outputDirectory>
 					<webXml>${webXmlPath}/web.xml</webXml>
 				</configuration>
 			</plugin>
@@ -85,6 +84,11 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
 			<version>4.3.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.twitter4j</groupId>
+			<artifactId>twitter4j-core</artifactId>
+			<version>[4.0,)</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

@@ -31,7 +31,7 @@ public class Config {
 	public static final String RESPONSE_OK = "RESPONSE_OK";
 	public static final String STORE_API_ADDRESS = "STORE_API_ADDRESS";
 	public static final String BASE_EXPOSED_API_URL = "BASE_EXPOSED_API_URL";
-	
+	public static final String TAG_DOMAINS_URL = "TAG_DOMAINS_URL";
 	
 
 	private static Map<String, String> params = null;
@@ -63,7 +63,7 @@ public class Config {
 		params.put(RESPONSE_OK, rb.getString(RESPONSE_OK));
 		params.put(STORE_API_ADDRESS, rb.getString(STORE_API_ADDRESS));
 		params.put(BASE_EXPOSED_API_URL, rb.getString(BASE_EXPOSED_API_URL));
-		
+		params.put(TAG_DOMAINS_URL, rb.getString(TAG_DOMAINS_URL));
 		
 		
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
@@ -169,11 +169,13 @@ public class Config {
 	
 	public String getStoreApiAddress() {
 		return params.get(STORE_API_ADDRESS);
-	}
+	} 
 
 	public String getBaseExposedApiUrl() {
 		return params.get(BASE_EXPOSED_API_URL);
 	}
 
-		
+	public String getTagDomainsUrl() {
+		return params.get(TAG_DOMAINS_URL);
+	}		
 }

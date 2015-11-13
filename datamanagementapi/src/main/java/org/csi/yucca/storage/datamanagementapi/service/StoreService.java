@@ -1,11 +1,22 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -30,6 +41,10 @@ import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
+
+import twitter4j.JSONArray;
+import twitter4j.JSONException;
+import twitter4j.JSONObject;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -538,10 +553,94 @@ public class StoreService {
 		if (messagesMap.get(lang) == null) {
 			Locale locale = new Locale(lang);
 
-			messagesMap.put(lang, ResourceBundle.getBundle("/i18n/MessagesBundle", locale));
+			//messagesMap.put(lang, ResourceBundle.getBundle("/i18n/MessagesBundle", locale));
+			String tagResource = "";
+			String domainResource = "";
+
+			tagResource = formatMessages(locale, "tags");
+			domainResource = formatMessages(locale, "domains");
+			try {
+				messagesMap.put(lang, new PropertyResourceBundle(new StringReader(tagResource + "\n" + domainResource)));
+			} catch (IOException ex) {
+				// TODO Auto-generated catch block
+				ex.printStackTrace();
+			}
 
 		}
 		return messagesMap.get(lang);
+	}
+	
+	public static Properties parsePropertiesString(String s) {
+	    // grr at load() returning void rather than the Properties object
+	    // so this takes 3 lines instead of "return new Properties().load(...);"
+	    final Properties p = new Properties();
+	    try {
+			p.load(new StringReader(s));
+		} catch (IOException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+	    return p;
+	}
+	
+	private static JSONObject loadMessages(Locale currentLocale, String element) {
+		InputStream is = null;
+		JSONObject json = null;
+		try {
+			String tagsDomainsURL = Config.getInstance().getTagDomainsUrl();
+			is = new URL(tagsDomainsURL + "/userportal/api/proxy/services/misc/stream"+element+"/").openStream();
+
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			String jsonText = null;
+			jsonText = readAll(rd);
+			json = new JSONObject(jsonText);
+
+			is.close();
+		} catch (JSONException ex) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		return json;
+	}
+
+	private static String readAll(Reader rd) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		int cp;
+		while ((cp = rd.read()) != -1) {
+			sb.append((char) cp);
+		}
+		return sb.toString();
+	}
+
+	protected static String formatMessages(Locale locale, String element) {
+		
+		JSONObject messages = loadMessages(locale, element);
+		
+		log.debug("[StoreService::formatMessages] - START");
+		StringBuffer sb = new StringBuffer("");
+		String loc = locale.getLanguage().substring(0, 1).toUpperCase() + locale.getLanguage().substring(1);
+		
+		String label1 = (element.equals("tags") ? "streamTags" : "streamDomains");
+		String label2 = (element.equals("tags") ? "tagCode" : "codDomain");
+		
+		try {
+			JSONObject streamTags = messages.getJSONObject(label1);
+			JSONArray elements = streamTags.getJSONArray("element");
+			for(int i = 0 ; i < elements.length() ; i++){
+				String tagCode = elements.getJSONObject(i).getString(label2);
+				String langEl = elements.getJSONObject(i).getString("lang"+loc);
+			    sb.append(tagCode + " = " + langEl + "\n");
+			}
+
+		} catch (JSONException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		} finally {
+			log.debug("[StoreService::formatMessages] - END");
+		}
+		return sb.toString();
 	}
 
 	@POST
