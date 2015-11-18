@@ -1,6 +1,8 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.OpendataInfo;
+
 import com.google.gson.annotations.Expose;
 
 public class Stream {
@@ -97,9 +99,34 @@ public class Stream {
     private StreamTags streamTags;
     @Expose
     private VirtualEntityPositions virtualEntityPositions;
-    @Expose
+    public String getExternalReference() {
+		return externalReference;
+	}
+
+	public void setExternalReference(String externalReference) {
+		this.externalReference = externalReference;
+	}
+
+	public OpendataInfo getOpendata() {
+		return opendata;
+	}
+
+	public void setOpendata(OpendataInfo opendata) {
+		this.opendata = opendata;
+	}
+
+	@Expose
     private Tenantssharing tenantssharing;
 
+
+    /* YUCCA-505 */
+    @Expose
+    private String externalReference;       
+    
+    @Expose
+    private OpendataInfo opendata;
+    
+    
     /**
      * 
      * @return

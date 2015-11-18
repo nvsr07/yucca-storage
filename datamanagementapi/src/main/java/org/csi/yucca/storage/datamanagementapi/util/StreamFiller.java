@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Components;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Element;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.OpendataInfo;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamInternalChildren;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamTags;
@@ -226,6 +227,19 @@ public class StreamFiller {
 		tenantsShare.setTenantsharing(listaTenant);
 	
 		sti.setTenantssharing(tenantsShare);
+		
+		
+		
+		/* YUCCA-505 */
+		sti.setExternalReference(stream.getExternalReference());
+		if (stream.getOpendata()!=null) {
+			OpendataInfo odataOut=new OpendataInfo();
+			odataOut.setAuthor(stream.getOpendata().getAuthor());
+			odataOut.setDataUpdateDate(stream.getOpendata().getDataUpdateDate());
+			odataOut.setIsOpendata(stream.getOpendata().getIsOpendata());
+			odataOut.setLanguage(stream.getOpendata().getLanguage());
+			sti.setOpendata(odataOut);
+		}
 
 		streams.setStream(sti);
 		strOut.setStreams(streams );

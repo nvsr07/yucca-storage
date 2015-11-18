@@ -123,9 +123,33 @@ public class Stream {
     @Expose
 	private Map<String, String> domainTranslated;
   
+
+
+    /* YUCCA-505 */
+    @Expose
+    private String externalReference;       
+    
+    @Expose
+    private OpendataInfo opendata;
     
 
-    /**
+    public String getExternalReference() {
+		return externalReference;
+	}
+
+	public void setExternalReference(String externalReference) {
+		this.externalReference = externalReference;
+	}
+
+	public OpendataInfo getOpendata() {
+		return opendata;
+	}
+
+	public void setOpendata(OpendataInfo opendata) {
+		this.opendata = opendata;
+	}
+
+	/**
      * 
      * @return
      *     The idTenant
