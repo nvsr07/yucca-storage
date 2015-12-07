@@ -180,7 +180,7 @@ public class MetadataCkanFactory {
 		JSONObject json = null;
 		try {
 			String tagsDomainsURL = Config.getInstance().getTagDomainsUrl();
-			is = new URL(tagsDomainsURL + "/userportal/api/proxy/services/misc/stream"+element+"/").openStream();
+			is = new URL(tagsDomainsURL + "/wso001/services/misc/stream"+element+"/").openStream();
 
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			String jsonText = null;
