@@ -78,7 +78,15 @@ public class MetadataCkanFactory {
 		Resource resourceDownload = new Resource();
 		resourceDownload.setDescription("Csv download url");
 		resourceDownload.setFormat("CSV");
-		String downloadCsvUrl = baseExposedApiUrl + metadata.getDatasetCode() + "/?$format=csv";
+		//String downloadCsvUrl = baseExposedApiUrl + metadata.getDatasetCode() + "/?$format=csv"; BASE_EXPOSED_API_URL=https://int-api.smartdatanet.it:443/api/
+		String downloadCsvUrl  =  Config.getInstance().getBaseExposedApiUrl() + metadata.getDatasetCode() + "/download/"+metadata.getIdDataset()+"/";
+		if(Metadata.CONFIG_DATA_TYPE_DATASET.equals(metadata.getConfigData().getType()) && Metadata.CONFIG_DATA_SUBTYPE_BULK_DATASET.equals(metadata.getConfigData().getSubtype())) {
+			downloadCsvUrl += "all";
+		}
+		else{
+			downloadCsvUrl += "current";
+		}
+		
 		resourceDownload.setUrl(downloadCsvUrl);
 		ckanDataset.addResource(resourceDownload);
 
