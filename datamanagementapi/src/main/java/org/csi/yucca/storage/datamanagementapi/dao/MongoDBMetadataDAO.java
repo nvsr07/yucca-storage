@@ -143,6 +143,20 @@ public class MongoDBMetadataDAO {
 		return metadataLoaded;
 	}
 	
+	public Metadata readCurrentMetadataByIdDataset(Long IdDataset) {
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("idDataset", IdDataset);
+		searchQuery.put("configData.current", 1);
+
+		DBObject data = collection.find(searchQuery).one();
+		ObjectId id = (ObjectId) data.get("_id");
+		Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(data));
+		metadataLoaded.setId(id.toString());
+		return metadataLoaded;
+	}
+	
+
+	
 	public List<Metadata> readOpendataMetadata(List<String> tenantFilter) {
 		List<Metadata> data = new ArrayList<Metadata>();
 		BasicDBObject searchQuery = new BasicDBObject();
