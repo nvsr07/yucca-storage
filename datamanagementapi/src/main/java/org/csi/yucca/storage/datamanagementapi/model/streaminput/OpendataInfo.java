@@ -6,17 +6,11 @@ public class OpendataInfo {
 
 	
 	@Expose
-    private Boolean isOpendata;
-	@Expose
-    private String author;
-	@Expose
-    private Long dataUpdateDate;
-	@Expose
-    private String language;
-	public Boolean getIsOpendata() {
+    private Integer isOpendata;
+	public Integer getIsOpendata() {
 		return isOpendata;
 	}
-	public void setIsOpendata(Boolean isOpendata) {
+	public void setIsOpendata(Integer isOpendata) {
 		this.isOpendata = isOpendata;
 	}
 	public String getAuthor() {
@@ -37,5 +31,11 @@ public class OpendataInfo {
 	public void setLanguage(String language) {
 		this.language = language;
 	}
+	@Expose
+    private String author;
+	@Expose
+    private Long dataUpdateDate;
+	@Expose
+    private String language;
 	
 }

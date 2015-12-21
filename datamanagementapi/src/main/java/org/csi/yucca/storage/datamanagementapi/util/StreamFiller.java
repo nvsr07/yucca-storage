@@ -236,7 +236,7 @@ public class StreamFiller {
 			OpendataInfo odataOut=new OpendataInfo();
 			odataOut.setAuthor(stream.getOpendata().getAuthor());
 			odataOut.setDataUpdateDate(stream.getOpendata().getDataUpdateDate());
-			odataOut.setIsOpendata(stream.getOpendata().getIsOpendata());
+			odataOut.setIsOpendata((stream.getOpendata().getIsOpendata()==null || stream.getOpendata().getIsOpendata().intValue()==0) ? false : true);
 			odataOut.setLanguage(stream.getOpendata().getLanguage());
 			sti.setOpendata(odataOut);
 		}

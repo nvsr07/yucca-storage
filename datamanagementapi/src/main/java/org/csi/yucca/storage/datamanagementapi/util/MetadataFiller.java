@@ -12,6 +12,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Opendata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tag;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tenantssharing;
@@ -144,6 +145,21 @@ public class MetadataFiller {
 		}
 		info.setTags(tags.toArray(new Tag[0]));
 
+		
+		/* YUCCA-505 */
+		info.setExternalReference(stream.getExternalReference());
+		if (stream.getOpendata()!=null) {
+			Opendata odataOut=new Opendata();
+			odataOut.setAuthor(stream.getOpendata().getAuthor());
+			odataOut.setDataUpdateDate(stream.getOpendata().getDataUpdateDate());
+			odataOut.setOpendata( (stream.getOpendata().getIsOpendata()==null || stream.getOpendata().getIsOpendata().intValue()==0) ? false : true);
+			odataOut.setLanguage(stream.getOpendata().getLanguage());
+			myMeta.setOpendata(odataOut);
+		}
+		
+		
+		
+		
 		myMeta.setInfo(info);
 		return myMeta;
 	}
