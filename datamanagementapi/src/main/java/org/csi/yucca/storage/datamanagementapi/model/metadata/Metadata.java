@@ -1,6 +1,15 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import org.apache.commons.codec.binary.Base64;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
+import org.csi.yucca.storage.datamanagementapi.util.ImageProcessor;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
@@ -221,6 +230,36 @@ public class Metadata extends AbstractEntity {
 
 	public void setOpendata(Opendata opendata) {
 		this.opendata = opendata;
+	}
+
+	
+	public byte[] readDatasetIconBytes() throws IOException{
+		String imageBase64 = this.getInfo().getIcon();
+		BufferedImage imag = null;
+
+		if (imageBase64 != null) {
+			String[] imageBase64Array = imageBase64.split(",");
+
+			String imageBase64Clean;
+			if (imageBase64Array.length > 1) {
+				imageBase64Clean = imageBase64Array[1];
+			} else {
+				imageBase64Clean = imageBase64Array[0];
+			}
+
+			byte[] bytearray = Base64.decodeBase64(imageBase64Clean.getBytes());
+			imag = ImageIO.read(new ByteArrayInputStream(bytearray));
+		}
+		if (imageBase64 == null || imag == null) {
+			imag = ImageIO.read(ImageProcessor.class.getClassLoader().getResourceAsStream(Constants.DEFAULT_IMAGE));
+		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(imag, "png", baos);
+		baos.flush();
+		byte[] iconBytes = baos.toByteArray();
+		baos.close();
+		return iconBytes;
 	}
 
 }

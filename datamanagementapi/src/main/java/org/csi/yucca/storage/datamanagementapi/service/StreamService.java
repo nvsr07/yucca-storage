@@ -7,12 +7,16 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Components;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Element;
@@ -59,6 +63,34 @@ public class StreamService {
 		}
 		return result;
 	}
+	
+	@GET
+	@Path("/icon/{tenant}/{streamCode}")
+	@Produces("image/png")
+	public Response streamIcon(@PathParam("tenant") String tenant, @PathParam("streamCode") String streamCode) throws NumberFormatException,
+	UnknownHostException, Exception {
+		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|streamCode: " + streamCode);
+
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+
+		final StreamOut stream = streamDAO.readCurrentStreamByCode(streamCode);
+		Long idDataset = stream.getConfigData().getIdDataset();
+		
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset);
+
+		
+		
+		byte[] iconBytes = metadata.readDatasetIconBytes();
+
+		return Response.ok().entity(iconBytes).type("image/png").build();
+	}
+	
 
 	private List<StreamOut> createStreamsYuccaLight(List<StreamOut> streamsIn) {
 		List<StreamOut> streamsOut = null;

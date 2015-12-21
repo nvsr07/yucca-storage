@@ -1,1 +1,2 @@
 datamanagementapi/pom.xml
+datamanagementapi/src/main/resources/prod/SDPDataApiSecret.properties

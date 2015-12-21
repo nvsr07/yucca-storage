@@ -78,7 +78,15 @@ public class MetadataCkanFactory {
 		Resource resourceDownload = new Resource();
 		resourceDownload.setDescription("Csv download url");
 		resourceDownload.setFormat("CSV");
-		String downloadCsvUrl = baseExposedApiUrl + metadata.getDatasetCode() + "/?$format=csv";
+		//String downloadCsvUrl = baseExposedApiUrl + metadata.getDatasetCode() + "/?$format=csv"; BASE_EXPOSED_API_URL=https://int-api.smartdatanet.it:443/api/
+		String downloadCsvUrl  =  Config.getInstance().getBaseExposedApiUrl() + metadata.getDatasetCode() + "/download/"+metadata.getIdDataset()+"/";
+		if(Metadata.CONFIG_DATA_TYPE_DATASET.equals(metadata.getConfigData().getType()) && Metadata.CONFIG_DATA_SUBTYPE_BULK_DATASET.equals(metadata.getConfigData().getSubtype())) {
+			downloadCsvUrl += "all";
+		}
+		else{
+			downloadCsvUrl += "current";
+		}
+		
 		resourceDownload.setUrl(downloadCsvUrl);
 		ckanDataset.addResource(resourceDownload);
 
@@ -180,7 +188,7 @@ public class MetadataCkanFactory {
 		JSONObject json = null;
 		try {
 			String tagsDomainsURL = Config.getInstance().getTagDomainsUrl();
-			is = new URL(tagsDomainsURL + "/userportal/api/proxy/services/misc/stream"+element+"/").openStream();
+			is = new URL(tagsDomainsURL + "/wso001/services/misc/stream"+element+"/").openStream();
 
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			String jsonText = null;

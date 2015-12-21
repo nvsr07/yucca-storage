@@ -82,4 +82,16 @@ public class MongoDBStreamDAO {
 		}
 		return streamLoaded;
 	}
+	
+	public StreamOut readCurrentStreamByCode(String streamCode) {
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("streamCode", streamCode);
+	
+		DBObject data = collection.find(searchQuery).sort(new BasicDBObject("configData.datasetVersion", -1)).one();
+		ObjectId id = (ObjectId) data.get("_id");
+		StreamOut streamLoaded = StreamOut.fromJson(JSON.serialize(data));
+		streamLoaded.setId(id.toString());
+		return streamLoaded;
+	}
+
 }
