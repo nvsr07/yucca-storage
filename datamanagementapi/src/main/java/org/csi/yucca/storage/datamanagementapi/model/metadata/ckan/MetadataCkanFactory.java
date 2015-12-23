@@ -187,8 +187,8 @@ public class MetadataCkanFactory {
 		InputStream is = null;
 		JSONObject json = null;
 		try {
-			String tagsDomainsURL = Config.getInstance().getTagDomainsUrl();
-			is = new URL(tagsDomainsURL + "/wso001/services/misc/stream"+element+"/").openStream();
+			String tagsDomainsURL = Config.getInstance().getApiAdminServiceUrl();
+			is = new URL(tagsDomainsURL + "/misc/stream"+element+"/").openStream();
 
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			String jsonText = null;

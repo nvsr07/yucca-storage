@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -587,8 +586,8 @@ public class StoreService {
 		InputStream is = null;
 		JSONObject json = null;
 		try {
-			String tagsDomainsURL = Config.getInstance().getTagDomainsUrl();
-			is = new URL(tagsDomainsURL + "/wso001/services/misc/stream"+element+"/").openStream();
+			String tagsDomainsURL = Config.getInstance().getApiAdminServiceUrl();
+			is = new URL(tagsDomainsURL + "/misc/stream"+element+"/").openStream();
 
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			String jsonText = null;
