@@ -83,9 +83,10 @@ public class MongoDBStreamDAO {
 		return streamLoaded;
 	}
 	
-	public StreamOut readCurrentStreamByCode(String streamCode) {
+	public StreamOut readCurrentStreamByCode(String virtualentityCode, String streamCode) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("streamCode", streamCode);
+		searchQuery.put("streams.stream.virtualEntityCode", virtualentityCode);
 	
 		DBObject data = collection.find(searchQuery).sort(new BasicDBObject("configData.datasetVersion", -1)).one();
 		ObjectId id = (ObjectId) data.get("_id");

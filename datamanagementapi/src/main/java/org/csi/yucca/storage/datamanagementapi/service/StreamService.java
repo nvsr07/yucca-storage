@@ -65,9 +65,9 @@ public class StreamService {
 	}
 	
 	@GET
-	@Path("/icon/{tenant}/{streamCode}")
+	@Path("/icon/{tenant}/{virtualentityCode}/{streamCode}")
 	@Produces("image/png")
-	public Response streamIcon(@PathParam("tenant") String tenant, @PathParam("streamCode") String streamCode) throws NumberFormatException,
+	public Response streamIcon(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode, @PathParam("streamCode") String streamCode) throws NumberFormatException,
 	UnknownHostException, Exception {
 		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|streamCode: " + streamCode);
 
@@ -76,7 +76,7 @@ public class StreamService {
 		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
 
-		final StreamOut stream = streamDAO.readCurrentStreamByCode(streamCode);
+		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode);
 		Long idDataset = stream.getConfigData().getIdDataset();
 		
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
