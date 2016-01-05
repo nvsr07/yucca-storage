@@ -102,7 +102,7 @@ public class InstallCepService {
 				dataCollection=(String)tenantInfo.get("measuresCollectionName");
 			} else if ("binaryDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
 				//TODO
-throw new Exception("invalid data type, cannot delete a mediaDataset data");
+				throw new Exception("invalid data type, cannot delete a mediaDataset data");
 			} else if ("socialDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
 				dataDb=(String)tenantInfo.get("measuresCollectionDb");
 				dataCollection=(String)tenantInfo.get("socialCollectionName");
@@ -133,12 +133,8 @@ throw new Exception("invalid data type, cannot delete a mediaDataset data");
 			System.err.println(e);
 			return JSON.parse("{KO:1}").toString();
 		}
-
 		return JSON.parse("{OK:1}").toString();
-
 	}
-
-
 
 	@POST
 	@Path("/insertFromStream")
@@ -260,6 +256,64 @@ throw new Exception("invalid data type, cannot delete a mediaDataset data");
 		}
 		return JSON.parse("{OK:1}").toString();
 	}
+	
+	@DELETE
+	@Path("/requestUninstallDataset/{tenant}/{idDataset}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String requestUninstallDataset(@PathParam("tenant") String tenant, @PathParam("idDataset") String idDataset) throws UnknownHostException {
+		String datasetOuput = JSON.parse("{KO:1}").toString();
+		mongo = MongoSingleton.getMongoClient();
+		try{
+			DB db = mongo.getDB(Config.getInstance().getDbSupport());
+
+			//recupero DatasetType
+			DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+			BasicDBObject searchQuery = new BasicDBObject();
+			searchQuery.put("idDataset", Long.parseLong(idDataset));
+			searchQuery.put("configData.current", 1);
+			searchQuery.put("configData.tenantCode", tenant);
+			
+			DBCursor cursor = col.find(searchQuery);
+			if (cursor.hasNext()) {
+				DBObject updateConfig = new BasicDBObject();
+
+				updateConfig.put("$set", new BasicDBObject("configData.current", 0));
+				updateConfig.put("$set", new BasicDBObject("configData.deleted", 1));
+
+				col.update(searchQuery, updateConfig, false, true);
+
+				DBCollection colApi = db.getCollection(Config.getInstance().getCollectionSupportApi());
+
+				BasicDBObject findApis = new BasicDBObject();
+				findApis.put("dataset.idDataset", idDataset);
+				
+				DBObject configDataUpdate = new BasicDBObject();
+				configDataUpdate.put("$set", new BasicDBObject("configData.deleted", 1));
+				
+				colApi.update(findApis, configDataUpdate, false, true);
+
+				DBCursor datasets = col.find(searchQuery);
+				while (datasets.hasNext()) {
+					String apiName = (String) datasets.next().get("datasetCode");
+					if (apiName != null) {
+						apiName += "_odata";
+						try {
+							StoreService.removeStore("1.0", apiName, "admin");
+						} catch (Exception ex) {
+							log.info("Impossible to remove " + apiName + ex.getMessage());
+						}
+					}
+					
+					datasetOuput = JSON.parse("{OK:1}").toString();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println(e);
+		}
+		return datasetOuput;
+		
+	}
 
 	@POST
 	@Path("/deleteDatasetLogically")
@@ -314,7 +368,7 @@ throw new Exception("invalid data type, cannot delete a mediaDataset data");
 
 					colDataset.update(findDatasets, updateConfig, false, true);
 
-					DBCollection colApi = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+					DBCollection colApi = db.getCollection(Config.getInstance().getCollectionSupportApi());
 
 					BasicDBObject findApis = new BasicDBObject();
 					findApis.put("dataset.idDataset", idDataset);
