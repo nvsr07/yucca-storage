@@ -201,7 +201,7 @@ public class StoreService {
 		String fileName = newStream.getCodiceStream() + ".png";
 
 		boolean addTwitter = newStream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
-		processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
+		//processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(newStream.getVisibility())) {
@@ -240,7 +240,7 @@ public class StoreService {
 		objStream.setVar("httpok", Config.getInstance().getHttpOk());
 		objStream.setVar("ok", Config.getInstance().getResponseOk());
 
-		objStream.setVar("icon", path + fileName);
+		//objStream.setVar("icon", path + fileName);
 		objStream.setVar("apiVersion", "1.0");
 		objStream.setVar("apiName", apiFinalName);
 		objStream.setVar("context", "/api/" + apiName);
@@ -366,7 +366,7 @@ public class StoreService {
 		if (metadata.getConfigData() != null && metadata.getConfigData().getSubtype() == Metadata.CONFIG_DATA_SUBTYPE_SOCIAL_DATASET)
 			addTwitter = true;
 
-		processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
+		//processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(metadata.getInfo().getVisibility())) {
@@ -406,7 +406,7 @@ public class StoreService {
 		addStream.setVar("httpok", Config.getInstance().getHttpOk());
 		addStream.setVar("ok", Config.getInstance().getResponseOk());
 
-		addStream.setVar("icon", path + fileName);
+		//addStream.setVar("icon", path + fileName);
 		addStream.setVar("apiVersion", "1.0");
 		addStream.setVar("apiName", apiFinalName);
 		addStream.setVar("context", "/api/" + apiName);// ds_Voc_28;
@@ -460,12 +460,12 @@ public class StoreService {
 		AddStream addStream = new AddStream();
 		addStream.setProperties(update);
 
-		ImageProcessor processor = new ImageProcessor();
-		String imageBase64 = newStream.getStreamIcon();
-		String path = "images/";
-		String fileName = newStream.getCodiceStream() + ".png";
-		boolean addTwitter = newStream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
-		processor.doProcessStream(imageBase64, path, fileName, addTwitter);
+		//ImageProcessor processor = new ImageProcessor();
+		//String imageBase64 = newStream.getStreamIcon();
+		//String path = "images/";
+		//String fileName = newStream.getCodiceStream() + ".png";
+		//boolean addTwitter = newStream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
+		//processor.doProcessStream(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(newStream.getVisibility())) {
@@ -504,7 +504,8 @@ public class StoreService {
 		addStream.setVar("httpok", Config.getInstance().getHttpOk());
 		addStream.setVar("ok", Config.getInstance().getResponseOk());
 
-		addStream.setVar("icon", path + fileName);
+		//addStream.setVar("icon", path + fileName);
+		addStream.setVar("icon", "");
 		addStream.setVar("apiVersion", "1.0");
 		addStream.setVar("apiName", tenant + "." + sensor + "_" + stream + "_stream");
 		addStream.setVar("context", "/api/topic/output." + tenant + "." + sensor + "_" + stream);
