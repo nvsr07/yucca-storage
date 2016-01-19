@@ -293,12 +293,12 @@ public class CallApiManagerUtil {
 				if (key == null)
 					break;
 				if (key.startsWith("FILE.")) {
-					String val = properties.getProperty(values + key + ".name");
+				/*	String val = properties.getProperty(values + key + ".name");
 					outf("%-20s %-30s %s",k,key + ".name",val);
 					if (val != null) {
 				      FileBody f = new FileBody(new File(val));
 						reqEntity.addPart(key.substring("FILE.".length()), f);
-					}
+					}*/
 				} else {
 					String val = properties.getProperty(values + key);
 					String outV = val;
