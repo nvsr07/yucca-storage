@@ -21,6 +21,12 @@ public class StreamOut {
     @Expose
     private Streams streams;
     
+    @Expose
+    private String datasetCode;
+    @Expose
+    private String apiCode;
+   
+    
     
     public static StreamOut fromJson(String json) {
 		Gson gson = JSonHelper.getInstance();
@@ -124,6 +130,22 @@ public class StreamOut {
     public void setStreams(Streams streams) {
         this.streams = streams;
     }
+
+	public String getDatasetCode() {
+		return datasetCode;
+	}
+
+	public void setDatasetCode(String datasetCode) {
+		this.datasetCode = datasetCode;
+	}
+
+	public String getApiCode() {
+		return apiCode;
+	}
+
+	public void setApiCode(String apiCode) {
+		this.apiCode = apiCode;
+	}
 
 	
 

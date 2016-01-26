@@ -90,4 +90,14 @@ public class MongoDBApiDAO {
 		apiLoaded.setId(id.toString());
 		return apiLoaded;
 	}
+
+	public MyApi readFirstApiByIdStream(Integer streamId) {
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("dataset.idStream", streamId);
+		DBObject data = collection.find(searchQuery).one();
+		ObjectId id = (ObjectId) data.get("_id");
+		MyApi apiLoaded = MyApi.fromJson(JSON.serialize(data));
+		apiLoaded.setId(id.toString());
+		return apiLoaded;
+	}
 }

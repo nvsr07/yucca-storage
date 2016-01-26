@@ -14,8 +14,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
+import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Components;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.ConfigData;
@@ -49,14 +51,21 @@ public class StreamService {
 
 		MongoClient mongo = MongoSingleton.getMongoClient();
 		String supportDb = Config.getInstance().getDbSupport();
+
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportDatasetCollection);
+		
+		String supportMetadataCollection = Config.getInstance().getCollectionSupportDataset();
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportMetadataCollection);
+
+		String supportApiCollection = Config.getInstance().getCollectionSupportApi();
+		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
 
 		String result = "[]";
 		List<StreamOut> allStreams = streamDAO.readAllStream(tenant, false);
 		if (allStreams != null) {
 			if (CONSUMER_YUCCA_LIGHT.equals(consumerType)) {
-				allStreams = createStreamsYuccaLight(allStreams);
+				allStreams = createStreamsYuccaLight(allStreams, metadataDAO, apiDAO);
 			}
 			Gson gson = JSonHelper.getInstance();
 			result = gson.toJson(allStreams);
@@ -92,7 +101,7 @@ public class StreamService {
 	}
 	
 
-	private List<StreamOut> createStreamsYuccaLight(List<StreamOut> streamsIn) {
+	private List<StreamOut> createStreamsYuccaLight(List<StreamOut> streamsIn, MongoDBMetadataDAO metadataDAO, MongoDBApiDAO apiDAO) {
 		List<StreamOut> streamsOut = null;
 		if (streamsIn != null) {
 			streamsOut = new LinkedList<StreamOut>();
@@ -155,6 +164,17 @@ public class StreamService {
 
 					streamLight.setStreams(new Streams());
 					streamLight.getStreams().setStream(stream);
+					
+					if(metadataDAO!=null){
+						Metadata medatata = metadataDAO.readCurrentMetadataByIdDataset(streamFull.getConfigData().getIdDataset());
+						streamLight.setDatasetCode(medatata.getDatasetCode());
+					}
+					if(apiDAO!=null){
+						MyApi api = apiDAO.readFirstApiByIdStream(streamFull.getIdStream());
+						streamLight.setApiCode(api.getApiCode());
+					
+					}
+					
 					streamsOut.add(streamLight);
 				}
 
