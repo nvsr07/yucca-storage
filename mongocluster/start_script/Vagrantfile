@@ -3,6 +3,10 @@
 
 Vagrant.configure(2) do |config|
  
+  config.vm.provider "virtualbox" do |v|
+        v.memory = 4096
+        v.cpus = 2
+  end
   config.vm.define "speed01" do |speed01|
     speed01.vm.box_check_update = false
     speed01.vm.box = "chef/centos-6.5"
