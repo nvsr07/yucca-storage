@@ -48,8 +48,7 @@ def step_gather_tenant_info(stats, **kwargs):
 
         tenants_info[tenant_code]['streams'] = list(db_support['stream'].find({
             'configData.tenantCode': tenant_code
-        }).sort([('idStream',1),
-		 ('configData.datasetVersion',1)]))
+        }))
     return stats, dict(kwargs, tenants_info=tenants_info)
 
 
@@ -154,7 +153,6 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             stream_data['virtualEntityCode'] = stream_info.get('virtualEntityCode')
             stream_data['virtualEntityDescription'] = stream_info.get('virtualEntityDescription')
             stream_data['streamTags'] = stream_info['streamTags']['tags']
-            stream_data['domainStream'] = stream_info['domainStream']
             stream_data['components'] = [{'componentName': element['componentName'],
                                           'measureUnit': element['measureUnit']}
                                          for element in stream_info['components']['element']]
@@ -172,7 +170,7 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             dataset_data = tenant_data_datasets_data.get(str(idDataset), {})
             datasetVersion = metadata['datasetVersion']
             datasetVersion_data = {}
-            datasetVersion_data['total'] = data_col.find({'idDataset': idDataset,'datasetVersion':datasetVersion}).count()
+            datasetVersion_data['total'] = data_col.find({'idDataset': idDataset}).count()
             datasetVersion_data['visibility'] = metadata['info']['visibility']
             datasetVersion_data['datasetName'] = metadata['info']['datasetName']
             datasetVersion_data['description'] = metadata['info'].get('description')
@@ -180,8 +178,6 @@ def step_tenant_totals(stats, tenants_info, **kwargs):
             datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
             datasetVersion_data['copyright'] = metadata['info'].get('copyright')
             datasetVersion_data['datasetTags'] = metadata['info'].get('tags')
-            datasetVersion_data['dataDomain'] = metadata['info'].get('dataDomain')
-
 
             dataset_data[str(datasetVersion)] = datasetVersion_data
             tenant_data_datasets_data[str(idDataset)] = dataset_data
@@ -533,7 +529,6 @@ def _tenant_streams_measure_since(origin_id, tenant_info, measure_collection):
         stream_data['virtualEntityCode'] = stream_info.get('virtualEntityCode')
         stream_data['virtualEntityDescription'] = stream_info.get('virtualEntityDescription')
         stream_data['streamTags'] = stream_info['streamTags']['tags']
-        stream_data['domainStream'] = stream_info['domainStream']
         stream_data['components'] = [{'componentName': element['componentName'],
                                       'measureUnit': element['measureUnit']}
                                      for element in stream_info['components']['element']]
@@ -557,7 +552,7 @@ def _tenant_datasets_data_since(origin_id, tenant_info, data_collection):
         datasetVersion = metadata['datasetVersion']
         datasetVersion_data = {}
         datasetVersion_data['total'] = data_collection.find({'_id': {'$gte': origin_id},
-                                                      'idDataset': idDataset,'datasetVersion': datasetVersion}).count()
+                                                      'idDataset': idDataset}).count()
         datasetVersion_data['visibility'] = metadata['info']['visibility']
 
         datasetVersion_data['datasetName'] = metadata['info']['datasetName']
@@ -566,7 +561,7 @@ def _tenant_datasets_data_since(origin_id, tenant_info, data_collection):
         datasetVersion_data['disclaimer'] = metadata['info'].get('disclaimer')
         datasetVersion_data['copyright'] = metadata['info'].get('copyright')
         datasetVersion_data['datasetTags'] = metadata['info'].get('tags')
-        datasetVersion_data['dataDomain'] = metadata['info'].get('dataDomain')	
+
         dataset_data[str(datasetVersion)] = datasetVersion_data
         tenant_datasets_data[str(idDataset)] = dataset_data
 

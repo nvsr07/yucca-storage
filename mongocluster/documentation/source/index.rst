@@ -21,10 +21,12 @@ Contenuto:
     aggregation
     start_script
     availability
+    security
     sysadminnotes
     query_delay_analysis
     upgrade_java_driver
     upgrade_mongodb
+    requirements_forecasting
 
 Indices and tables
 ==================
