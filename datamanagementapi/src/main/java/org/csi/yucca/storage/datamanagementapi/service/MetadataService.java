@@ -679,6 +679,15 @@ public class MetadataService {
 		}
 		return createDatasetResponse.toJson();
 	}
+	
+	
+	public static void main(String[] args) {
+		String s = "I dati in oggetto riguardano la produzione annuale di rifiuti urbani a livello comunale comprensiva della % di raccolta differenziata raggiunta e del dettaglio delle tipologie di rifiuti raccolte ed avviate a recupero o a smaltimento.In particolare la % di raccolta differenziata viene calcolata sulla base del metodo regionale di cui alla D.G.R. 43-435 del 10 luglio 2000.L’acquisizione dei dati è disciplinata dal protocollo di cui dalla DGR 2 maggio 2001, n°17-2876 mod. da DGR 23 dicembre 2003, n° 48-11386 ed avviene attraverso l’uso di un sistema in rete che utilizza la RUPAR (Rete Unitaria della Pubblica Amministrazione Regionale).Gli utenti abilitati ad accedere a tale applicativo sono i Consorzi di gestione rifiuti, le Province e la Regione i quali, via web browser, utilizzano i servizi disponibili a seconda del profilo assegnato.I dati forniti dai Consorzi, dopo un controllo da parte della Provincia e della Regione, vengono approvati formalmente con deliberazione di giunta regionale.Con D.G.R. 47-5101 del 18/12/2012 sono stati approvati i quantitativi di rifiuti raccolti nel 2011 in modo differenziato e indifferenziato oggetto del presente dataset.Tale procedura ha garantito negli anni informazioni controllate ed omogenee su tutto il territorio regionale.";
+		String s600 =s != null ? s.substring(0, 600) : "";
+		System.out.println("s600 " +s600);
+		String sSmall = "AGRICULTURE,RAIN";
+		System.out.println("sSmall " +Util.safeSubstring(sSmall, 600));
+	}
 
 	@POST
 	@Path("/add/{tenant}/{datasetCode}")

@@ -38,6 +38,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
+import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import twitter4j.JSONArray;
@@ -247,21 +248,21 @@ public class StoreService {
 		objStream.setVar("context", "/api/" + apiName);
 		objStream.setVar("P", "");
 		objStream.setVar("endpoint", Config.getInstance().getBaseApiUrl() + apiName);
-		objStream.setVar("desc", newStream.getNomeStream() != null ? newStream.getNomeStream().substring(0, API_FIELD_MAX_LENGTH) : "");
+		objStream.setVar("desc", newStream.getNomeStream() != null ? Util.safeSubstring(newStream.getNomeStream(), API_FIELD_MAX_LENGTH) : "");
 		objStream.setVar("copiright", newStream.getCopyright() != null ? newStream.getCopyright() : "");
 
 		objStream.setVar("extra_isApi", "false");
-		objStream.setVar("extra_apiDescription", newStream.getVirtualEntityName() != null ? newStream.getVirtualEntityName().substring(0, API_FIELD_MAX_LENGTH) : "");
+		objStream.setVar("extra_apiDescription", newStream.getVirtualEntityName() != null ? Util.safeSubstring(newStream.getVirtualEntityName(), API_FIELD_MAX_LENGTH) : "");
 		objStream.setVar("codiceTenant", newStream.getCodiceTenant() != null ? newStream.getCodiceTenant() : "");
 		objStream.setVar("codiceStream", newStream.getCodiceStream() != null ? newStream.getCodiceStream() : "");
 		objStream.setVar("nomeStream", newStream.getNomeStream() != null ? newStream.getNomeStream() : "");
 		objStream.setVar("nomeTenant", newStream.getNomeTenant() != null ? newStream.getNomeTenant() : "");
-		objStream.setVar("licence", newStream.getLicence() != null ? newStream.getLicence().substring(0, API_FIELD_MAX_LENGTH) : "");
-		objStream.setVar("disclaimer", newStream.getDisclaimer() != null ? newStream.getDisclaimer().substring(0, API_FIELD_MAX_LENGTH) : "");
+		objStream.setVar("licence", newStream.getLicence() != null ? Util.safeSubstring(newStream.getLicence(), API_FIELD_MAX_LENGTH) : "");
+		objStream.setVar("disclaimer", newStream.getDisclaimer() != null ? Util.safeSubstring(newStream.getDisclaimer(), API_FIELD_MAX_LENGTH) : "");
 
 		objStream.setVar("virtualEntityCode", newStream.getCodiceVirtualEntity() != null ? newStream.getCodiceVirtualEntity() : "");
 		objStream.setVar("virtualEntityName", newStream.getVirtualEntityName() != null ? newStream.getVirtualEntityName() : "");
-		objStream.setVar("virtualEntityDescription", newStream.getVirtualEntityDescription() != null ? newStream.getVirtualEntityDescription().substring(0, API_FIELD_MAX_LENGTH) : "");
+		objStream.setVar("virtualEntityDescription", newStream.getVirtualEntityDescription() != null ? Util.safeSubstring(newStream.getVirtualEntityDescription(), API_FIELD_MAX_LENGTH) : "");
 		String tags = "";
 
 		if (newStream.getDomainStream() != null) {
@@ -273,7 +274,7 @@ public class StoreService {
 			}
 		}
 
-		objStream.setVar("tags", tags.substring(0, API_FIELD_MAX_LENGTH));
+		objStream.setVar("tags", Util.safeSubstring(tags, API_FIELD_MAX_LENGTH));
 
 		// DT Add document
 		String datasetInput = extractContentForDocument(json);
@@ -413,8 +414,8 @@ public class StoreService {
 		addStream.setVar("context", "/api/" + apiName);// ds_Voc_28;
 		addStream.setVar("P", "");
 		addStream.setVar("endpoint", Config.getInstance().getBaseApiUrl() + apiName);
-		addStream.setVar("desc", metadata.getInfo().getDescription() != null ? metadata.getInfo().getDescription().substring(0, API_FIELD_MAX_LENGTH) : "");
-		addStream.setVar("copiright", metadata.getInfo().getCopyright() != null ? metadata.getInfo().getCopyright().substring(0, API_FIELD_MAX_LENGTH) : "");
+		addStream.setVar("desc", metadata.getInfo().getDescription() != null ? Util.safeSubstring(metadata.getInfo().getDescription(), API_FIELD_MAX_LENGTH) : "");
+		addStream.setVar("copiright", metadata.getInfo().getCopyright() != null ? Util.safeSubstring(metadata.getInfo().getCopyright(), API_FIELD_MAX_LENGTH) : "");
 
 		addStream.setVar("extra_isApi", "false");
 		addStream.setVar("extra_apiDescription", metadata.getInfo().getDatasetName() != null ? metadata.getInfo().getDatasetName() : "");
@@ -422,8 +423,8 @@ public class StoreService {
 		addStream.setVar("codiceStream", "");
 		addStream.setVar("nomeStream", "");
 		addStream.setVar("nomeTenant", metadata.getConfigData().getTenantCode() != null ? metadata.getConfigData().getTenantCode() : "");
-		addStream.setVar("licence", metadata.getInfo().getLicense() != null ? metadata.getInfo().getLicense().substring(0, API_FIELD_MAX_LENGTH) : "");
-		addStream.setVar("disclaimer", metadata.getInfo().getDisclaimer() != null ? metadata.getInfo().getDisclaimer().substring(0, API_FIELD_MAX_LENGTH) : "");
+		addStream.setVar("licence", metadata.getInfo().getLicense() != null ? Util.safeSubstring(metadata.getInfo().getLicense(), API_FIELD_MAX_LENGTH) : "");
+		addStream.setVar("disclaimer", metadata.getInfo().getDisclaimer() != null ? Util.safeSubstring(metadata.getInfo().getDisclaimer(), API_FIELD_MAX_LENGTH) : "");
 		addStream.setVar("virtualEntityName", "");
 		addStream.setVar("virtualEntityDescription", "");
 
@@ -441,7 +442,7 @@ public class StoreService {
 			}
 		}
 
-		addStream.setVar("tags", tags.substring(0, API_FIELD_MAX_LENGTH));
+		addStream.setVar("tags", Util.safeSubstring(tags, API_FIELD_MAX_LENGTH));
 
 		// DT Add document
 		String contentJson = extractMetadataContentForDocument(jsonFile);
