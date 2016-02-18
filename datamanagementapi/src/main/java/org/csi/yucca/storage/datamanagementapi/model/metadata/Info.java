@@ -1,6 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ public class Info extends AbstractEntity {
 
 	private Tag tags[];
 	private Field fields[];
+	private List<String> fileNames;
 
 	private Tenantssharing tenantssharing;
 
@@ -240,5 +242,28 @@ public class Info extends AbstractEntity {
 		this.externalReference = externalReference;
 	}
 
+	public List<String> getFileNames() {
+		return fileNames;
+	}
+
+	public void setFileNames(List<String> fileNames) {
+		this.fileNames = fileNames;
+	}
+
+	public void addFilename(String fileName) {
+		if (this.fileNames == null)
+			this.fileNames = new LinkedList<String>();
+		this.fileNames.add(fileName);
+	}
+
+	public void removeFilename(String fileName) {
+		if (this.fileNames != null) {
+			this.fileNames.remove(fileName);
+			if (this.fileNames.size() == 0)
+				this.fileNames = null;
+
+		}
+
+	}
 
 }

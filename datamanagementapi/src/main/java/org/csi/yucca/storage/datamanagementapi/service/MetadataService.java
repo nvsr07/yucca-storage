@@ -474,6 +474,7 @@ public class MetadataService {
 		String csvSeparator = null;
 		boolean skipFirstRow = false;
 		String csvData = null;
+		String fileName = null;
 
 		try {
 			ServletFileUpload upload = new ServletFileUpload();
@@ -492,6 +493,7 @@ public class MetadataService {
 					skipFirstRow = new Boolean(read(item.openStream()));
 				else if (IMPORT_BULKDATASET_FILE_REQ_KEY.equals(item.getFieldName())) {
 					csvData = readFileRows(item.openStream(), encoding);
+					fileName = item.getName();
 				}
 			}
 
@@ -501,6 +503,9 @@ public class MetadataService {
 
 		log.debug("[MetadataService::createMetadata] - encoding: " + encoding + ", formatType: " + formatType + ", csvSeparator: " + csvSeparator);
 		Metadata metadata = Metadata.fromJson(datasetMetadata);
+		if(fileName!=null)
+			metadata.getInfo().addFilename(fileName);
+		
 		CreateDatasetResponse createDatasetResponse = new CreateDatasetResponse();
 
 		metadata.setDatasetVersion(1);
@@ -701,6 +706,7 @@ public class MetadataService {
 		String csvSeparator = null;
 		boolean skipFirstRow = false;
 		String csvData = null;
+		String fileName = null;
 
 		try {
 			ServletFileUpload upload = new ServletFileUpload();
@@ -717,8 +723,12 @@ public class MetadataService {
 					skipFirstRow = new Boolean(read(item.openStream()));
 				else if (IMPORT_BULKDATASET_FILE_REQ_KEY.equals(item.getFieldName())) {
 					csvData = readFileRows(item.openStream(), encoding);
+					fileName = item.getName();
 				}
+
+
 			}
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -731,6 +741,10 @@ public class MetadataService {
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
 		Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+		existingMetadata.getInfo().addFilename(fileName);
+		metadataDAO.updateMetadata(existingMetadata);
+
+		
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 
 		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
@@ -783,6 +797,7 @@ public class MetadataService {
 			newMetadata.getInfo().setDisclaimer(inputMetadata.getInfo().getDisclaimer());
 			newMetadata.getInfo().setLicense(inputMetadata.getInfo().getLicense());
 			newMetadata.getInfo().setTags(inputMetadata.getInfo().getTags());
+			newMetadata.getInfo().setFileNames(inputMetadata.getInfo().getFileNames());
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
