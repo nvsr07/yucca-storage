@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.QSPStore;
+import org.csi.yucca.storage.datamanagementapi.apimanager.store.RemoveDoc;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
@@ -704,6 +705,21 @@ public class StoreService {
 
 		publish.run();
 
+		RemoveDoc removeDoc = new RemoveDoc();
+		removeDoc.setVar("apimanConsoleAddress", Config.getInstance().getConsoleAddress());
+		removeDoc.setVar("username", Config.getInstance().getStoreUsername());
+		removeDoc.setVar("password", Config.getInstance().getStorePassword());
+		removeDoc.setVar("httpok", Config.getInstance().getHttpOk());
+		removeDoc.setVar("ok", Config.getInstance().getResponseOk());
+
+		removeDoc.setVar("publishStatus", "BLOCKED");
+		removeDoc.setVar("apiVersion", apiVersion);
+		removeDoc.setVar("apiName", apiName);
+		removeDoc.setVar("provider", provider);
+		removeDoc.setVar("P", "");
+		removeDoc.run();
+		
+	
 		return true;
 	}
 
