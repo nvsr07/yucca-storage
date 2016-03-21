@@ -64,7 +64,11 @@ public class MetadataCkanFactory {
 		ckanDataset.setVersion(Util.nvl(metadata.getDatasetVersion()));
 
 		String storeApiAddress = Config.getInstance().getStoreApiAddress();
-		String metadataUrl = storeApiAddress + "name=" + metadata.getDatasetCode() + "_odata&version=1.0&provider=admin  ";
+		//String metadataUrl = storeApiAddress + "name=" + metadata.getDatasetCode() + "_odata&version=1.0&provider=admin  ";
+		String metadataUrl = Config.getInstance().getUserportalBaseUrl() + "#/dataexplorer/dataset/" + metadata.getConfigData().getTenantCode() +"/" + metadata.getDatasetCode();
+		
+		//https://int-userportal.smartdatanet.it/userportal/#/dataexplorer/dataset/sandbox/ProvaDataset_60
+		
 		ckanDataset.setUrl(metadataUrl);
 
 		Resource resourceApiOdata = new Resource();

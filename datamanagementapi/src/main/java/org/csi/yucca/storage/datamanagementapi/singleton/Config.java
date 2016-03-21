@@ -30,10 +30,10 @@ public class Config {
 	public static final String HTTP_OK = "HTTP_OK";
 	public static final String RESPONSE_OK = "RESPONSE_OK";
 	public static final String STORE_API_ADDRESS = "STORE_API_ADDRESS";
+	public static final String USERPORTAL_BASE_URL = "USERPORTAL_BASE_URL";
 	public static final String STORE_BASE_URL = "STORE_BASE_URL";
 	public static final String BASE_EXPOSED_API_URL = "BASE_EXPOSED_API_URL";
 	public static final String API_ADMIN_SERVICES_URL = "API_ADMIN_SERVICES_URL";
-	
 
 	private static Map<String, String> params = null;
 	private static Config instance = null;
@@ -52,8 +52,8 @@ public class Config {
 		params.put(MONGO_DB_AUTH, rb.getString(MONGO_DB_AUTH));
 		params.put(MONGO_DB_AUTH_FLAG, rb.getString(MONGO_DB_AUTH_FLAG));
 		params.put(MONGO_COLLECTION_SUPPORT_TENANT, rb.getString(MONGO_COLLECTION_SUPPORT_TENANT));
-		params.put(MONGO_COLLECTION_SUPPORT_STATISTICS, rb.getString(MONGO_COLLECTION_SUPPORT_STATISTICS));		
-		params.put(MONGO_COLLECTION_SUPPORT_STREAM_STATS, rb.getString(MONGO_COLLECTION_SUPPORT_STREAM_STATS));		
+		params.put(MONGO_COLLECTION_SUPPORT_STATISTICS, rb.getString(MONGO_COLLECTION_SUPPORT_STATISTICS));
+		params.put(MONGO_COLLECTION_SUPPORT_STREAM_STATS, rb.getString(MONGO_COLLECTION_SUPPORT_STREAM_STATS));
 		params.put(BASE_API_URL, rb.getString(BASE_API_URL));
 		params.put(MONGO_COLLECTION_TENANT_DATA, rb.getString(MONGO_COLLECTION_TENANT_DATA));
 		params.put(MONGO_COLLECTION_TENANT_SOCIAL, rb.getString(MONGO_COLLECTION_TENANT_SOCIAL));
@@ -64,10 +64,10 @@ public class Config {
 		params.put(RESPONSE_OK, rb.getString(RESPONSE_OK));
 		params.put(STORE_API_ADDRESS, rb.getString(STORE_API_ADDRESS));
 		params.put(STORE_BASE_URL, rb.getString(STORE_BASE_URL));
+		params.put(USERPORTAL_BASE_URL, rb.getString(USERPORTAL_BASE_URL));
 		params.put(BASE_EXPOSED_API_URL, rb.getString(BASE_EXPOSED_API_URL));
 		params.put(API_ADMIN_SERVICES_URL, rb.getString(API_ADMIN_SERVICES_URL));
-		
-		
+
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
 		params.put(STORE_USERNAME, rbSecret.getString(STORE_USERNAME));
@@ -116,13 +116,15 @@ public class Config {
 	public String getCollectionSupportTenant() {
 		return params.get(MONGO_COLLECTION_SUPPORT_TENANT);
 	}
+
 	public String getCollectionSupportStatistics() {
 		return params.get(MONGO_COLLECTION_SUPPORT_STATISTICS);
 	}
+
 	public String getCollectionSupportStreamStats() {
 		return params.get(MONGO_COLLECTION_SUPPORT_STREAM_STATS);
 	}
-	
+
 	public String getCollectionTenantData() {
 		return params.get(MONGO_COLLECTION_TENANT_DATA);
 	}
@@ -146,37 +148,42 @@ public class Config {
 	public String getBaseApiUrl() {
 		return params.get(BASE_API_URL);
 	}
+
 	public String getDammiInfo() {
 		return params.get(DAMMI_INFO);
 	}
-	
+
 	public String getStoreUsername() {
 		return params.get(STORE_USERNAME);
 	}
+
 	public String getStorePassword() {
 		return params.get(STORE_PASSWORD);
 	}
-	
+
 	public String getConsoleAddress() {
 		return params.get(CONSOLE_ADDRESS);
 	}
-	
+
 	public String getHttpOk() {
 		return params.get(HTTP_OK);
 	}
-	
+
 	public String getResponseOk() {
 		return params.get(RESPONSE_OK);
 	}
-	
+
 	public String getStoreApiAddress() {
 		return params.get(STORE_API_ADDRESS);
-	} 
-	
+	}
+
 	public String getStoreBaseUrl() {
 		return params.get(STORE_BASE_URL);
-	} 
-	
+	}
+
+	public String getUserportalBaseUrl() {
+		return params.get(USERPORTAL_BASE_URL);
+	}
 
 	public String getBaseExposedApiUrl() {
 		return params.get(BASE_EXPOSED_API_URL);
@@ -184,5 +191,5 @@ public class Config {
 
 	public String getApiAdminServiceUrl() {
 		return params.get(API_ADMIN_SERVICES_URL);
-	}		
+	}
 }
