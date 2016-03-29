@@ -1,0 +1,27 @@
+\select@language {english}
+\contentsline {part}{I\hspace {1em}Cluster MongoDB}{3}{part.1}
+\contentsline {chapter}{\numberline {1}Architettura}{5}{chapter.1}
+\contentsline {section}{\numberline {1.1}Sharding}{5}{section.1.1}
+\contentsline {section}{\numberline {1.2}Cluster}{5}{section.1.2}
+\contentsline {section}{\numberline {1.3}Shard}{5}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1}Primary Shard}{6}{subsection.1.3.1}
+\contentsline {section}{\numberline {1.4}Config Servers}{6}{section.1.4}
+\contentsline {section}{\numberline {1.5}Mongos}{6}{section.1.5}
+\contentsline {section}{\numberline {1.6}Replica set}{6}{section.1.6}
+\contentsline {section}{\numberline {1.7}Primary}{6}{section.1.7}
+\contentsline {section}{\numberline {1.8}Secondary}{7}{section.1.8}
+\contentsline {section}{\numberline {1.9}Arbiter}{7}{section.1.9}
+\contentsline {section}{\numberline {1.10}Architettura di deploy}{7}{section.1.10}
+\contentsline {chapter}{\numberline {2}Aggiunta di un nodo ad un replica set}{9}{chapter.2}
+\contentsline {section}{\numberline {2.1}Downlaod dei file necessari}{9}{section.2.1}
+\contentsline {section}{\numberline {2.2}Restore dei dati}{9}{section.2.2}
+\contentsline {section}{\numberline {2.3}Aggiunta al Replica Set}{10}{section.2.3}
+\contentsline {chapter}{\numberline {3}Inizializzazione di un Replica Set}{11}{chapter.3}
+\contentsline {section}{\numberline {3.1}Downlaod dei file necessari}{11}{section.3.1}
+\contentsline {section}{\numberline {3.2}Cambio dei parametri di configurazione}{11}{section.3.2}
+\contentsline {section}{\numberline {3.3}Inizializzazione del Replica Set}{12}{section.3.3}
+\contentsline {section}{\numberline {3.4}Aggiungere gli altri nodi}{12}{section.3.4}
+\contentsline {chapter}{\numberline {4}Aggiunta di una shard al cluster}{13}{chapter.4}
+\contentsline {section}{\numberline {4.1}Collegamento a mongos}{13}{section.4.1}
+\contentsline {section}{\numberline {4.2}Aggiunta della shard}{13}{section.4.2}
+\contentsline {chapter}{\numberline {5}Inizializzazione del cluster}{15}{chapter.5}
