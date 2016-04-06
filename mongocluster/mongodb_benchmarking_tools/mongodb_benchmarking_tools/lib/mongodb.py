@@ -2,7 +2,7 @@ import operator
 
 from pymongo import MongoClient
 
-
+from functools import reduce
 
 def setup_connection(host, user=None, password=None):
     client = MongoClient(host)
