@@ -353,6 +353,37 @@ public class MetadataService {
 
 		return new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl).toJson();
 	}
+	
+	@GET
+	@Path("/{tenant}/{virtualentityCode}/{streamCode}")
+	@Produces("application/json; charset=UTF-8")
+	public String getFromStreamKey(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode, @PathParam("streamCode") String streamCode) throws NumberFormatException, UnknownHostException {
+		// select
+		log.debug("[MetadataService::get] - START - datasetCode: " + virtualentityCode + " - streamCode: " + streamCode);
+		
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+
+		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode);
+		Long idDataset = stream.getConfigData().getIdDataset();
+		
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset);
+		
+		String supportApiCollection = Config.getInstance().getCollectionSupportApi();
+
+		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+
+		MyApi api = apiDAO.readApiByCode(metadata.getDatasetCode());
+
+		String baseApiUrl = Config.getInstance().getStoreApiAddress();
+
+		return new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl).toJson();
+	}
 
 	@GET
 	@Path("/opendata/{outputFormat}/tenant/{tenantCode}")

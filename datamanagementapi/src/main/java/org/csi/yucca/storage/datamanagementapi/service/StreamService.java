@@ -54,7 +54,7 @@ public class StreamService {
 
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportDatasetCollection);
-		
+
 		String supportMetadataCollection = Config.getInstance().getCollectionSupportDataset();
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportMetadataCollection);
 
@@ -72,12 +72,12 @@ public class StreamService {
 		}
 		return result;
 	}
-	
+
 	@GET
 	@Path("/icon/{tenant}/{virtualentityCode}/{streamCode}")
 	@Produces("image/png")
-	public Response streamIcon(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode, @PathParam("streamCode") String streamCode) throws NumberFormatException,
-	UnknownHostException, Exception {
+	public Response streamIcon(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode,
+			@PathParam("streamCode") String streamCode) throws NumberFormatException, UnknownHostException, Exception {
 		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|streamCode: " + streamCode);
 
 		MongoClient mongo = MongoSingleton.getMongoClient();
@@ -87,17 +87,40 @@ public class StreamService {
 
 		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode);
 		Long idDataset = stream.getConfigData().getIdDataset();
-		
+
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset);
 
-		
-		
 		byte[] iconBytes = metadata.readDatasetIconBytes();
 
 		return Response.ok().entity(iconBytes).type("image/png").build();
+	}
+
+	@GET
+	@Path("/datasetCode/{tenant}/{virtualentityCode}/{streamCode}")
+	@Produces("text/plain")
+	public Response streamDatasetCode(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode,
+			@PathParam("streamCode") String streamCode) throws NumberFormatException, UnknownHostException, Exception {
+		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|streamCode: " + streamCode);
+
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+
+		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode);
+		Long idDataset = stream.getConfigData().getIdDataset();
+
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset);
+
+		String datasetCode = metadata.getDatasetCode();
+
+		return Response.ok().entity(datasetCode).type("text/plain").build();
 	}
 	
 
@@ -123,7 +146,7 @@ public class StreamService {
 					}
 
 					Stream stream = new Stream();
-					
+
 					stream.setVirtualEntityName(streamFull.getStreams().getStream().getVirtualEntityName());
 					stream.setVirtualEntityDescription(streamFull.getStreams().getStream().getVirtualEntityDescription());
 					stream.setVirtualEntityCode(streamFull.getStreams().getStream().getVirtualEntityCode());
@@ -164,17 +187,17 @@ public class StreamService {
 
 					streamLight.setStreams(new Streams());
 					streamLight.getStreams().setStream(stream);
-					
-					if(metadataDAO!=null){
+
+					if (metadataDAO != null) {
 						Metadata medatata = metadataDAO.readCurrentMetadataByIdDataset(streamFull.getConfigData().getIdDataset());
 						streamLight.setDatasetCode(medatata.getDatasetCode());
 					}
-					if(apiDAO!=null){
+					if (apiDAO != null) {
 						MyApi api = apiDAO.readFirstApiByIdStream(streamFull.getIdStream());
 						streamLight.setApiCode(api.getApiCode());
-					
+
 					}
-					
+
 					streamsOut.add(streamLight);
 				}
 

@@ -25,14 +25,13 @@ public class MongoDBMetadataDAO {
 		this.collection = mongo.getDB(db).getCollection(collection);
 	}
 
-	public Metadata createMetadata(Metadata metadata,Long idDataset) {
-
+	public Metadata createMetadata(Metadata metadata, Long idDataset) {
 
 		for (int i = 0; i < 5; i++) {
 			try {
-				if(idDataset==null){
+				if (idDataset == null) {
 					metadata.setIdDataset(MongoDBUtils.getIdForInsert(this.collection, "idDataset"));
-				}else{
+				} else {
 					metadata.setIdDataset(idDataset);
 				}
 				metadata.generateCode();
@@ -41,27 +40,25 @@ public class MongoDBMetadataDAO {
 				String json = metadata.toJson();
 				DBObject dbObject = (DBObject) JSON.parse(json);
 
-				DBObject uniqueMetadata = new BasicDBObject("idDataset",metadata.getIdDataset());
-				uniqueMetadata.put("datasetVersion",metadata.getDatasetVersion());
+				DBObject uniqueMetadata = new BasicDBObject("idDataset", metadata.getIdDataset());
+				uniqueMetadata.put("datasetVersion", metadata.getDatasetVersion());
 
-				// if the metadata with that id and version exists .. update it, otherwise insert the new one.
-				//upsert:true  multi:false
-				this.collection.update(uniqueMetadata,dbObject,true,false);
-				//				ObjectId id = (ObjectId) dbObject.get("_id");
-				//				metadata.setId(id.toString());
+				// if the metadata with that id and version exists .. update it,
+				// otherwise insert the new one.
+				// upsert:true multi:false
+				this.collection.update(uniqueMetadata, dbObject, true, false);
+				// ObjectId id = (ObjectId) dbObject.get("_id");
+				// metadata.setId(id.toString());
 				break;
 			} catch (Exception e) {
 				log.error("[] - ERROR in insert. Attempt " + i + " - message: " + e.getMessage());
 			}
 		}
 
-	
-
-
 		return metadata;
 	}
 
-	public Metadata createNewVersion(Metadata metadata){
+	public Metadata createNewVersion(Metadata metadata) {
 
 		metadata.setDatasetVersion(metadata.getDatasetVersion() + 1);
 		metadata.getConfigData().setCurrent(1);
@@ -83,13 +80,12 @@ public class MongoDBMetadataDAO {
 		this.collection.update(query, dbObject);
 	}
 
-
 	public List<Metadata> readAllMetadata(String tenant, boolean onlyCurrent) {
 		List<Metadata> data = new ArrayList<Metadata>();
 		BasicDBObject searchQuery = new BasicDBObject();
 		if (tenant != null)
 			searchQuery.put("configData.tenantCode", tenant);
-		if(onlyCurrent)
+		if (onlyCurrent)
 			searchQuery.put("configData.current", 1);
 
 		DBCursor cursor = collection.find(searchQuery);
@@ -102,20 +98,18 @@ public class MongoDBMetadataDAO {
 		}
 		return data;
 	}
-	
-	
-	
-    public int countAllMetadata(String tenant, boolean onlyCurrent) {
-        BasicDBObject searchQuery = new BasicDBObject();
-        if (tenant != null)
-            searchQuery.put("configData.tenantCode", tenant);
-        searchQuery.put("configData.subtype", "bulkDataset");
-        if(onlyCurrent)
-            searchQuery.put("configData.current", 1);
 
-        DBCursor cursor = collection.find(searchQuery);
-        return cursor.count();
-    } 	
+	public int countAllMetadata(String tenant, boolean onlyCurrent) {
+		BasicDBObject searchQuery = new BasicDBObject();
+		if (tenant != null)
+			searchQuery.put("configData.tenantCode", tenant);
+		searchQuery.put("configData.subtype", "bulkDataset");
+		if (onlyCurrent)
+			searchQuery.put("configData.current", 1);
+
+		DBCursor cursor = collection.find(searchQuery);
+		return cursor.count();
+	}
 
 	public void deleteMetadata(Metadata metadata) {
 		DBObject query = BasicDBObjectBuilder.start().append("_id", new ObjectId(metadata.getId())).get();
@@ -142,7 +136,7 @@ public class MongoDBMetadataDAO {
 		metadataLoaded.setId(id.toString());
 		return metadataLoaded;
 	}
-	
+
 	public Metadata readCurrentMetadataByIdDataset(Long IdDataset) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("idDataset", IdDataset);
@@ -154,16 +148,14 @@ public class MongoDBMetadataDAO {
 		metadataLoaded.setId(id.toString());
 		return metadataLoaded;
 	}
-	
 
-	
 	public List<Metadata> readOpendataMetadata(List<String> tenantFilter) {
 		List<Metadata> data = new ArrayList<Metadata>();
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("opendata.isOpendata", true);
-		if(tenantFilter!=null && tenantFilter.size()>0)
+		if (tenantFilter != null && tenantFilter.size() > 0)
 			searchQuery.append("configData.tenantCode", new BasicDBObject("$in", tenantFilter));
-		
+
 		DBCursor cursor = collection.find(searchQuery);
 		while (cursor.hasNext()) {
 			DBObject doc = cursor.next();
@@ -174,29 +166,29 @@ public class MongoDBMetadataDAO {
 		}
 		return data;
 	}
-	
+
 	public static void main(String[] args) {
-		
-		String tenants  = "sandbox|smartlab|csp";
-		List<String >tenantFilter = new LinkedList<String>();
+
+		String tenants = "sandbox|smartlab|csp";
+		List<String> tenantFilter = new LinkedList<String>();
 		for (String t : tenants.split("[|]")) {
 			tenantFilter.add(t);
 		}
-		
+
 		String queryParam = "{ $in: [";
 		int counter = 0;
 		for (String tenant : tenantFilter) {
-			queryParam +="\""+tenant+"\"";
+			queryParam += "\"" + tenant + "\"";
 			counter++;
-			if(counter<tenantFilter.size())
-				queryParam +=",";
+			if (counter < tenantFilter.size())
+				queryParam += ",";
 		}
 		queryParam += "]}";
 		System.out.println(queryParam);
 	}
 
 	public Metadata findFirstMetadataByDatasetId(Long idDataset, Integer datasetVersion) {
-		
+
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("idDataset", idDataset);
 		searchQuery.append("datasetVersion", datasetVersion);
@@ -208,4 +200,5 @@ public class MongoDBMetadataDAO {
 		return metadataLoaded;
 	}
 
+	
 }
