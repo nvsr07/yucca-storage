@@ -36,7 +36,7 @@ def main():
 
     configsvr_client = setup_connection(opts.configsvr_url, opts.user, opts.password)
 
-    nodes = discover_cluster_nodes(configsvr_client)
+    nodes = discover_cluster_nodes(configsvr_client, opts.user, opts.password)
     dbs = discover_cluser_dbs(configsvr_client)
 
     result = []
