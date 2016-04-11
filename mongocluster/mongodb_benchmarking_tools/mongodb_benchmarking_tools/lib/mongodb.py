@@ -12,10 +12,10 @@ def setup_connection(host, user=None, password=None):
     return client
 
 
-def discover_cluster_nodes(configsvr_client):
+def discover_cluster_nodes(configsvr_client, user=None, password=None):
     shards = [shard['host'].split('/')[1] for shard in configsvr_client.config.shards.find()]
     nodes = reduce(operator.add, map(operator.methodcaller('split', ','), shards))
-    return [setup_connection(node) for node in nodes]
+    return [setup_connection(node, user, password) for node in nodes]
 
 
 def discover_cluser_dbs(configsvr_client):
