@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Analisi risorse necessarie al cluster &mdash; CSI MongoDB 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CSI MongoDB 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Procedura di Upgrade per MongoDB versione 3.0" href="upgrade_mongodb.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="upgrade_mongodb.html" title="Procedura di Upgrade per MongoDB versione 3.0"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="analisi-risorse-necessarie-al-cluster">
+<h1>Analisi risorse necessarie al cluster<a class="headerlink" href="#analisi-risorse-necessarie-al-cluster" title="Permalink to this headline">¶</a></h1>
+<p>In seguito all&#8217;aumentare della mole di dati contenuti nel cluster, all&#8217; aumentare dei nodi o all&#8217;
+aumento della quantità di inserimenti al secondo, per mantenere il throughput adeguato è necessario
+adeguare le risorse per ogni singolo nodo.
+Il seguente documento illustra come evolvere il cluster in seguito all&#8217; aumentare dei dati diviso
+per tipologia di risorsa.</p>
+<div class="section" id="memoria-ram">
+<h2>Memoria RAM<a class="headerlink" href="#memoria-ram" title="Permalink to this headline">¶</a></h2>
+<p>La RAM è la risorsa maggiormente utilizzata da MongoDB ed è quella che necessita di essere tenuta
+sotto controllo maggiormente in quanto impattata da diversi fattori.</p>
+<div class="section" id="connection-pool">
+<h3>Connection Pool<a class="headerlink" href="#connection-pool" title="Permalink to this headline">¶</a></h3>
+<p>È la RAM richiesta per le varie connessioni ai mongod o mongos, ciascuna connessione occupa minimo
+1 MB di memoria, essendoci nodi in replica, tool di monitoraggio e svariati mongos che si collegano
+al cluster è un valore di cui si deve tenere conto.
+Nello stato attuale del cluster (3 shard composte ciascuna da 3 nodi in replica) il calcolo per
+il connection pool dei singoli nodi è il seguente:</p>
+<p>numSecondariesInReplica + numMonitoring + numShard + numMongos + numConfig</p>
+<p>Per quanto riguarda invece i mongos il connection pool va calcolato nel seguente modo:</p>
+<p>(((maxPrimaryConnectionsYouWant - numSecondariesInReplica*3 - monitoring*2) / numMongos) * 0.9</p>
+</div>
+<div class="section" id="woking-set">
+<h3>Woking Set<a class="headerlink" href="#woking-set" title="Permalink to this headline">¶</a></h3>
+<p>Il working set è la somma dello spazio occupato in memoria dagli indici e dall&#8217;active set, non è un
+valore calcolabile in quanto è variabile con l&#8217;utilizzo che si fa dei dati, l&#8217;active set non è
+necessario che rimanga sempre nella RAM, gli indici invece sarebbe meglio se vi fossero tutti
+contenuti (valore monitorato). In ogni caso mongoDB si occuperà di tenere sempre in memoria gli
+indici più utilizzati.
+Per questo è necessario monitorare la dimensione occupata dagli indici e agire di conseguenza sulla
+quantità di memoria RAM necessaria</p>
+</div>
+</div>
+<div class="section" id="banda-richiesta">
+<h2>Banda richiesta<a class="headerlink" href="#banda-richiesta" title="Permalink to this headline">¶</a></h2>
+<p>Per calcolare la banda richiesta da mongodb, in particolare per permettere almeno ai nodi secondary
+di rimanere sempre sincronizzati con i nodi primary, la formula è la seguente:</p>
+<p>op/sec * docsize + 40%</p>
+<p>Stimando una dimensione media dei documenti di 256 byte e una quantità di inserimenti pari a
+10000/s risulta che:</p>
+<p>(10000 * 256 byte) + 40% = 3584000 b/s</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Analisi risorse necessarie al cluster</a><ul>
+<li><a class="reference internal" href="#memoria-ram">Memoria RAM</a><ul>
+<li><a class="reference internal" href="#connection-pool">Connection Pool</a></li>
+<li><a class="reference internal" href="#woking-set">Woking Set</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#banda-richiesta">Banda richiesta</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="upgrade_mongodb.html"
+                        title="previous chapter">Procedura di Upgrade per MongoDB versione 3.0</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/requirements_forecasting.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="upgrade_mongodb.html" title="Procedura di Upgrade per MongoDB versione 3.0"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CSI MongoDB 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, AXANT.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
