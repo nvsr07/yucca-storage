@@ -43,6 +43,18 @@ public class TenantOut {
     @Expose
     private Integer maxStreamsNum;
 
+    @Expose
+    private String organizationCode;
+
+    
+    public String getOrganizationCode() {
+		return organizationCode;
+	}
+	public void setOrganizationCode(String organizationCode) {
+		this.organizationCode = organizationCode;
+	}
+    
+    
     public Integer getMaxDatasetNum() {
 		return maxDatasetNum;
 	}

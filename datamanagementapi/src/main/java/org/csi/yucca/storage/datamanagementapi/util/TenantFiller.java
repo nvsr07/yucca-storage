@@ -17,7 +17,7 @@ public class TenantFiller {
 		tout.setMaxDatasetNum(tenant.getMaxDatasetNum());
 		tout.setMaxStreamsNum(tenant.getMaxStreamsNum());
 		
-		
+		tout.setOrganizationCode(tenant.getOrganizationCode());
 		//dati di  default o aggregati
 		
 		

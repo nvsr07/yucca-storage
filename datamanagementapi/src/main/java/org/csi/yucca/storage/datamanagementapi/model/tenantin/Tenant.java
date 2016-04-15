@@ -14,13 +14,32 @@ public class Tenant {
     @Expose
     private String codiceTenant;
 
-    @Expose
+	/**
+     * 
+     * @return
+     *     The organizationCode
+     */
+    public String getOrganizationCode() {
+		return organizationCode;
+	}
+
+    /**
+     * 
+     * @param organizationCode
+     *     The organizationCode
+     */
+	public void setOrganizationCode(String organizationCode) {
+		this.organizationCode = organizationCode;
+	}
+
+	@Expose
     private Integer maxDatasetNum;
     
     @Expose
     private Integer maxStreamsNum;
     
-    
+    @Expose
+    private String organizationCode;
     
 	/**
      * 
