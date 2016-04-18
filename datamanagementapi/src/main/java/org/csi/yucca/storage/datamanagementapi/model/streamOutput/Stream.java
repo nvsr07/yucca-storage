@@ -822,5 +822,15 @@ public class Stream {
 	public void setTwtMaxStreamsOfVE(Integer twtMaxStreamsOfVE) {
 		this.twtMaxStreamsOfVE = twtMaxStreamsOfVE;
 	}
+	@Expose
+    private String virtualEntitySlug;
+	
+	public String getVirtualEntitySlug() {
+		return virtualEntitySlug;
+	}
+
+	public void setVirtualEntitySlug(String virtualEntitySlug) {
+		this.virtualEntitySlug = virtualEntitySlug;
+	}
 
 }

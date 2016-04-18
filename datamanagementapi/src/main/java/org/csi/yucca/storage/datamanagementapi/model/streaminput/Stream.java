@@ -9,6 +9,8 @@ import com.google.gson.annotations.Expose;
 
 public class Stream {
 
+	
+
 	@Expose
     private Integer twtMaxStreamsOfVE;
 	@Expose
@@ -987,4 +989,17 @@ public class Stream {
 	public void setDomainTranslated(Map<String, String> domainTranslated) {
 		this.domainTranslated = domainTranslated;
 	}
+	
+	
+	@Expose
+    private String virtualEntitySlug;
+	
+	public String getVirtualEntitySlug() {
+		return virtualEntitySlug;
+	}
+
+	public void setVirtualEntitySlug(String virtualEntitySlug) {
+		this.virtualEntitySlug = virtualEntitySlug;
+	}
+	
 }

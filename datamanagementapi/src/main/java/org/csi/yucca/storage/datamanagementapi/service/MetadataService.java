@@ -66,6 +66,7 @@ import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -157,6 +158,12 @@ public class MetadataService {
 			headerFixedColumn.add("Sensor.Category");
 			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntityCategory()));
 
+			
+			
+			headerFixedColumn.add("Sensor.virtualEntitySlug");
+			fixedFields.add(Util.nvlt(stream.getStreams().getStream().getVirtualEntitySlug()));
+			
+			
 			if (stream.getStreams().getStream().getVirtualEntityPositions() != null
 					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition() != null
 					&& stream.getStreams().getStream().getVirtualEntityPositions().getPosition().size() > 0) {

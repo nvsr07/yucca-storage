@@ -88,7 +88,7 @@ public class StreamFiller {
 		sti.setTwtRatePercentage(stream.getTwtRatePercentage());
 		sti.setTwtResultType(stream.getTwtResultType());
 		sti.setTwtUntil(stream.getTwtUntil());
-
+sti.setVirtualEntitySlug(stream.getVirtualEntitySlug());
 
 		sti.setVirtualEntityCategory(stream.getCategoriaVirtualEntity());
 		sti.setVirtualEntityCode(stream.getCodiceVirtualEntity());
