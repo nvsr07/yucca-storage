@@ -529,6 +529,10 @@ public class StoreService {
 		addStream.setVar("virtualEntityCode", newStream.getCodiceVirtualEntity() != null ? newStream.getCodiceVirtualEntity() : "");
 		addStream.setVar("virtualEntityName", newStream.getVirtualEntityName() != null ? newStream.getVirtualEntityName() : "");
 		addStream.setVar("virtualEntityDescription", newStream.getVirtualEntityDescription() != null ? newStream.getVirtualEntityDescription() : "");
+		
+		addStream.setVar("extra_latitude", newStream.getVirtualEntityPositions().getPosition().get(0).getLat().toString());
+		addStream.setVar("extra_longitude", newStream.getVirtualEntityPositions().getPosition().get(0).getLon().toString());
+
 		String tags = "";
 
 		if (newStream.getDomainStream() != null) {
