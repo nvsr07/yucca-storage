@@ -33,6 +33,7 @@ import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.QSPStore;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.RemoveDoc;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
@@ -530,8 +531,17 @@ public class StoreService {
 		addStream.setVar("virtualEntityName", newStream.getVirtualEntityName() != null ? newStream.getVirtualEntityName() : "");
 		addStream.setVar("virtualEntityDescription", newStream.getVirtualEntityDescription() != null ? newStream.getVirtualEntityDescription() : "");
 		
-		addStream.setVar("extra_latitude", newStream.getVirtualEntityPositions().getPosition().get(0).getLat().toString());
-		addStream.setVar("extra_longitude", newStream.getVirtualEntityPositions().getPosition().get(0).getLon().toString());
+		addStream.setVar("extra_latitude", "");
+		addStream.setVar("extra_longitude", "");
+		if (newStream.getVirtualEntityPositions() != null){
+			if (newStream.getVirtualEntityPositions().getPosition() != null){
+				List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Position> position = newStream.getVirtualEntityPositions().getPosition();
+				if (position.get(0) != null){
+					addStream.setVar("extra_latitude", position.get(0).getLat().toString());
+					addStream.setVar("extra_longitude", position.get(0).getLon().toString());
+				}
+			}
+		}
 
 		String tags = "";
 
