@@ -1,0 +1,77 @@
+
+
+DROP TABLE db_csi_log.sdnet_realtimereadamq;
+CREATE TABLE db_csi_log.sdnet_realtimereadamq (
+servercode string,
+timestamp string, 
+uniqueid string, 
+connectionid string, 
+protocol string, 
+username string, 
+tenant string, 
+destination string, 
+operation string, 
+iporiginsensorstream string, 
+numeroeventi int, 
+elapsed int, 
+error string, 
+unix_ts int,
+end_timestamp string, 
+end_unix_ts int
+) stored as orc;
+
+
+ 
+
+insert into table db_csi_log.sdnet_realtimereadamq 
+select 
+'amqstream1' as servercode ,
+a.timestamp,
+a.uniqueid,
+a.connectionid,
+a.protocol,
+a.username,
+a.tenant,
+a.destination,
+a.operation,
+a.iporiginsensorstream,
+a.numeroeventi,
+a.elapsed,
+a.error,
+a.unix_ts,
+b.timestamp as end_timestamp,
+b.unix_ts as end_unix_ts
+from  db_csi_log.sdnet_stream1_amq a 
+  INNER JOIN db_csi_log.sdnet_stream1_amq b  on a.connectionid = b.connectionid 
+    where a.operation='SUBSCRIPTION' and b.operation='DISCONNECTION';
+
+
+	
+insert into table db_csi_log.sdnet_realtimereadamq 
+select 
+'amqstream2' as servercode ,
+a.timestamp,
+a.uniqueid,
+a.connectionid,
+a.protocol,
+a.username,
+a.tenant,
+a.destination,
+a.operation,
+a.iporiginsensorstream,
+a.numeroeventi,
+a.elapsed,
+a.error,
+a.unix_ts,
+b.timestamp as end_timestamp,
+b.unix_ts as end_unix_ts
+from  db_csi_log.sdnet_stream2_amq a 
+  INNER JOIN db_csi_log.sdnet_stream2_amq b  on a.connectionid = b.connectionid 
+    where a.operation='SUBSCRIPTION' and b.operation='DISCONNECTION';
+
+
+
+
+
+
+

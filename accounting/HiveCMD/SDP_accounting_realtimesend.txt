@@ -1,0 +1,265 @@
+
+
+DROP TABLE db_csi_log.sdnet_realtimesendamq;
+CREATE TABLE db_csi_log.sdnet_realtimesendamq (
+servercode string,
+timestamp string, 
+uniqueid string, 
+connectionid string, 
+protocol string, 
+username string, 
+tenant string, 
+destination string, 
+operation string, 
+iporiginsensorstream string, 
+numeroeventi int, 
+elapsed int, 
+error string, 
+unix_ts int
+) stored as orc;
+
+
+DROP TABLE db_csi_log.sdnet_realtimesendwso2;
+CREATE TABLE db_csi_log.sdnet_realtimesendwso2 (
+ servercode string,
+ timestamp       string,               
+ uniqueid        string,              
+ connid          string,               
+ protocol        string,               
+ tenant          string,               
+ destination     string,               
+ operation       string,               
+ iporigin        string,               
+ sensor_stream   string,               
+ numevents       int,                  
+ elapsed         int,                  
+ error           string,               
+ unix_ts         int                  
+) stored as orc;
+
+
+DROP TABLE db_csi_log.sdnet_realtimesend_apache;
+CREATE TABLE db_csi_log.sdnet_realtimesend_apache (
+servercode STRING,
+log_timestamp STRING,
+uniqueid STRING,
+jwt STRING,
+forwarded_for STRING,
+risorsa STRING,
+status_ret STRING,
+useragent STRING,
+elapsed_microsec INT,
+unix_ts INT
+) stored as orc;
+
+
+
+
+DROP TABLE db_csi_log.sdnet_realtimesend_mqtt_rawdata;
+CREATE TABLE db_csi_log.sdnet_realtimesend_mqtt_rawdata (
+servercode string,
+timestamp string, 
+uniqueid string, 
+connectionid string, 
+protocol string, 
+username string, 
+operation string, 
+iporiginsensorstream string, 
+unix_ts int,
+destination string, 
+tenant string,
+sensor string,
+stream string,
+nevents int 
+) stored as orc;
+
+DROP TABLE db_csi_log.sdnet_realtimesend_http_rawdata;
+CREATE TABLE db_csi_log.sdnet_realtimesend_http_rawdata (
+servercode string,
+timestamp string, 
+uniqueid string, 
+forwarderdfor string, 
+useragent string,
+unix_ts int,
+destination string, 
+tenant string,
+sensor string,
+stream string,
+nevents int 
+) stored as orc;
+
+ 
+
+insert into table db_csi_log.sdnet_realtimesendamq 
+select 
+'amqstream1' as servercode ,
+a.timestamp,
+a.uniqueid,
+a.connectionid,
+a.protocol,
+a.username,
+a.tenant,
+a.destination,
+a.operation,
+a.iporiginsensorstream,
+a.numeroeventi,
+a.elapsed,
+a.error,
+a.unix_ts
+from  db_csi_log.sdnet_stream1_amq a 
+where a.operation='SEND'
+;
+
+
+insert into table db_csi_log.sdnet_realtimesendamq 
+select 
+'amqstream2' as servercode ,
+a.timestamp,
+a.uniqueid,
+a.connectionid,
+a.protocol,
+a.username,
+a.tenant,
+a.destination,
+a.operation,
+a.iporiginsensorstream,
+a.numeroeventi,
+a.elapsed,
+a.error,
+a.unix_ts
+from  db_csi_log.sdnet_stream2_amq a 
+where a.operation='SEND'
+;
+
+
+
+
+insert into table db_csi_log.sdnet_realtimesendwso2
+select 
+'esbin1wso2' as servercode,
+a.timestamp,
+a.uniqueid,
+a.connid,
+a.protocol,
+a.tenant,
+a.destination,
+a.operation,
+a.iporigin,
+a.sensor_stream,
+a.numevents,
+a.elapsed,
+a.error,
+a.unix_ts
+from  db_csi_log.sdnet_esbin1 a where a.uniqueid<>'-';
+
+
+
+insert into table db_csi_log.sdnet_realtimesendwso2
+select 
+'esbin2wso2' as servercode,
+a.timestamp,
+a.uniqueid,
+a.connid,
+a.protocol,
+a.tenant,
+a.destination,
+a.operation,
+a.iporigin,
+a.sensor_stream,
+a.numevents,
+a.elapsed,
+a.error,
+a.unix_ts
+from  db_csi_log.sdnet_esbin2 a where a.uniqueid<>'-';
+
+
+
+
+
+insert into table db_csi_log.sdnet_realtimesend_apache 
+select  
+web.servercode,
+web.log_timestamp, 
+web.uniqueid as uniqueid,
+web.jwt,
+web.forwarded_for,
+web.risorsa,
+web.status_ret,
+web.useragent,
+web.elapsed_microsec,
+web.unix_ts
+from 
+(select 'streaim1apache' as servercode,a.log_timestamp, a.jwt, a.id_api as uniqueid,a.forwarded_for,a.risorsa,a.status_ret,a.useragent,a.elapsed_microsec, a.unix_ts from db_csi_log.sdnet_stream1_apache a  where 
+a.risorsa like 'POST /api/input/%' 
+) web
+;
+
+insert into table db_csi_log.sdnet_realtimesend_apache 
+select  
+web.servercode,
+web.log_timestamp, 
+web.uniqueid as uniqueid,
+web.jwt,
+web.forwarded_for,
+web.risorsa,
+web.status_ret,
+web.useragent,
+web.elapsed_microsec,
+web.unix_ts
+from 
+(
+select 'streaim2apache' as servercode,b.log_timestamp, b.jwt, b.id_api as uniqueid,b.forwarded_for,b.risorsa,b.status_ret,b.useragent,b.elapsed_microsec, b.unix_ts from db_csi_log.sdnet_stream2_apache b where 
+b.risorsa like 'POST /api/input/%'
+) web
+;
+
+
+
+insert into table db_csi_log.sdnet_realtimesend_mqtt_rawdata 
+select 
+amq.servercode ,
+amq.timestamp , 
+amq.uniqueid , 
+amq.connectionid , 
+amq.protocol , 
+amq.username , 
+amq.operation , 
+amq.iporiginsensorstream , 
+amq.unix_ts,
+wso2.destination , 
+split(wso2.tenant,'_')[0], 
+split(wso2.sensor_stream,'\\|') [0] ,
+split(wso2.sensor_stream,'\\|') [1] ,
+wso2.numevents 
+from db_csi_log.sdnet_realtimesendamq  amq, db_csi_log.sdnet_realtimesendwso2 wso2
+where amq.uniqueid=wso2.uniqueid;
+
+
+
+
+insert into table db_csi_log.sdnet_realtimesend_http_rawdata 
+select 
+apache.servercode ,
+apache.log_timestamp , 
+apache.uniqueid , 
+apache.forwarded_for,
+apache.useragent,
+apache.unix_ts,
+concat(
+split(trim(split(regexp_replace(risorsa, 'POST /api/', ''), 'HTTP/')[0]),'/')[0],
+'.',
+split(trim(split(regexp_replace(risorsa, 'POST /api/', ''), 'HTTP/')[0]),'/')[1]
+) as destination,
+split(trim(split(regexp_replace(risorsa, 'POST /api/', ''), 'HTTP/')[0]),'/')[1] as tenant,
+split(wso2.sensor_stream,'\\|') [0] ,
+split(wso2.sensor_stream,'\\|') [1] ,
+wso2.numevents 
+from db_csi_log.sdnet_realtimesend_apache  apache, db_csi_log.sdnet_realtimesendwso2 wso2
+where apache.uniqueid=wso2.uniqueid;
+
+
+
+
+
+
+
