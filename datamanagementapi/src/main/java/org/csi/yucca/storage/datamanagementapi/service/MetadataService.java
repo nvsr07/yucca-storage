@@ -357,8 +357,11 @@ public class MetadataService {
 		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
 		StreamOut stream = streamDAO.readStreamByMetadata(metadata);
+		
+		MetadataWithExtraAttribute pippo = new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl);
+		String pippoJSON = pippo.toJson();
 
-		return new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl).toJson();
+		return pippoJSON;
 	}
 	
 	@GET
@@ -533,7 +536,7 @@ public class MetadataService {
 					csvData = readFileRows(item.openStream(), encoding);
 					fileName = item.getName();
 				}
-			}
+			} 
 
 		} catch (Exception e) {
 			e.printStackTrace();
