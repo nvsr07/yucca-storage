@@ -1,8 +1,6 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.OpendataInfo;
-
 import com.google.gson.annotations.Expose;
 
 public class Stream {
@@ -55,6 +53,8 @@ public class Stream {
     private String streamStatus;
     @Expose
     private String domainStream;
+    @Expose
+    private String codSubDomain;
     @Expose
     private String licence;
     @Expose
@@ -343,6 +343,24 @@ public class Stream {
         this.domainStream = domainStream;
     }
 
+    /**
+     * 
+     * @return
+     *     The codSubDomain
+     */
+    public String getCodSubDomain() {
+        return codSubDomain;
+    }
+
+    /**
+     * 
+     * @param codSubDomain
+     *     The codSubDomain
+     */
+    public void setCodSubDomain(String codSubDomain) {
+        this.codSubDomain = codSubDomain;
+    }
+    
     /**
      * 
      * @return
