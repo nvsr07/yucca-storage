@@ -1,7 +1,7 @@
 DROP TABLE db_csi_log.sdnet_datainsert_wso2;
 CREATE TABLE db_csi_log.sdnet_datainsert_wso2 (
 servercode STRING,
-timestamp STRING , 
+log_timestamp STRING , 
 uniqueid STRING, 
 forwardedfor STRING, 
 jwt STRING, 
@@ -57,7 +57,7 @@ nrecin INT
 insert into table db_csi_log.sdnet_datainsert_wso2 
 select 
 'datainsertup1' as servercode,
-t2.timestamp, 
+t2.log_timestamp, 
 t2.uniqueid, 
 t1.forwardedfor, 
 t1.jwt, 
@@ -83,7 +83,7 @@ where t1.forwardedfor <> '-'  AND t2.forwardedfor = '-' ;
 insert into table db_csi_log.sdnet_datainsert_wso2 
 select 
 'datainsertup2' as servercode,
-t2.timestamp, 
+t2.log_timestamp, 
 t2.uniqueid, 
 t1.forwardedfor, 
 t1.jwt, 
