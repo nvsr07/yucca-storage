@@ -68,6 +68,8 @@ public class Stream {
     @Expose
     private String domainStream;
     @Expose
+    private String codSubDomain;
+    @Expose
     private String licence;
     @Expose
     private String disclaimer;
@@ -438,7 +440,26 @@ public class Stream {
     public void setDomainStream(String domainStream) {
         this.domainStream = domainStream;
     }
+    
 
+    /**
+     * 
+     * @return
+     *     The codSubDomain
+     */
+    public String getCodSubDomain() {
+        return codSubDomain;
+    }
+
+    /**
+     * 
+     * @param codSubDomain
+     *     The codSubDomain
+     */
+    public void setCodSubDomain(String codSubDomain) {
+        this.codSubDomain = codSubDomain;
+    }
+    
     /**
      * 
      * @return

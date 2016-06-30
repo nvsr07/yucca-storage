@@ -3,7 +3,7 @@
 DROP TABLE db_csi_log.sdnet_realtimesendamq;
 CREATE TABLE db_csi_log.sdnet_realtimesendamq (
 servercode string,
-timestamp string, 
+log_timestamp string, 
 uniqueid string, 
 connectionid string, 
 protocol string, 
@@ -22,7 +22,7 @@ unix_ts int
 DROP TABLE db_csi_log.sdnet_realtimesendwso2;
 CREATE TABLE db_csi_log.sdnet_realtimesendwso2 (
  servercode string,
- timestamp       string,               
+ log_timestamp       string,               
  uniqueid        string,              
  connid          string,               
  protocol        string,               
@@ -58,7 +58,7 @@ unix_ts INT
 DROP TABLE db_csi_log.sdnet_realtimesend_mqtt_rawdata;
 CREATE TABLE db_csi_log.sdnet_realtimesend_mqtt_rawdata (
 servercode string,
-timestamp string, 
+log_timestamp string, 
 uniqueid string, 
 connectionid string, 
 protocol string, 
@@ -76,7 +76,7 @@ nevents int
 DROP TABLE db_csi_log.sdnet_realtimesend_http_rawdata;
 CREATE TABLE db_csi_log.sdnet_realtimesend_http_rawdata (
 servercode string,
-timestamp string, 
+log_timestamp string, 
 uniqueid string, 
 forwarderdfor string, 
 useragent string,
@@ -93,7 +93,7 @@ nevents int
 insert into table db_csi_log.sdnet_realtimesendamq 
 select 
 'amqstream1' as servercode ,
-a.timestamp,
+a.log_timestamp,
 a.uniqueid,
 a.connectionid,
 a.protocol,
@@ -114,7 +114,7 @@ where a.operation='SEND'
 insert into table db_csi_log.sdnet_realtimesendamq 
 select 
 'amqstream2' as servercode ,
-a.timestamp,
+a.log_timestamp,
 a.uniqueid,
 a.connectionid,
 a.protocol,
@@ -137,7 +137,7 @@ where a.operation='SEND'
 insert into table db_csi_log.sdnet_realtimesendwso2
 select 
 'esbin1wso2' as servercode,
-a.timestamp,
+a.log_timestamp,
 a.uniqueid,
 a.connid,
 a.protocol,
@@ -157,7 +157,7 @@ from  db_csi_log.sdnet_esbin1 a where a.uniqueid<>'-';
 insert into table db_csi_log.sdnet_realtimesendwso2
 select 
 'esbin2wso2' as servercode,
-a.timestamp,
+a.log_timestamp,
 a.uniqueid,
 a.connid,
 a.protocol,
@@ -218,7 +218,7 @@ b.risorsa like 'POST /api/input/%'
 insert into table db_csi_log.sdnet_realtimesend_mqtt_rawdata 
 select 
 amq.servercode ,
-amq.timestamp , 
+amq.log_timestamp , 
 amq.uniqueid , 
 amq.connectionid , 
 amq.protocol , 

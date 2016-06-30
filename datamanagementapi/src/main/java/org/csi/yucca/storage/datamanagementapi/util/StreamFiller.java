@@ -56,6 +56,7 @@ public class StreamFiller {
 		sti.setDeploymentVersion(stream.getDeploymentVersion());
 		sti.setDisclaimer(stream.getDisclaimer());
 		sti.setDomainStream(stream.getDomainStream());
+		sti.setCodSubDomain(stream.getCodSubDomain());
 		sti.setFabricControllerOutcome(stream.getEsitoFabricController());
 		sti.setFps(stream.getFps());
 		sti.setIdCategoriaVe(stream.getIdCategoriaVe());

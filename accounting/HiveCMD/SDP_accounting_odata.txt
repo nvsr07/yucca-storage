@@ -1,7 +1,7 @@
 DROP TABLE db_csi_log.sdnet_odata_jboss;
 CREATE TABLE db_csi_log.sdnet_odata_jboss (
 servercode STRING,
-timestamp STRING , 
+log_timestamp STRING , 
 uniqueid STRING, 
 forwardedfor STRING, 
 jwt STRING, 
@@ -55,7 +55,7 @@ nrecout INT
 insert into table db_csi_log.sdnet_odata_jboss 
 select 
 'odataup1' as servercode,
-t2.timestamp, 
+t2.log_timestamp, 
 t2.uniqueid, 
 t1.forwardedfor, 
 t1.jwt, 
@@ -80,7 +80,7 @@ where t1.forwardedfor <> '-'  AND t2.forwardedfor = '-' ;
 insert into table db_csi_log.sdnet_odata_jboss 
 select  
 'odataup2' as servercode,
-t4.timestamp, 
+t4.log_timestamp, 
 t4.uniqueid, 
 t3.forwardedfor, 
 t3.jwt, 
