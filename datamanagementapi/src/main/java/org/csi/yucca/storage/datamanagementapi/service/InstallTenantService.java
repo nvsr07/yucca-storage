@@ -66,12 +66,9 @@ public class InstallTenantService {
 
 		// mongoParams = ConfigParamsSingleton.getInstance().getParams();
 		mongo = MongoSingleton.getMongoClient();
-
 		gson = JSonHelper.getInstance();
 
-		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match
-																							// @nil
-																							// elements
+		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
 		try {
 			TenantIn tenantin = gson.fromJson(json, TenantIn.class);
 			if (tenantin != null && tenantin.getTenants() != null && tenantin.getTenants().getTenant() != null) {
@@ -80,9 +77,10 @@ public class InstallTenantService {
 				DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportTenant());
 				TenantOut myTenant = TenantFiller.fillTenant(tenantin.getTenants().getTenant());
 
+				log.debug("[InstallTenantService::createTenant] myTenant = " + myTenant);
+				
 				DBObject dbObject = (DBObject) JSON.parse(gson.toJson(myTenant, TenantOut.class));
 				col.insert(dbObject);
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

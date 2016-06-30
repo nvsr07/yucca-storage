@@ -3,6 +3,8 @@ package org.csi.yucca.storage.datamanagementapi.util;
 import org.csi.yucca.storage.datamanagementapi.model.tenantin.Tenant;
 import org.csi.yucca.storage.datamanagementapi.model.tenantout.TenantOut;
 
+import com.google.gson.annotations.Expose;
+
 public class TenantFiller {
 
 
@@ -18,8 +20,19 @@ public class TenantFiller {
 		tout.setMaxStreamsNum(tenant.getMaxStreamsNum());
 		
 		tout.setOrganizationCode(tenant.getOrganizationCode());
+		tout.setTenantType(tenant.getTenantType());
+		tout.setCodDeploymentStatus(tenant.getCodDeploymentStatus());
+		tout.setDataAttivazione(tenant.getDataAttivazione());
+		tout.setDataDisattivazione(tenant.getDataDisattivazione());
+		tout.setNumGiorniAttivo(tenant.getNumGiorniAttivo());
+		tout.setIdEcosystem(tenant.getIdEcosystem());
+	    tout.setUserName(tenant.getUserName());
+	    tout.setUserFirstName(tenant.getUserFirstName());
+	    tout.setUserLastName(tenant.getUserLastName());
+	    tout.setUserEmail(tenant.getUserEmail());
+	    tout.setUserTypeAuth(tenant.getUserTypeAuth());
+	    
 		//dati di  default o aggregati
-		
 		
 		String DBTenant = "DB_"+tenant.getCodiceTenant();
 		
