@@ -18,7 +18,9 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
-					<outputDirectory>D:\Portable\jboss-eap-6.2\standalone\deployments</outputDirectory>
+					<!-- outputDirectory>C:\Program Files (x86)\jboss-eap-6.2\standalone\deployments</outputDirectory -->
+					<!-- outputDirectory>D:\Portable\jboss-eap-6.2\standalone\deployments</outputDirectory -->
+					<outputDirectory>/Library/JBoss/jboss-eap-6.2/standalone/deployments</outputDirectory>
 					<webXml>${webXmlPath}/web.xml</webXml>
 				</configuration>
 			</plugin>
@@ -127,11 +129,16 @@
 			<version>3.0.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20151123</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
 		<dependency>
-		    <groupId>javax.mail</groupId>
-		    <artifactId>mail</artifactId>
-		    <version>1.4</version>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4</version>
 		</dependency>
 	</dependencies>
 	<profiles>
@@ -177,17 +184,25 @@
 			<build>
 				<resources>
 					<resource>
-						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/int</directory>
+						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory>
 					</resource>
 					<resource>
 						<directory>conf</directory>
 						<targetPath>.</targetPath>
 					</resource>
 				</resources>
+				<testResources>
+					<testResource>
+						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/int</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/int</directory>
+					</testResource>
+				</testResources>
 			</build>
 			<properties>
-				<webXmlPath>//csint1/dirtec/2014/Tecnologie e
-					attività/SmartDataPlatform/PropFiles/datamangement/int/</webXmlPath>
+				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath -->
+				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e
+					attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
 			</properties>
 		</profile>
 		<profile>
@@ -195,17 +210,25 @@
 			<build>
 				<resources>
 					<resource>
-						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/prod</directory>
+						<!-- directory>//csint1//dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory>
 					</resource>
 					<resource>
 						<directory>conf</directory>
 						<targetPath>.</targetPath>
 					</resource>
 				</resources>
+				<testResources>
+					<testResource>
+						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/prod</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/prod</directory>
+					</testResource>
+				</testResources>
 			</build>
 			<properties>
-				<webXmlPath>//csint1/dirtec/2014/Tecnologie e
-					attività/SmartDataPlatform/PropFiles/datamangement/prod/</webXmlPath>
+				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath -->
+				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e
+					attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath>
 			</properties>
 		</profile>
 	</profiles>
