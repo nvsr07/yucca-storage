@@ -1,8 +1,12 @@
 package org.csi.yucca.storage.datamanagementapi.singleton;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
+
+import org.apache.log4j.Logger;
 
 public class Config {
 
@@ -34,9 +38,22 @@ public class Config {
 	public static final String STORE_BASE_URL = "STORE_BASE_URL";
 	public static final String BASE_EXPOSED_API_URL = "BASE_EXPOSED_API_URL";
 	public static final String API_ADMIN_SERVICES_URL = "API_ADMIN_SERVICES_URL";
+	public static final String KNOX_SDNET_URL = "KNOX_SDNET_URL";
+	public static final String KNOX_USER = "KNOX_USER";
+	public static final String KNOX_PWD = "KNOX_PWD";
+	public static final String MAIL_FROM = "MAIL_FROM";
+	public static final String MAIL_TO = "MAIL_TO";
+	public static final String MAIL_SERVER = "MAIL_SERVER";
+	public static final String MAIL_SUBJECT_404="MAIL_SUBJECT_404";
+	public static final String MAIL_BODY_404="MAIL_BODY_404";
+	public static final String MAIL_SUBJECT_500="MAIL_SUBJECT_500";
+	public static final String MAIL_BODY_500="MAIL_BODY_500";
+	public static final String MAIL_SUBJECT_200="MAIL_SUBJECT_200";
+	public static final String MAIL_BODY_200="MAIL_BODY_200";
 
 	private static Map<String, String> params = null;
 	private static Config instance = null;
+	static Logger log = Logger.getLogger(Config.class);
 
 	private Config() {
 
@@ -67,11 +84,23 @@ public class Config {
 		params.put(USERPORTAL_BASE_URL, rb.getString(USERPORTAL_BASE_URL));
 		params.put(BASE_EXPOSED_API_URL, rb.getString(BASE_EXPOSED_API_URL));
 		params.put(API_ADMIN_SERVICES_URL, rb.getString(API_ADMIN_SERVICES_URL));
+		params.put(KNOX_SDNET_URL, rb.getString(KNOX_SDNET_URL));
+		params.put(MAIL_FROM, rb.getString(MAIL_FROM));
+		params.put(MAIL_TO, rb.getString(MAIL_TO));
+		params.put(MAIL_SERVER, rb.getString(MAIL_SERVER));
+		params.put(MAIL_SUBJECT_404, rb.getString(MAIL_SUBJECT_404));
+		params.put(MAIL_BODY_404, rb.getString(MAIL_BODY_404));
+		params.put(MAIL_SUBJECT_500, rb.getString(MAIL_SUBJECT_500));
+		params.put(MAIL_BODY_500, rb.getString(MAIL_BODY_500));
+		params.put(MAIL_SUBJECT_200, rb.getString(MAIL_SUBJECT_200));
+		params.put(MAIL_BODY_200, rb.getString(MAIL_BODY_200));
 
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
 		params.put(STORE_USERNAME, rbSecret.getString(STORE_USERNAME));
 		params.put(STORE_PASSWORD, rbSecret.getString(STORE_PASSWORD));
+		params.put(KNOX_USER, rbSecret.getString(KNOX_USER));
+		params.put(KNOX_PWD, rbSecret.getString(KNOX_PWD));
 	}
 
 	public static Config getInstance() {
@@ -191,5 +220,76 @@ public class Config {
 
 	public String getApiAdminServiceUrl() {
 		return params.get(API_ADMIN_SERVICES_URL);
+	}
+	
+	public String getApiKnoxSDNETUrl() {
+		return params.get(KNOX_SDNET_URL);
+	}
+	
+	public String getKnoxSDNETUser() {
+		return params.get(KNOX_USER);
+	}
+	
+	public String getKnoxSDNETPwd() {
+		return params.get(KNOX_PWD);
+	}
+	
+	public String getMailFrom() {
+		return params.get(MAIL_FROM);
+	}
+	
+	public String getMailTo() {
+		return params.get(MAIL_TO);
+	}
+	
+	public String getMailServer() {
+		return params.get(MAIL_SERVER);
+	}
+	
+	public static String getMailSubject404() {
+		return params.get(MAIL_SUBJECT_404);
+	}
+
+	public static String getMailSubject500() {
+		return params.get(MAIL_SUBJECT_500);
+	}
+
+	public static String getMailSubject200() {
+		return params.get(MAIL_SUBJECT_200);
+	}
+
+	public static String getMailBody404() {
+		return params.get(MAIL_BODY_404);
+	}
+
+	public static String getMailBody500() {
+		return params.get(MAIL_BODY_500);
+	}
+
+	public static String getMailBody200() {
+		return params.get(MAIL_BODY_200);
+	}
+
+	public static Properties loadClientConfiguration() throws IOException {
+		return loadConfiguration("client.properties");
+	}
+
+	public static Properties loadServerConfiguration() throws IOException {
+		return loadConfiguration("server.properties");
+	}
+	
+	public static Properties loadAuthorizationConfiguration() throws IOException {
+		return loadConfiguration("authorization.properties");
+	}
+	
+	private static Properties loadConfiguration(String configPath) throws IOException {
+		log.debug("[Config::loadConfiguration] - START, configPath " + configPath);
+		try {
+			Properties config = new Properties();
+			config.load(Config.class.getClassLoader().getResourceAsStream(configPath));
+			return config;
+		} finally {
+			log.debug("[Config::loadConfiguration] - END, configPath " + configPath);
+		}
 	}
 }

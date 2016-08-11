@@ -1,6 +1,10 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -13,14 +17,27 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
+import org.csi.yucca.storage.datamanagementapi.mail.SendHTMLEmail;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
+import org.csi.yucca.storage.datamanagementapi.model.types.FileStatus;
+import org.csi.yucca.storage.datamanagementapi.model.types.POJOHdfs;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
@@ -43,6 +60,8 @@ public class InstallCepService {
 
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
+	private static final String OK_RESULT = "{OK:1}";
+	private static final String KO_RESULT = "{KO:1}";
 
 	@Context
 	ServletContext context;
@@ -53,7 +72,12 @@ public class InstallCepService {
 	@Path("/clearDataset/{tenant}/{idDataset}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String clearDataset(@PathParam("tenant") String tenant, @PathParam("idDataset") String idDataset) throws UnknownHostException {
-		return deleteDatasetData(tenant,idDataset,null);
+		String returnJSONValue = deleteDatasetData(tenant,idDataset,null);
+		if (returnJSONValue.equals(JSON.parse(OK_RESULT).toString())){
+			//Cancellazione HDFS;
+			returnJSONValue = deleteHDFSData(tenant,idDataset,null);
+		}
+		return returnJSONValue;
 	}	
 
 
@@ -61,7 +85,12 @@ public class InstallCepService {
 	@Path("/clearDataset/{tenant}/{idDataset}/{datasetVersion}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String clearDatasetByVersion(@PathParam("tenant") String tenant, @PathParam("idDataset") String idDataset,@PathParam("datasetVersion") String datasetVersion) throws UnknownHostException {
-		return deleteDatasetData(tenant,idDataset,datasetVersion);
+		String returnJSONValue = deleteDatasetData(tenant,idDataset,datasetVersion);
+		if (returnJSONValue.equals(JSON.parse(OK_RESULT).toString())){
+			//Cancellazione HDFS;
+			returnJSONValue = deleteHDFSData(tenant,idDataset,datasetVersion);
+		}
+		return returnJSONValue;
 	}	
 
 	private String deleteDatasetData(String tenant, String idDataset,String datasetVersion) throws UnknownHostException {
@@ -73,26 +102,18 @@ public class InstallCepService {
 			if (null!=datasetVersion) datasetVersionLng=new Long(Long.parseLong(datasetVersion));
 			DB db = mongo.getDB(Config.getInstance().getDbSupport());
 
-
 			//recupero DatasetType
 			DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 			BasicDBObject searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
 			if (null!=datasetVersionLng) searchQuery.put("datasetVersion",datasetVersionLng.longValue());
 
-
 			DBObject datasetMetaData = col.findOne(searchQuery);
 			Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(datasetMetaData));
-
-
-
-
 
 			DBCollection colTenant = db.getCollection(Config.getInstance().getCollectionSupportTenant());
 
 			searchQuery = new BasicDBObject();
 			searchQuery.put("tenantCode", tenant);
-
-
 
 			String dataDb=null;
 			String dataCollection=null;
@@ -109,7 +130,6 @@ public class InstallCepService {
 			} else if ("bulkDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
 				dataDb=(String)tenantInfo.get("dataCollectionDb");
 				dataCollection=(String)tenantInfo.get("dataCollectionName");
-
 			}
 
 			DBCollection colDati=null;
@@ -119,21 +139,138 @@ public class InstallCepService {
 				colDati=db1.getCollection(dataCollection);
 			}
 
-
 			searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
 			if (null!=datasetVersionLng) searchQuery.put("datasetVersion",datasetVersionLng.longValue());
 
+			System.out.println("searchQuery: " + searchQuery);
+			WriteResult wr = null;
+			//wr = colDati.remove(searchQuery);
 
-			WriteResult wr= colDati.remove(searchQuery);
-
-			System.out.println(wr);
+			System.out.println("wr: " + wr);
 
 		}catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
-			return JSON.parse("{KO:1}").toString();
+			return JSON.parse(KO_RESULT).toString();
 		}
-		return JSON.parse("{OK:1}").toString();
+		return JSON.parse(OK_RESULT).toString();
+	}
+	
+	private String deleteHDFSData(String tenant, String idDataset, String datasetVersion){
+		String apiBaseUrl = "";
+		String typeDirectory = "";
+		String subTypeDirectory = "";
+		String URL_DataDomain = "";
+		
+		SendHTMLEmail mailer = new SendHTMLEmail();
+		
+		try {
+			DB db = mongo.getDB(Config.getInstance().getDbSupport());
+			Long datasetVersionLng=null;
+			if (null!=datasetVersion) datasetVersionLng=new Long(Long.parseLong(datasetVersion));
+			//recupero DatasetType
+			DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+			BasicDBObject searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
+			if (null != datasetVersionLng) searchQuery.put("datasetVersion",datasetVersionLng.longValue());
+
+			DBObject datasetMetaData = col.findOne(searchQuery);
+			Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(datasetMetaData));
+			
+			DBCollection colStream = db.getCollection(Config.getInstance().getCollectionSupportStream());
+			BasicDBObject streamSearchQuery = new BasicDBObject("configData.idDataset", Long.parseLong(idDataset));
+			if (null != datasetVersionLng) streamSearchQuery.put("configData.datasetVersion",datasetVersionLng.longValue());
+
+			if (metadataLoaded.getConfigData().getSubtype().equals("bulkDataset")){
+				if (metadataLoaded.getInfo().getCodSubDomain() == null){
+					System.out.println("CodSubDomain is null => " + metadataLoaded.getInfo().getCodSubDomain());
+					typeDirectory = "db_" + metadataLoaded.getConfigData().getTenantCode();
+				} else {
+					System.out.println("CodSubDomain => " + metadataLoaded.getInfo().getCodSubDomain());
+					typeDirectory = "db_" + metadataLoaded.getInfo().getCodSubDomain();
+				}
+				subTypeDirectory = metadataLoaded.getDatasetCode();
+
+				System.out.println("typeDirectory => " + typeDirectory);
+				System.out.println("subTypeDirectory => " + subTypeDirectory);
+			} else if (metadataLoaded.getConfigData().getSubtype().equals("streamDataset")){
+				DBObject streamMetaData = col.findOne(streamSearchQuery);
+				StreamOut streamMetadataLoaded = StreamOut.fromJson(JSON.serialize(streamMetaData));
+				typeDirectory = "so_" + streamMetadataLoaded.getStreams().getStream().getVirtualEntitySlug();
+				subTypeDirectory = streamMetadataLoaded.getStreamCode();
+			} else if (metadataLoaded.getConfigData().getSubtype().equals("socialDataset")){
+				DBObject streamMetaData = col.findOne(streamSearchQuery);
+				StreamOut streamMetadataLoaded = StreamOut.fromJson(JSON.serialize(streamMetaData));
+				typeDirectory = "so_" + streamMetadataLoaded.getStreams().getStream().getVirtualEntitySlug();
+				subTypeDirectory = streamMetadataLoaded.getStreamCode();
+			}
+			
+			URL_DataDomain = metadataLoaded.getInfo().getDataDomain();
+			
+			apiBaseUrl = Config.getInstance().getApiKnoxSDNETUrl() + new String(tenant).toUpperCase() + "/rawdata/" + URL_DataDomain + "/" + typeDirectory + "/" + subTypeDirectory;
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpGet httpget = new HttpGet(apiBaseUrl + "?op=LISTSTATUS");
+			
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(Config.getInstance().getKnoxSDNETUser(), Config.getInstance().getKnoxSDNETPwd()));
+			 
+			// Add AuthCache to the execution context
+			final HttpClientContext context = HttpClientContext.create();
+			context.setCredentialsProvider(credsProvider);
+			 
+			HttpResponse response = client.execute(httpget, context);
+			log.debug("[SAML2ConsumerServlet::getAllTenants] call to " + apiBaseUrl + " - status " + response.getStatusLine().toString() + " - status Code " + response.getStatusLine().getStatusCode());
+
+			if (response.getStatusLine().getStatusCode() == 404){
+				mailer.Send404MailForClearDataset(apiBaseUrl);
+			} else if (response.getStatusLine().getStatusCode() == 500){
+				mailer.Send500MailForClearDataset(apiBaseUrl);
+			} else {
+				StringBuilder out = new StringBuilder();
+				BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+				String line = "";
+
+				while ((line = rd.readLine()) != null) {
+					out.append(line);
+				}
+
+				String inputJson = out.toString();
+				log.info("inputJson = " + inputJson);
+				
+				String json = inputJson.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null");
+				Gson gson = JSonHelper.getInstance();
+				POJOHdfs pojoHdfs = gson.fromJson(json, POJOHdfs.class);
+				
+				FileStatus[] hdfsPath = pojoHdfs.getFileStatuses().getFileStatus();
+				for (int i = 0; i < hdfsPath.length; i++) {
+					
+					HttpDelete httpgetDel = null;
+					if (null!=datasetVersion){
+						String[] nameFile = hdfsPath[i].getPathSuffix().split(".");
+						String[] partNameFile = nameFile[0].split("-");
+						if (partNameFile[2].equals(datasetVersion.toString())){
+							httpgetDel = new HttpDelete(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix() + "?op=DELETE");
+						}
+					} else {
+						httpgetDel = new HttpDelete(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix() + "?op=DELETE");
+					}
+					
+					HttpResponse responseDel = client.execute(httpgetDel, context);
+					
+					if (responseDel.getStatusLine().getStatusCode() == 404){
+						mailer.Send404MailForClearDataset(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix());
+					} else if (responseDel.getStatusLine().getStatusCode() == 500){
+						mailer.Send500MailForClearDataset(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix());
+					} else {
+						mailer.Send200MailForClearDataset(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix());
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("[SAML2ConsumerServlet::getAllTenants] - ERROR " + e.getMessage());
+			mailer.Send500MailForClearDataset(apiBaseUrl + ". E' stata riscontrata la seguente eccezione: " + e.getMessage() + "\n" + e.getStackTrace());
+			e.printStackTrace();
+		}
+		return JSON.parse(OK_RESULT).toString();
 	}
 
 	@POST
@@ -252,9 +389,9 @@ public class InstallCepService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
-			return JSON.parse("{KO:1}").toString();
+			return JSON.parse(KO_RESULT).toString();
 		}
-		return JSON.parse("{OK:1}").toString();
+		return JSON.parse(OK_RESULT).toString();
 	}
 	
 	@DELETE
@@ -304,12 +441,13 @@ public class InstallCepService {
 						}
 					}
 					
-					datasetOuput = JSON.parse("{OK:1}").toString();
+					datasetOuput = JSON.parse(OK_RESULT).toString();
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
+			datasetOuput = JSON.parse(KO_RESULT).toString();
 		}
 		return datasetOuput;
 		
@@ -402,10 +540,10 @@ public class InstallCepService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
-			return JSON.parse("{KO:1}").toString();
+			return JSON.parse(KO_RESULT).toString();
 		}
 
-		return JSON.parse("{OK:1}").toString();
+		return JSON.parse(OK_RESULT).toString();
 	}
 
 	private static Long insertDocumentWithKey(DBCollection col, DBObject obj, String key, Integer maxRetry) throws Exception {
