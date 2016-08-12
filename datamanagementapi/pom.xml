@@ -194,8 +194,13 @@
 			<build>
 				<resources>
 					<resource>
+<<<<<<< HEAD
 						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory>
 						<!--  directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory -->
+=======
+						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory>
+>>>>>>> branch 'master' of https://github.com/csipiemonte/yucca-storage.git
 					</resource>
 					<resource>
 						<directory>conf</directory>
@@ -204,15 +209,25 @@
 				</resources>
 				<testResources>
 					<testResource>
+<<<<<<< HEAD
 						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/int</directory>
 						<!-- directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/int</directory -->
+=======
+						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/int</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/int</directory>
+>>>>>>> branch 'master' of https://github.com/csipiemonte/yucca-storage.git
 					</testResource>
 				</testResources>
 			</build>
 			<properties>
+<<<<<<< HEAD
 				<webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
 				<!-- webXmlPath>/Volumes/dirtec/2014/Tecnologie e
 					attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath -->
+=======
+				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath -->
+				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
+>>>>>>> branch 'master' of https://github.com/csipiemonte/yucca-storage.git
 			</properties>
 		</profile>
 		<profile>
@@ -220,8 +235,13 @@
 			<build>
 				<resources>
 					<resource>
+<<<<<<< HEAD
 						<directory>//csint1//dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory>
 						<!-- directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory -->
+=======
+						<!-- directory>//csint1//dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory>
+>>>>>>> branch 'master' of https://github.com/csipiemonte/yucca-storage.git
 					</resource>
 					<resource>
 						<directory>conf</directory>
@@ -230,15 +250,25 @@
 				</resources>
 				<testResources>
 					<testResource>
+<<<<<<< HEAD
 						<directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/prod</directory>
 						<!-- directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/realtime/test/prod</directory -->
+=======
+						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/prod</directory -->
+						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/prod</directory>
+>>>>>>> branch 'master' of https://github.com/csipiemonte/yucca-storage.git
 					</testResource>
 				</testResources>
 			</build>
 			<properties>
+<<<<<<< HEAD
 				<webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath>
 				<!-- webXmlPath>/Volumes/dirtec/2014/Tecnologie e
 					attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath-->
+=======
+				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath -->
+				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath>
+>>>>>>> branch 'master' of https://github.com/csipiemonte/yucca-storage.git
 			</properties>
 		</profile>
 	</profiles>
