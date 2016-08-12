@@ -1,10 +1,8 @@
 package org.csi.yucca.storage.datamanagementapi.service;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -91,13 +89,12 @@ public class InstallCepService {
 			returnJSONValue = deleteHDFSData(tenant,idDataset,datasetVersion);
 		}
 		return returnJSONValue;
-	}	
+	}
 
 	private String deleteDatasetData(String tenant, String idDataset,String datasetVersion) throws UnknownHostException {
 		mongo = MongoSingleton.getMongoClient();
 		try{
 
-			//TODO controlli ed eccezioni
 			Long datasetVersionLng=null;
 			if (null!=datasetVersion) datasetVersionLng=new Long(Long.parseLong(datasetVersion));
 			DB db = mongo.getDB(Config.getInstance().getDbSupport());
@@ -118,6 +115,7 @@ public class InstallCepService {
 			String dataDb=null;
 			String dataCollection=null;
 			DBObject tenantInfo = colTenant.findOne(searchQuery);
+			//Controllo il tipo del Dataset per interrogare la Mongo Collectio giusta
 			if ("streamDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
 				dataDb=(String)tenantInfo.get("measuresCollectionDb");
 				dataCollection=(String)tenantInfo.get("measuresCollectionName");
@@ -143,8 +141,9 @@ public class InstallCepService {
 			if (null!=datasetVersionLng) searchQuery.put("datasetVersion",datasetVersionLng.longValue());
 
 			System.out.println("searchQuery: " + searchQuery);
+			//Cancello i dati da Mongo
 			WriteResult wr = null;
-			//wr = colDati.remove(searchQuery);
+			wr = colDati.remove(searchQuery);
 
 			System.out.println("wr: " + wr);
 
@@ -180,6 +179,7 @@ public class InstallCepService {
 			BasicDBObject streamSearchQuery = new BasicDBObject("configData.idDataset", Long.parseLong(idDataset));
 			if (null != datasetVersionLng) streamSearchQuery.put("configData.datasetVersion",datasetVersionLng.longValue());
 
+			//Verifico il tipo di Dataset per creare il path corretto su HDFS
 			if (metadataLoaded.getConfigData().getSubtype().equals("bulkDataset")){
 				if (metadataLoaded.getInfo().getCodSubDomain() == null){
 					System.out.println("CodSubDomain is null => " + metadataLoaded.getInfo().getCodSubDomain());
@@ -209,7 +209,7 @@ public class InstallCepService {
 			apiBaseUrl = Config.getInstance().getApiKnoxSDNETUrl() + new String(tenant).toUpperCase() + "/rawdata/" + URL_DataDomain + "/" + typeDirectory + "/" + subTypeDirectory;
 			HttpClient client = HttpClientBuilder.create().build();
 			HttpGet httpget = new HttpGet(apiBaseUrl + "?op=LISTSTATUS");
-			
+			//Settata la http GET, setto le credenziali di KNOX!
 			CredentialsProvider credsProvider = new BasicCredentialsProvider();
 			credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(Config.getInstance().getKnoxSDNETUser(), Config.getInstance().getKnoxSDNETPwd()));
 			 
@@ -224,7 +224,9 @@ public class InstallCepService {
 				mailer.Send404MailForClearDataset(apiBaseUrl);
 			} else if (response.getStatusLine().getStatusCode() == 500){
 				mailer.Send500MailForClearDataset(apiBaseUrl);
+				return JSON.parse(KO_RESULT).toString();
 			} else {
+				//200 HTTP STATUS CODE
 				StringBuilder out = new StringBuilder();
 				BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 				String line = "";
@@ -245,9 +247,7 @@ public class InstallCepService {
 					
 					HttpDelete httpgetDel = null;
 					if (null!=datasetVersion){
-						String[] nameFile = hdfsPath[i].getPathSuffix().split(".");
-						String[] partNameFile = nameFile[0].split("-");
-						if (partNameFile[2].equals(datasetVersion.toString())){
+						if (hdfsPath[i].getPathSuffix().endsWith("-" + datasetVersion + ".csv")){
 							httpgetDel = new HttpDelete(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix() + "?op=DELETE");
 						}
 					} else {
@@ -260,7 +260,9 @@ public class InstallCepService {
 						mailer.Send404MailForClearDataset(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix());
 					} else if (responseDel.getStatusLine().getStatusCode() == 500){
 						mailer.Send500MailForClearDataset(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix());
+						return JSON.parse(KO_RESULT).toString();
 					} else {
+						//200 HTTP STATUS CODE
 						mailer.Send200MailForClearDataset(apiBaseUrl + "/" + hdfsPath[i].getPathSuffix());
 					}
 				}
@@ -269,6 +271,7 @@ public class InstallCepService {
 			log.error("[SAML2ConsumerServlet::getAllTenants] - ERROR " + e.getMessage());
 			mailer.Send500MailForClearDataset(apiBaseUrl + ". E' stata riscontrata la seguente eccezione: " + e.getMessage() + "\n" + e.getStackTrace());
 			e.printStackTrace();
+			return JSON.parse(KO_RESULT).toString();
 		}
 		return JSON.parse(OK_RESULT).toString();
 	}
