@@ -1,2 +1,15 @@
 datamanagementapi/pom.xml
 datamanagementapi/src/main/resources/prod/SDPDataApiSecret.properties
+datamanagementapi/src/main/resources/local/SDPDataApiSecret.properties
+
+datamanagementapi/src/main/resources/local/SDPDataApiSecret.properties
+
+datamanagementapi/src/main/resources/local/SDPDataApiSecret.properties
+
+datamanagementapi/.settings/org.eclipse.wst.common.component
+
+datamanagementapi/src/main/resources/local/SDPDataApiSecret.properties
+
+datamanagementapi/src/main/resources/local/SDPDataApiSecret.properties
+
+datamanagementapi/test-output/
