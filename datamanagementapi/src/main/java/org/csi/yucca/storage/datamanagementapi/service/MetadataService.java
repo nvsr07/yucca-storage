@@ -57,6 +57,8 @@ import org.csi.yucca.storage.datamanagementapi.service.response.ErrorMessage;
 import org.csi.yucca.storage.datamanagementapi.service.response.UpdateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
+import org.csi.yucca.storage.datamanagementapi.upload.DataInsertDataUpload;
+import org.csi.yucca.storage.datamanagementapi.upload.DataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
@@ -66,7 +68,6 @@ import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -107,9 +108,10 @@ public class MetadataService {
 		return result;
 	}
 
-	@GET
-	@Path("/download/{tenant}/{datasetCode}/{format}")
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	// disabled download csv, migrated on odata api
+	//@GET
+	//@Path("/download/{tenant}/{datasetCode}/{format}")
+	//@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @PathParam("format") String format)
 			throws NumberFormatException, UnknownHostException, Exception {
 		log.debug("[MetadataService::downloadData] - START tenant: " + tenant + "|datasetCode: " + datasetCode + "|format: " + format);
@@ -709,7 +711,7 @@ public class MetadataService {
 				}
 
 				if (csvData != null) {
-					try {
+					try { //TODO create data da aggiornare
 						dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
 					} catch (Exception e) {
 						log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
@@ -735,7 +737,7 @@ public class MetadataService {
 		System.out.println("sSmall " +Util.safeSubstring(sSmall, 600));
 	}
 
-	@POST
+	@POST //TODO add data da aggiornare
 	@Path("/add/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request)
@@ -767,7 +769,7 @@ public class MetadataService {
 					fileName = item.getName();
 				}
 
-
+				
 			}
 			
 
@@ -788,7 +790,8 @@ public class MetadataService {
 		
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 
-		MongoDBDataUpload dataUpload = new MongoDBDataUpload();
+		//DataUpload dataUpload = new MongoDBDataUpload();
+		DataUpload dataUpload = new DataInsertDataUpload();
 
 		List<SDPBulkInsertException> checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, existingMetadata, skipFirstRow);
 		if (checkFileToWriteErrors != null && checkFileToWriteErrors.size() > 0) {
@@ -798,7 +801,8 @@ public class MetadataService {
 		} else {
 
 			try {
-				dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", existingMetadata);
+				//dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", existingMetadata);
+				dataUpload.writeData(tenant, existingMetadata);
 			} catch (Exception e) {
 				log.error("[MetadataService::addData] - writeFileToMongo ERROR: " + e.getMessage());
 				updateDatasetResponse.addErrorMessage(new ErrorMessage(e));

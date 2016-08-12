@@ -51,6 +51,8 @@ public class Config {
 	public static final String MAIL_SUBJECT_200="MAIL_SUBJECT_200";
 	public static final String MAIL_BODY_200="MAIL_BODY_200";
 
+	public static final String DATA_INSERT_BASE_URL = "DATA_INSERT_BASE_URL";
+	
 	private static Map<String, String> params = null;
 	private static Config instance = null;
 	static Logger log = Logger.getLogger(Config.class);
@@ -94,6 +96,7 @@ public class Config {
 		params.put(MAIL_BODY_500, rb.getString(MAIL_BODY_500));
 		params.put(MAIL_SUBJECT_200, rb.getString(MAIL_SUBJECT_200));
 		params.put(MAIL_BODY_200, rb.getString(MAIL_BODY_200));
+		params.put(DATA_INSERT_BASE_URL, rb.getString(DATA_INSERT_BASE_URL));
 
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
@@ -217,6 +220,11 @@ public class Config {
 	public String getBaseExposedApiUrl() {
 		return params.get(BASE_EXPOSED_API_URL);
 	}
+	
+	public String getDataInsertBaseUrl() {
+		return params.get(DATA_INSERT_BASE_URL);
+	}
+	
 
 	public String getApiAdminServiceUrl() {
 		return params.get(API_ADMIN_SERVICES_URL);

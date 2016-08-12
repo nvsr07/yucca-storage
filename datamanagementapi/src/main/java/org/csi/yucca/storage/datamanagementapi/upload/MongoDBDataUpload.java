@@ -5,11 +5,11 @@ import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.TimeZone;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.types.GeoPoint;
+import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 
@@ -22,26 +22,33 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 
-public class MongoDBDataUpload {
+public class MongoDBDataUpload extends DataUpload{
 
 	private ArrayList<DBObject> mongoOperation = new ArrayList<DBObject>();
-	private List<SDPBulkInsertException> formalErrors = new ArrayList<SDPBulkInsertException>();
 
 	public MongoDBDataUpload() {
 
 	}
 
-	public List<SDPBulkInsertException> checkFileToWrite(String datiIn, String separator, Metadata datasetMetadata, boolean skipFirstRow) {
-		try {
-			this.prepareDataInsert(datiIn, separator, datasetMetadata, skipFirstRow);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			formalErrors.add(new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_UNDEFINED, "-1", -1, -1, e.getMessage()));
-		}
-		return this.formalErrors;
-	}
+//	public List<SDPBulkInsertException> checkFileToWrite(String datiIn, String separator, Metadata datasetMetadata, boolean skipFirstRow) {
+//		try {
+//			this.prepareDataInsert(datiIn, separator, datasetMetadata, skipFirstRow);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			formalErrors.add(new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_UNDEFINED, "-1", -1, -1, e.getMessage()));
+//		}
+//		return this.formalErrors;
+//	}
 
+	
+	@Override
+	public void writeData(String tenant, Metadata datasetMetadata)  throws Exception{
+		MongoClient mongoClient = MongoSingleton.getMongoClient();
+		String db = "DB_" + tenant;
+		writeFileToMongo(mongoClient, db, "data", datasetMetadata);
+	}
+	
 	/**
 	 * throws an exception if there are formal errors o there are not insert
 	 * operation to do
@@ -79,11 +86,13 @@ public class MongoDBDataUpload {
 
 	}
 
+	@Override
 	public int getTotalDocumentToInsert() {
 		return this.mongoOperation.size();
 	}
 
-	private void prepareDataInsert(String dataIn, String separator, Metadata datasetMetadata, boolean skipFirstRow) throws IOException {
+	@Override
+	protected void prepareDataInsert(String dataIn, String separator, Metadata datasetMetadata, boolean skipFirstRow) throws IOException {
 
 		ArrayList<SDPBulkInsertException> errors = new ArrayList<SDPBulkInsertException>();
 
