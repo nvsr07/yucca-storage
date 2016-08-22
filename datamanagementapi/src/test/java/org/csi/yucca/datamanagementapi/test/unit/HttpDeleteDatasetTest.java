@@ -43,7 +43,7 @@ public class HttpDeleteDatasetTest extends RestTest {
 		
 		RequestSpecification rs = given().contentType(ContentType.JSON);
 
-		Response rsp = rs.log().all().when().delete(dato.getString("dmapi.url") + "metadata/clearDataset/" + dato.get("dmapi.tenant") + "/" + dato.get("dmapi.idDataset") + dato.opt("dmapi.datasetVersion"));
+		Response rsp = rs.log().all().when().delete(dato.getString("dmapi.url") + "metadata/clearDataset/" + dato.get("dmapi.tenant") + "/" + dato.get("dmapi.idDataset") + (dato.opt("dmapi.datasetVersion") == null ? "" : dato.get("dmapi.datasetVersion")));
 		rsp.then().statusCode(HttpStatus.SC_OK);
 		
 		rsp.then().log().all().body(dato.optString("dmapi.ko_ok"), Matchers.equalTo(1));
