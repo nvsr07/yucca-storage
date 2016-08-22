@@ -790,6 +790,7 @@ public class MetadataService {
 		
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 
+		//Scommentare per vecchio utilizzo delle MONGO DB DATA UPLOAD!!
 		//DataUpload dataUpload = new MongoDBDataUpload();
 		DataUpload dataUpload = new DataInsertDataUpload();
 
