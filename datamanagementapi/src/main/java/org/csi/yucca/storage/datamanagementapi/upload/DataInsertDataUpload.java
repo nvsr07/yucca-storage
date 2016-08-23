@@ -35,6 +35,8 @@ public class DataInsertDataUpload extends DataUpload {
 		int numColumnFileIn = 0;
 		String[] nextRow;
 		int lineNumber = 0;
+		String item = "{\"datasetCode\":\"" + datasetMetadata.getDatasetCode() + "\",\"datasetVersion\":\"" + datasetMetadata.getDatasetVersion() + "\", \"values\": [";
+		
 		while ((nextRow = reader.readNext()) != null) {
 			lineNumber++;
 			System.out.println("Line # " + lineNumber);
@@ -85,8 +87,7 @@ public class DataInsertDataUpload extends DataUpload {
 						} else {
 
 							try {
-								if ("int".equals(typeCode) || "long".equals(typeCode) || "double".equals(typeCode) || "float".equals(typeCode) || "longitude".equals(typeCode)
-										|| "latitude".equals(typeCode))
+								if ("int".equals(typeCode) || "long".equals(typeCode) || "double".equals(typeCode) || "float".equals(typeCode) || "longitude".equals(typeCode) || "latitude".equals(typeCode))
 									values += "\"" + fieldName + "\":" + curValue + ",";
 								else
 									values += "\"" + fieldName + "\":\"" + curValue + "\",";
@@ -102,7 +103,7 @@ public class DataInsertDataUpload extends DataUpload {
 
 					numColumn++;
 				}
-
+				
 				if (!found) {
 					SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_COLUMNNOTFOUND, row, lineNumber, -1, " cannot find column "
 							+ datasetMetadata.getInfo().getFields()[j].getFieldName());
@@ -115,15 +116,14 @@ public class DataInsertDataUpload extends DataUpload {
 				errors.addAll(errorCurrentRow);
 				System.out.println("end row ..errors");
 			} else {
-				String item = "{\"datasetCode\":\"" + datasetMetadata.getDatasetCode() + "\",\"datasetVersion\":\"" + datasetMetadata.getDatasetVersion() + "\", \"values\": [{";
-				item += values.substring(0, values.length() - 1);
-				item += "}]},";
-				items += item;
-				totalCount++;
+				item += "{" + values.substring(0, values.length() - 1) + "}, ";
 			}
 
 		}
 
+		item = item.substring(0, item.length() - 2) + "]},";
+		items += item;
+		totalCount++;
 		items = items.substring(0, items.length() - 1) + "]";
 		if (reader != null)
 			reader.close();

@@ -95,7 +95,7 @@ public class HttpDelegate {
 				post.setDoAuthentication( true );
 				String userPassowrd  = basicUser + ":" + basicPassword;
 				byte[] encoding = Base64.encodeBase64(userPassowrd.getBytes());
-				post.setRequestHeader("Authorization", "Basic " + encoding);
+				post.setRequestHeader("Authorization", "Basic " + new String(encoding));
 				
 			}
 			
