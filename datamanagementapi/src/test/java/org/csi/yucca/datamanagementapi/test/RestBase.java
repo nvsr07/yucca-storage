@@ -11,11 +11,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.BeforeClass;
 
-public class RestTest {
+public class RestBase {
 
 	protected JSONObject secretObject = new JSONObject();
 
-	public RestTest() {
+	public RestBase() {
 		super();
 	}
 	
@@ -26,7 +26,7 @@ public class RestTest {
 	}
 
 	protected Iterator<Object[]> getFromJson(String file) {
-		ArrayList<Object[]> data = new ArrayList<>();
+		ArrayList<Object[]> data = new ArrayList<Object[]>();
 
 		String str = readFile(file);
 		JSONObject json = new JSONObject(str);

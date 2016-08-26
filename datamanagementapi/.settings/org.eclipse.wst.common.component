@@ -5,6 +5,8 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources/local"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/conf"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/int"/>
         <property name="context-root" value="datamanagementapi"/>
         <property name="java-output-path" value="/datamanagementapi/target/classes"/>
     </wb-module>

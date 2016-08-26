@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.csi.yucca.datamanagementapi.test.RestTest;
+import org.csi.yucca.datamanagementapi.test.RestBase;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONArray;
@@ -21,20 +21,20 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
-public class HttpDeleteDatasetTest extends RestTest {
+public class HttpDetailDatasetVisibilityIT extends RestBase {
 
 	@BeforeClass
 	public void setUpSecretObject() throws IOException {
 		super.setUpSecretObject("/testSecret.json");
 	}
 	
-	@DataProvider(name = "ValidationDeleteDatasetTest")
+	@DataProvider(name = "HttpDetailDatasetVisibility")
 	public Iterator<Object[]> getFromJson() {
-		return super.getFromJson("/ValidationDeleteDatasetTest.json");
+		return super.getFromJson("/HttpDetailDatasetVisibility.json");
 	}
 	
-	@Test(dataProvider = "ValidationDeleteDatasetTest")
-	public void deleteDatasetTesting(JSONObject dato) {
+	@Test(dataProvider = "HttpDetailDatasetVisibility")
+	public void testDetailDatasetVisibility(JSONObject dato) {
 		/*
 			if (dato.optBoolean("rt.toskip") || dato.optBoolean("rt.httptoskip"))
 				throw new SkipException("TODO in future version");
@@ -43,11 +43,16 @@ public class HttpDeleteDatasetTest extends RestTest {
 		
 		RequestSpecification rs = given().contentType(ContentType.JSON);
 
-		Response rsp = rs.log().all().when().delete(dato.getString("dmapi.url") + "metadata/clearDataset/" + dato.get("dmapi.tenant") + "/" + dato.get("dmapi.idDataset") + (dato.opt("dmapi.datasetVersion") == null ? "" : dato.get("dmapi.datasetVersion")));
+		Response rsp = rs.log().all().when().get(dato.getString("dmapi.url") + "dataset/" + 
+				dato.get("dmapi.tenant") + "/" + dato.get("dmapi.datasetCode") + (dato.opt("dmapi.visibleFrom") == null ? "" : dato.get("dmapi.visibleFrom")));
+
 		rsp.then().statusCode(HttpStatus.SC_OK);
 		
-		rsp.then().log().all().body(dato.optString("dmapi.ko_ok"), Matchers.equalTo(1));
-
+		if (dato.getBoolean("dmapi.visibile"))
+			rsp.then().log().all().body("metadata.datasetCode", Matchers.equalTo(dato.get("dmapi.datasetCode")));
+		else
+			rsp.then().log().all().body("metadata.datasetCode", Matchers.not(Matchers.equalTo(dato.get("dmapi.datasetCode"))));
+		
 		/*
 		 if (StringUtils.isNotEmpty(dato.optString("rt.errorCode")))
 			rsp.then().body("error_code", Matchers.equalTo(dato.optString("rt.errorCode")));
