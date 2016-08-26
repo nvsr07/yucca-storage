@@ -19,8 +19,8 @@
 				<version>2.4</version>
 				<configuration>
 					<!-- outputDirectory>C:\Program Files (x86)\jboss-eap-6.2\standalone\deployments</outputDirectory -->
-					<outputDirectory>D:\Portable\jboss-eap-6.2\standalone\deployments</outputDirectory>
-					<!-- outputDirectory>/Library/JBoss/jboss-eap-6.2/standalone/deployments</outputDirectory -->
+					<!-- outputDirectory>D:\Portable\jboss-eap-6.2\standalone\deployments</outputDirectory -->
+					<outputDirectory>/Library/JBoss/jboss-eap-6.2/standalone/deployments</outputDirectory>
 					<webXml>${webXmlPath}/web.xml</webXml>
 				</configuration>
 			</plugin>
@@ -113,9 +113,9 @@
 			<version>3.1</version>
 		</dependency>
 		<dependency>
-		    <groupId>commons-codec</groupId>
-		    <artifactId>commons-codec</artifactId>
-		    <version>1.10</version>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.twitter4j</groupId>
@@ -145,6 +145,13 @@
 			<version>1.4.7</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>
+		</dependency>
+
 	</dependencies>
 	<profiles>
 		<profile>
@@ -206,7 +213,8 @@
 			</build>
 			<properties>
 				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath -->
-				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
+				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e
+					attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
 			</properties>
 		</profile>
 		<profile>
@@ -231,7 +239,8 @@
 			</build>
 			<properties>
 				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath -->
-				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath>
+				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e
+					attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath>
 			</properties>
 		</profile>
 	</profiles>

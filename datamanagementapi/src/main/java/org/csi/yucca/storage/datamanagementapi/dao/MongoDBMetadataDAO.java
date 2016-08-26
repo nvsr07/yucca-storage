@@ -5,10 +5,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
@@ -125,12 +127,33 @@ public class MongoDBMetadataDAO {
 		return metadataLoaded;
 	}
 
-	public Metadata readCurrentMetadataByCode(String metadataCode) {
+	public Metadata readCurrentMetadataByCode(String metadataCode, String visibleFromParam) {
+		
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("datasetCode", metadataCode);
 		searchQuery.put("configData.current", 1);
+		
+		if (visibleFromParam != null) {
+			
+			//add query
+			//db.getCollection('metadata').find({ $or :[{"info.visibility": "public"}, {"info.tenantssharing.tenantsharing.tenantCode": { $in: ["tst_regpie", "csp", "csi"]}}]}).sort({"_id": -1})
+			
+			BasicDBList or = new BasicDBList();
+			or.add(new BasicDBObject("info.visibility", "public"));
+			
+			String[] visSplit = StringUtils.split(visibleFromParam, "|");
+			if ((visSplit != null) && (visSplit.length > 0)){
 
+				or.add(new BasicDBObject("info.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
+			}
+
+			searchQuery.put("$or", or);
+		}
+		log.info(" ======== > SearchQuery " + searchQuery.toString());
 		DBObject data = collection.find(searchQuery).one();
+		if (data == null) {
+			return null;
+		}
 		ObjectId id = (ObjectId) data.get("_id");
 		Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(data));
 		metadataLoaded.setId(id.toString());

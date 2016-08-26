@@ -26,6 +26,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -126,7 +127,7 @@ public class MetadataService {
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode, null);
 
 		String fileName = metadata.getDatasetCode() + "." + format;
 
@@ -239,15 +240,7 @@ public class MetadataService {
 				int totalColumn = fields.size();
 				if (isStream) {
 					totalColumn = headerFixedColumn.size() + fields.size() * 4;// 4
-					// is
-					// the
-					// fields
-					// column
-					// exposed
-					// (alias,
-					// measureUnit,
-					// dataType,
-					// measure)
+					// is the fields column exposed (alias, measureUnit, dataType, measure)
 				} else if (isSocial) {
 					totalColumn = headerFixedColumn.size() + fields.size();
 				}
@@ -337,10 +330,11 @@ public class MetadataService {
 	@Path("/{tenant}/{datasetCode}")
 	// @Produces(MediaType.APPLICATION_JSON)
 	@Produces("application/json; charset=UTF-8")
-	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode) throws NumberFormatException, UnknownHostException {
-		// select
+	public String get(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @QueryParam(value="visibleFrom") String visibleFromParam) throws NumberFormatException, UnknownHostException {
+		
 		log.debug("[MetadataService::get] - START - datasetCode: " + datasetCode);
 		System.out.println("DatasetItem requested with datasetCode=" + datasetCode);
+		
 		MongoClient mongo = MongoSingleton.getMongoClient();
 		String supportDb = Config.getInstance().getDbSupport();
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
@@ -348,22 +342,28 @@ public class MetadataService {
 
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-		Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
-
-		MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
-
-		MyApi api = apiDAO.readApiByCode(datasetCode);
-
-		String baseApiUrl = Config.getInstance().getStoreApiAddress();
-
-		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
-		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
-		StreamOut stream = streamDAO.readStreamByMetadata(metadata);
+		Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode, visibleFromParam);
 		
-		MetadataWithExtraAttribute pippo = new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl);
-		String pippoJSON = pippo.toJson();
+		if (metadata == null) {
+			
+			return "{\"errorMsg\": \"Dataset not Found\"}";
+		} else {
 
-		return pippoJSON;
+			MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+	
+			MyApi api = apiDAO.readApiByCode(datasetCode);
+	
+			String baseApiUrl = Config.getInstance().getStoreApiAddress();
+	
+			String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+			MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+			StreamOut stream = streamDAO.readStreamByMetadata(metadata);
+			
+			MetadataWithExtraAttribute dataset = new MetadataWithExtraAttribute(metadata, stream, api, baseApiUrl);
+			String datasetJSON = dataset.toJson();
+	
+			return datasetJSON;
+		}
 	}
 	
 	@GET
@@ -571,7 +571,8 @@ public class MetadataService {
 		try {
 
 			List<SDPBulkInsertException> checkFileToWriteErrors = null;
-			MongoDBDataUpload dataUpload = new MongoDBDataUpload();
+			//DataUpload dataUpload = new MongoDBDataUpload();
+			DataUpload dataUpload = new DataInsertDataUpload();
 			if (csvData != null) {
 				checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadata, skipFirstRow);
 			}
@@ -600,9 +601,6 @@ public class MetadataService {
 				int maxDatasetNum=((Number) tenantData.get("maxDatasetNum")).intValue();
 
 				if (maxDatasetNum>0) {
-					
-					
-
 					
 					int numCurrentDataset=metadataDAO.countAllMetadata(tenant, true);
 					log.info("[MetadataService::createMetadata] -  tenant="+tenant+"     maxDatasetNum="+maxDatasetNum + "        numCurrentDataset="+numCurrentDataset);
@@ -712,7 +710,8 @@ public class MetadataService {
 
 				if (csvData != null) {
 					try { //TODO create data da aggiornare
-						dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
+						//dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
+						dataUpload.writeData(tenant, metadataCreated);
 					} catch (Exception e) {
 						log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
 						createDatasetResponse.addErrorMessage(new ErrorMessage(e));
@@ -783,7 +782,7 @@ public class MetadataService {
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-		Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+		Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode, null);
 		existingMetadata.getInfo().addFilename(fileName);
 		metadataDAO.updateMetadata(existingMetadata);
 
@@ -833,8 +832,8 @@ public class MetadataService {
 			// new metadata created from the existing one changing only the
 			// field editable (get from input) and increment version
 			//
-			Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
-			Metadata newMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+			Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode, null);
+			Metadata newMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode, null);
 
 			newMetadata.getInfo().setExternalReference(inputMetadata.getInfo().getExternalReference());
 			newMetadata.getInfo().setCopyright(inputMetadata.getInfo().getCopyright());
@@ -947,7 +946,7 @@ public class MetadataService {
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByCode(datasetCode, null);
 		
 		byte[] iconBytes = metadata.readDatasetIconBytes();
 
