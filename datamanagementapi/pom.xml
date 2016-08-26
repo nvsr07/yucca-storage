@@ -151,6 +151,13 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.4</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+
 
 	</dependencies>
 	<profiles>
@@ -213,8 +220,7 @@
 			</build>
 			<properties>
 				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath -->
-				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e
-					attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
+				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
 			</properties>
 		</profile>
 		<profile>

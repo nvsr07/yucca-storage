@@ -44,7 +44,7 @@ public class HttpDetailDatasetVisibilityIT extends RestBase {
 		RequestSpecification rs = given().contentType(ContentType.JSON);
 
 		Response rsp = rs.when().get(dato.getString("dmapi.url") + "dataset/" + 
-				dato.get("dmapi.tenant") + "/" + dato.get("dmapi.datasetCode") + (dato.opt("dmapi.visibleFrom") == null ? "" : dato.get("dmapi.visibleFrom")));
+				dato.get("dmapi.tenant") + "/" + dato.get("dmapi.datasetCode") + dato.get("dmapi.visibleFrom"));
 
 		rsp.then().statusCode(HttpStatus.SC_OK);
 		
