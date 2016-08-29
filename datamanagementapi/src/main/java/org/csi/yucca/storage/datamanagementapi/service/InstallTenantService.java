@@ -17,6 +17,7 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -51,12 +52,8 @@ public class InstallTenantService {
 
 	@Context
 	ServletContext context;
-	private String storeBaseUrl;
-	private String apiAdminServiceUrl;
 
-	private CloseableHttpClient httpclient;
 
-	private Gson gson;
 	static Logger log = Logger.getLogger(InstallTenantService.class);
 
 	@POST
@@ -66,7 +63,7 @@ public class InstallTenantService {
 
 		// mongoParams = ConfigParamsSingleton.getInstance().getParams();
 		mongo = MongoSingleton.getMongoClient();
-		gson = JSonHelper.getInstance();
+		Gson gson = JSonHelper.getInstance();
 
 		String json = tenantInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null"); // match @nil elements
 		try {
@@ -90,7 +87,6 @@ public class InstallTenantService {
 
 		return JSON.parse("{OK:1}").toString();
 	}
-
 	@POST
 	@Path("/addAdminApplication")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -98,9 +94,9 @@ public class InstallTenantService {
 			@QueryParam("password") String password) throws UnknownHostException {
 
 		try {
-			resgisterToStoreInit(username, password);
-			addApplication(tenantCode);
-			logoutFromStore(username, password);
+			CloseableHttpClient c = ApiManagerFacade.registerToStoreInit(username, password);
+			ApiManagerFacade.addApplication(c,"userportal_" + tenantCode);
+			ApiManagerFacade.logoutFromStore(c,username, password);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
@@ -116,9 +112,9 @@ public class InstallTenantService {
 			@QueryParam("password") String password) throws UnknownHostException {
 
 		try {
-			resgisterToStoreInit(username, password);
-			subscribeAdminApi(tenantCode);
-			logoutFromStore(username, password);
+			CloseableHttpClient c = ApiManagerFacade.registerToStoreInit(username, password);
+			ApiManagerFacade.subscribeApi(c,"admin_api", "userportal_" + tenantCode);
+			ApiManagerFacade.logoutFromStore(c,username, password);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
@@ -134,13 +130,13 @@ public class InstallTenantService {
 			@QueryParam("password") String password) throws UnknownHostException {
 
 		try {
-			resgisterToStoreInit(username, password);
-			GeneralResponse generetateKeyResponse = generetateKey(tenantCode);
+			CloseableHttpClient c = ApiManagerFacade.registerToStoreInit(username, password);
+			GeneralResponse generetateKeyResponse = ApiManagerFacade.generateKey(c, "userportal_" + tenantCode);
 			String clientKey = generetateKeyResponse.getData().getKey().getConsumerKey();
 			String clientSecret = generetateKeyResponse.getData().getKey().getConsumerSecret();
 			// insert key
-			insertKey(tenantCode, clientKey, clientSecret);
-			logoutFromStore(username, password);
+			ApiManagerFacade.insertKey(c, tenantCode, clientKey, clientSecret);
+			ApiManagerFacade.logoutFromStore(c, username, password);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
@@ -149,186 +145,5 @@ public class InstallTenantService {
 		return JSON.parse("{success:1, message:'Generate Admin Key completed successfully'}").toString();
 	}
 
-	private void resgisterToStoreInit(String username, String password) throws Exception {
-		storeBaseUrl = Config.getInstance().getStoreBaseUrl();
-		apiAdminServiceUrl = Config.getInstance().getApiAdminServiceUrl();
-		httpclient = HttpClients.createDefault();
-		gson = JSonHelper.getInstance();
-
-		// login
-		loginOnStore(username, password);
-	}
-
-	private void loginOnStore(String username, String password) throws Exception {
-		log.debug("[InstallTenantService::loginOnStore] username " + username);
-
-		List<NameValuePair> loginParams = new LinkedList<NameValuePair>();
-		loginParams.add(new BasicNameValuePair("action", "login"));
-		loginParams.add(new BasicNameValuePair("username", username));
-		loginParams.add(new BasicNameValuePair("password", password));
-
-		boolean result = false;
-		String url = storeBaseUrl + "site/blocks/user/login/ajax/login.jag";
-		String response = makeHttpPost(url, loginParams);
-		GeneralResponse generalResponse = gson.fromJson(response, GeneralResponse.class);
-		result = !generalResponse.getError();
-		if (!result)
-			throw new Exception("Login with user " + username + " failed: " + generalResponse.getMessage());
-	}
-
-	private void addApplication(String tenantCode) throws Exception {
-		log.debug("[InstallTenantService::addApplication] tenantCode " + tenantCode);
-		List<NameValuePair> addApplicationParams = new LinkedList<NameValuePair>();
-		addApplicationParams.add(new BasicNameValuePair("action", "addApplication"));
-		addApplicationParams.add(new BasicNameValuePair("application", "userportal_" + tenantCode));
-		addApplicationParams.add(new BasicNameValuePair("tier", "Unlimited"));
-		addApplicationParams.add(new BasicNameValuePair("description", ""));
-		addApplicationParams.add(new BasicNameValuePair("callbackUrl", ""));
-
-		boolean result = false;
-		String url = storeBaseUrl + "site/blocks/application/application-add/ajax/application-add.jag";
-		String response = makeHttpPost(url, addApplicationParams);
-		GeneralResponse generalResponse = gson.fromJson(response, GeneralResponse.class);
-		result = !generalResponse.getError();
-		if (!result)
-			throw new Exception("Add Application for " + tenantCode + " failed: " + generalResponse.getMessage());
-
-	}
-
-	private void subscribeAdminApi(String tenantCode) throws Exception {
-		log.debug("[InstallTenantService::subscribeAdminApi] tenantCode: " + tenantCode);
-		List<NameValuePair> subscribeAdminApiParams = new LinkedList<NameValuePair>();
-		subscribeAdminApiParams.add(new BasicNameValuePair("action", "addAPISubscription"));
-		subscribeAdminApiParams.add(new BasicNameValuePair("name", "admin_api"));
-		subscribeAdminApiParams.add(new BasicNameValuePair("version", "1.0"));
-		subscribeAdminApiParams.add(new BasicNameValuePair("tier", "Unlimited"));
-		subscribeAdminApiParams.add(new BasicNameValuePair("applicationName", "userportal_" + tenantCode));
-		subscribeAdminApiParams.add(new BasicNameValuePair("application", ""));
-		subscribeAdminApiParams.add(new BasicNameValuePair("provider", "admin"));
-		subscribeAdminApiParams.add(new BasicNameValuePair("keytype", ""));
-		subscribeAdminApiParams.add(new BasicNameValuePair("callbackUrl", ""));
-		subscribeAdminApiParams.add(new BasicNameValuePair("authorizedDomains", ""));
-		subscribeAdminApiParams.add(new BasicNameValuePair("validityTime", ""));
-
-		boolean result = false;
-		String url = storeBaseUrl + "site/blocks/subscription/subscription-add/ajax/subscription-add.jag";
-		String response = makeHttpPost(url, subscribeAdminApiParams);
-		GeneralResponse generalResponse = gson.fromJson(response, GeneralResponse.class);
-		result = !generalResponse.getError();
-		if (!result)
-			throw new Exception("Add Application for " + tenantCode + " failed: " + generalResponse.getMessage());
-	}
-
-	private GeneralResponse generetateKey(String tenantCode) throws Exception {
-		log.debug("[InstallTenantService::generetateKey] tenantCode: " + tenantCode);
-		List<NameValuePair> generetateKeyParams = new LinkedList<NameValuePair>();
-		generetateKeyParams.add(new BasicNameValuePair("action", "generateApplicationKey"));
-		generetateKeyParams.add(new BasicNameValuePair("name", ""));
-		generetateKeyParams.add(new BasicNameValuePair("version", ""));
-		generetateKeyParams.add(new BasicNameValuePair("tier", ""));
-		generetateKeyParams.add(new BasicNameValuePair("applicationName", ""));
-		generetateKeyParams.add(new BasicNameValuePair("application", "userportal_" + tenantCode));
-		generetateKeyParams.add(new BasicNameValuePair("provider", "admin"));
-		generetateKeyParams.add(new BasicNameValuePair("keytype", "PRODUCTION"));
-		generetateKeyParams.add(new BasicNameValuePair("callbackUrl", ""));
-		generetateKeyParams.add(new BasicNameValuePair("authorizedDomains", "ALL"));
-		generetateKeyParams.add(new BasicNameValuePair("validityTime", "999999999"));
-
-		GeneralResponse generalResponse = null;
-		String url = storeBaseUrl + "site/blocks/subscription/subscription-add/ajax/subscription-add.jag";
-		String response = makeHttpPost(url, generetateKeyParams);
-		if (response != null)
-			generalResponse = gson.fromJson(response, GeneralResponse.class);
-		if (generalResponse.getError())
-			throw new Exception("Add Application for " + tenantCode + " failed: " + generalResponse.getMessage());
-		if (generalResponse.getData() == null || generalResponse.getData().getKey() == null || generalResponse.getData().getKey().getConsumerKey() == null
-				|| generalResponse.getData().getKey().getConsumerSecret() == null)
-			throw new Exception("Add Application for " + tenantCode + " failed: Invalid consumerKey and consumerSecret - " + generalResponse.getMessage());
-
-		return generalResponse;
-	}
-
-	private void insertKey(String tenantCode, String clientKey, String clientSecret) throws Exception {
-		log.debug("[InstallTenantService::insertKey] tenantCode: " + clientKey);
-		String paramJson = "{ \"tenant\": {\"clientKey\": \"" + clientKey + "\", \"clientSecret\": \"" + clientSecret + "\"}}";
-
-		String url = apiAdminServiceUrl + "/secdata/clientcred/" + tenantCode;
-
-		HttpEntity response = makeHttpPut(url, paramJson);
-		if (response != null)
-			EntityUtils.toString(response); // {"generatedId":{"element":{"idGenerato":36}}}
-
-	}
-
-	private void logoutFromStore(String username, String password) throws Exception {
-		log.debug("[InstallTenantService::logoutFromStore] username " + username);
-
-		List<NameValuePair> logoutParams = new LinkedList<NameValuePair>();
-		logoutParams.add(new BasicNameValuePair("action", "logout"));
-		logoutParams.add(new BasicNameValuePair("username", username));
-		logoutParams.add(new BasicNameValuePair("password", password));
-
-		boolean result = false;
-		String url = storeBaseUrl + "site/blocks/user/login/ajax/login.jag";
-		String response = makeHttpPost(url, logoutParams);
-		GeneralResponse generalResponse = gson.fromJson(response, GeneralResponse.class);
-		result = !generalResponse.getError();
-		if (!result)
-			throw new Exception("Logout with user " + username + " failed: " + generalResponse.getMessage());
-	}
-
-	private String makeHttpPost(String url, List<NameValuePair> params) throws Exception {
-		log.debug("[InstallTenantService::makeHttpPost] url " + url + " params " + explainParams(params));
-		HttpPost postMethod = new HttpPost(url);
-		postMethod.setEntity(new UrlEncodedFormEntity(params));
-
-		CloseableHttpResponse response = httpclient.execute(postMethod);
-		StatusLine statusLine = response.getStatusLine();
-		int statusCode = statusLine.getStatusCode();
-		if (statusCode == HttpStatus.SC_OK) {
-			try {
-				HttpEntity entity = response.getEntity();
-				return EntityUtils.toString(entity);
-			} finally {
-				response.close();
-			}
-		} else {
-			log.error("[InstallTenantService::makeHttpPost] ERROR Status code " + statusCode);
-			throw new HttpException("ERROR: Status code " + statusCode);
-		}
-	}
-
-	private HttpEntity makeHttpPut(String url, String paramJson) throws Exception {
-		log.debug("[InstallTenantService::makeHttpPut] url " + url + " paramJson " + paramJson);
-		HttpPut putMethod = new HttpPut(url);
-		StringEntity params = new StringEntity(paramJson, "UTF-8");
-		params.setContentType("application/json");
-		putMethod.addHeader("content-type", "application/json");
-		putMethod.setEntity(params);
-
-		CloseableHttpResponse response = httpclient.execute(putMethod);
-		StatusLine statusLine = response.getStatusLine();
-		int statusCode = statusLine.getStatusCode();
-		if (statusCode == HttpStatus.SC_OK) {
-			try {
-				HttpEntity entity = response.getEntity();
-				return entity;
-			} finally {
-				response.close();
-			}
-		} else {
-			log.error("[InstallTenantService::makeHttpPut] ERROR Status code " + statusCode);
-			throw new HttpException("ERROR: Status code " + statusCode);
-		}
-	}
-
-	private String explainParams(List<NameValuePair> params) {
-		String result = "";
-		if (params != null)
-			for (NameValuePair nameValuePair : params) {
-				result += nameValuePair.getName() + "=" + nameValuePair.getValue() + "&";
-			}
-		return result;
-	}
 
 }
