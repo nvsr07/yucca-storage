@@ -11,6 +11,11 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	
+	<scm>
+    	<connection>scm:svn:svn://sdnet-build.sdp.csi.it/SdpPropFiles/trunk</connection>
+  	</scm>
+  	
 	<build>
 		<plugins>
 			<plugin>
@@ -18,9 +23,6 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
-					<!-- outputDirectory>C:\Program Files (x86)\jboss-eap-6.2\standalone\deployments</outputDirectory -->
-					<!-- outputDirectory>D:\Portable\jboss-eap-6.2\standalone\deployments</outputDirectory -->
-					<outputDirectory>/Library/JBoss/jboss-eap-6.2/standalone/deployments</outputDirectory>
 					<webXml>${webXmlPath}/web.xml</webXml>
 				</configuration>
 			</plugin>
@@ -44,6 +46,14 @@
 					</suiteXmlFiles>
 				</configuration>
 			</plugin>
+			 <plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-scm-plugin</artifactId>
+		        <version>1.9.5</version>
+		        <configuration>
+		          <connectionType>connection</connectionType>
+		        </configuration>
+		      </plugin>			
 		</plugins>
 	</build>
 	<dependencies>
@@ -157,8 +167,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 		</dependency>
-
-
 	</dependencies>
 	<profiles>
 		<profile>
@@ -204,7 +212,7 @@
 				<resources>
 					<resource>
 						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory -->
-						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory>
+						<directory>${project.build.directory}/checkout/datamangement/resources/int</directory>
 					</resource>
 					<resource>
 						<directory>conf</directory>
@@ -214,13 +222,13 @@
 				<testResources>
 					<testResource>
 						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/int</directory -->
-						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/int</directory>
+						<directory>${project.build.directory}/checkout/datamangement/test/int</directory>
 					</testResource>
 				</testResources>
 			</build>
 			<properties>
 				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath -->
-				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath>
+				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/int/</webXmlPath>
 			</properties>
 		</profile>
 		<profile>
@@ -229,7 +237,7 @@
 				<resources>
 					<resource>
 						<!-- directory>//csint1//dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory -->
-						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory>
+						<directory>${project.build.directory}/checkout/datamangement/resources/prod</directory>
 					</resource>
 					<resource>
 						<directory>conf</directory>
@@ -239,14 +247,13 @@
 				<testResources>
 					<testResource>
 						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/prod</directory -->
-						<directory>/Volumes/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/prod</directory>
+						<directory>${project.build.directory}/checkout/datamangement/test/prod</directory>
 					</testResource>
 				</testResources>
 			</build>
 			<properties>
 				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath -->
-				<webXmlPath>/Volumes/dirtec/2014/Tecnologie e
-					attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath>
+				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/prod/</webXmlPath>
 			</properties>
 		</profile>
 	</profiles>
