@@ -46,23 +46,6 @@
 					</suiteXmlFiles>
 				</configuration>
 			</plugin>
-			 <plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-scm-plugin</artifactId>
-		        <version>1.9.5</version>
-		        <configuration>
-		          <connectionType>connection</connectionType>
-		        </configuration>
-		        <executions>
-		        	<execution>
-		        		<id>1</id>
-		        		<phase>validate</phase>
-			            <goals>
-			              <goal>checkout</goal>
-			            </goals>
-			          </execution>
-			    </executions>
-		      </plugin>
 		      <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
 		        <artifactId>maven-failsafe-plugin</artifactId>
@@ -224,9 +207,27 @@
 		<profile>
 			<id>int</id>
 			<build>
+				<plugins>
+				 <plugin>
+			        <groupId>org.apache.maven.plugins</groupId>
+			        <artifactId>maven-scm-plugin</artifactId>
+			        <version>1.9.5</version>
+			        <configuration>
+			          <connectionType>connection</connectionType>
+			        </configuration>
+			        <executions>
+			        	<execution>
+			        		<id>1</id>
+			        		<phase>validate</phase>
+				            <goals>
+				              <goal>checkout</goal>
+				            </goals>
+				          </execution>
+				    </executions>
+			      </plugin>			
+				</plugins>
 				<resources>
 					<resource>
-						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int</directory -->
 						<directory>${project.build.directory}/checkout/datamangement/resources/int</directory>
 					</resource>
 					<resource>
@@ -236,22 +237,38 @@
 				</resources>
 				<testResources>
 					<testResource>
-						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/int</directory -->
 						<directory>${project.build.directory}/checkout/datamangement/test/int</directory>
 					</testResource>
 				</testResources>
 			</build>
 			<properties>
-				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/int/</webXmlPath -->
 				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/int/</webXmlPath>
 			</properties>
 		</profile>
 		<profile>
 			<id>prod</id>
 			<build>
+				<plugins>
+ 				 <plugin>
+			        <groupId>org.apache.maven.plugins</groupId>
+			        <artifactId>maven-scm-plugin</artifactId>
+			        <version>1.9.5</version>
+			        <configuration>
+			          <connectionType>connection</connectionType>
+			        </configuration>
+			        <executions>
+			        	<execution>
+			        		<id>1</id>
+			        		<phase>validate</phase>
+				            <goals>
+				              <goal>checkout</goal>
+				            </goals>
+				          </execution>
+				    </executions>
+			      </plugin>			
+				</plugins>
 				<resources>
 					<resource>
-						<!-- directory>//csint1//dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod</directory -->
 						<directory>${project.build.directory}/checkout/datamangement/resources/prod</directory>
 					</resource>
 					<resource>
@@ -261,13 +278,11 @@
 				</resources>
 				<testResources>
 					<testResource>
-						<!-- directory>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/test/prod</directory -->
 						<directory>${project.build.directory}/checkout/datamangement/test/prod</directory>
 					</testResource>
 				</testResources>
 			</build>
 			<properties>
-				<!-- webXmlPath>//csint1/dirtec/2014/Tecnologie e attività/SmartDataPlatform/PropFiles/datamangement/resources/prod/</webXmlPath -->
 				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/prod/</webXmlPath>
 			</properties>
 		</profile>
