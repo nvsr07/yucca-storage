@@ -36,6 +36,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
@@ -60,7 +61,6 @@ import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.DataInsertDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.DataUpload;
-import org.csi.yucca.storage.datamanagementapi.upload.MongoDBDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
@@ -651,7 +651,7 @@ public class MetadataService {
 				arrayTenant = lista.toArray(arrayTenant);
 				if (metadata.getInfo().getTenantssharing() == null) {
 					Tenantssharing tenantssharing = new Tenantssharing();
-					metadata.getInfo().setTenantssharing(tenantssharing);
+					metadata.getInfo().setTenantssharing(tenantssharing); 
 				}
 				metadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
 
@@ -688,22 +688,40 @@ public class MetadataService {
 						log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
 				}
+				/*
 				try {
 
 					StoreService.publishStore("1.0", apiName, "admin");
 					Set<String> tenantSet = new TreeSet<String>();
+					
+					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
 					if (metadata.getInfo().getTenantssharing() != null) {
+						
 						for (Tenantsharing tenantSh : metadata.getInfo().getTenantssharing().getTenantsharing()) {
 							tenantSet.add(tenantSh.getTenantCode());
 							String appName = "userportal_" + tenantSh.getTenantCode();
-							StoreService.addSubscriptionForTenant(apiName, appName);
+							SubscriptionAPIResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient, appName);
+							
+							ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
+							
+							//StoreService.addSubscriptionForTenant(apiName, appName);
 						}
 					}
 					if (!tenantSet.contains(metadata.getConfigData().getTenantCode())) {
 						String appName = "userportal_" + metadata.getConfigData().getTenantCode();
-						StoreService.addSubscriptionForTenant(apiName, appName);
+						ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
+						
+						//StoreService.addSubscriptionForTenant(apiName, appName);
 					}
 
+				} catch (Exception e) {
+					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+				}
+				*/
+				try {
+					StoreService.publishStore("1.0", apiName, "admin");
+					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, metadata.getInfo().getVisibility(), metadata.getInfo(), null, apiName, false, true);
 				} catch (Exception e) {
 					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}
@@ -820,6 +838,10 @@ public class MetadataService {
 			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::updateMetadata] - START");
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
+		
+		boolean fromPublicToPrivate = false; 
+		boolean fromPrivateToPublic = false; 
+
 		try {
 			MongoClient mongo = MongoSingleton.getMongoClient();
 			String supportDb = Config.getInstance().getDbSupport();
@@ -846,6 +868,14 @@ public class MetadataService {
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
+			
+			if (newMetadata.getInfo().getVisibility() != existingMetadata.getInfo().getVisibility()) {
+				if (newMetadata.getInfo().getVisibility().equals("public")) {
+					fromPrivateToPublic = true;
+				} else {
+					fromPublicToPrivate = true;
+				}
+			}
 
 			if ("public".equals(newMetadata.getInfo().getVisibility()) && inputMetadata.getOpendata() != null && inputMetadata.getOpendata().isOpendata()) {
 				Opendata opendata = new Opendata();
@@ -900,14 +930,14 @@ public class MetadataService {
 			 * Create api in the store
 			 */
 			String apiName = "";
-			Boolean updateOperation = false;
+			//Boolean updateOperation = false;
 			try {
 				apiName = StoreService.createApiforBulk(newMetadata, false, metadataInput);
 			} catch (Exception duplicate) {
 				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 					try {
 						apiName = StoreService.createApiforBulk(newMetadata, true, metadataInput);
-						updateOperation = true;
+						//updateOperation = true;
 					} catch (Exception e) {
 						log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
@@ -915,17 +945,12 @@ public class MetadataService {
 					log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 				}
 			}
-			if (!updateOperation) {
-				try {
-					StoreService.publishStore("1.0", apiName, "admin");
-
-					String appName = "userportal_" + newMetadata.getConfigData().getTenantCode();
-					StoreService.addSubscriptionForTenant(apiName, appName);
-
-				} catch (Exception e) {
-					log.error("[MetadataService::updateMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
-				}
-			}
+			//if (!updateOperation) {
+			StoreService.publishStore("1.0", apiName, "admin");
+			CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+			ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), existingMetadata.getInfo(), apiName, fromPrivateToPublic, fromPublicToPrivate);
+			
+			//}
 		} catch (Exception e) {
 			log.debug("[MetadataService::updateMetadata] - ERROR " + e.getMessage());
 			updateDatasetResponse.addErrorMessage(new ErrorMessage(e));

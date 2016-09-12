@@ -21,20 +21,20 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
-public class HttpDetailDatasetVisibilityIT extends RestBase {
+public class HttpAddSubscriptionDatasetIT extends RestBase {
 
 	@BeforeClass
 	public void setUpSecretObject() throws IOException {
 		super.setUpSecretObject("/testSecret.json");
 	}
 	
-	@DataProvider(name = "HttpDetailDatasetVisibility")
+	@DataProvider(name = "ValidationDeleteDatasetTest")
 	public Iterator<Object[]> getFromJson() {
-		return super.getFromJson("/HttpDetailDatasetVisibility.json");
+		return super.getFromJson("/ValidationDeleteDatasetTest.json");
 	}
 	
-	@Test(dataProvider = "HttpDetailDatasetVisibility")
-	public void testDetailDatasetVisibility(JSONObject dato) {
+	@Test(dataProvider = "ValidationDeleteDatasetTest")
+	public void deleteDatasetTesting(JSONObject dato) {
 		/*
 			if (dato.optBoolean("rt.toskip") || dato.optBoolean("rt.httptoskip"))
 				throw new SkipException("TODO in future version");
@@ -43,15 +43,11 @@ public class HttpDetailDatasetVisibilityIT extends RestBase {
 		
 		RequestSpecification rs = given().contentType(ContentType.JSON);
 
-		Response rsp = rs.when().get(dato.getString("dmapi.url") + "dataset/" + dato.get("dmapi.tenant") + "/" + dato.get("dmapi.datasetCode") + dato.get("dmapi.visibleFrom"));
-
+		Response rsp = rs.log().all().when().delete(dato.getString("dmapi.url") + "metadata/clearDataset/" + dato.get("dmapi.tenant") + "/" + dato.get("dmapi.idDataset") + (dato.opt("dmapi.datasetVersion") == null ? "" : dato.get("dmapi.datasetVersion")));
 		rsp.then().statusCode(HttpStatus.SC_OK);
 		
-		if (dato.getBoolean("dmapi.visibile"))
-			rsp.then().log().all().body("metadata.datasetCode", Matchers.equalTo(dato.get("dmapi.datasetCode")));
-		else
-			rsp.then().log().all().body("errorMsg", Matchers.equalTo("Dataset not Found"));
-		
+		rsp.then().log().all().body(dato.optString("dmapi.ko_ok"), Matchers.equalTo(1));
+
 		/*
 		 if (StringUtils.isNotEmpty(dato.optString("rt.errorCode")))
 			rsp.then().body("error_code", Matchers.equalTo(dato.optString("rt.errorCode")));

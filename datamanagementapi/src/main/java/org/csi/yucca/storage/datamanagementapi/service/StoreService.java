@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
@@ -27,13 +25,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
-import org.csi.yucca.storage.datamanagementapi.apimanager.store.QSPStore;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.RemoveDoc;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
-import org.csi.yucca.storage.datamanagementapi.model.streamOutput.Position;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
@@ -90,6 +87,7 @@ public class StoreService {
 						throw duplicate;
 				}
 
+				/*
 				if (newStream.getPublishStream() != 0) {
 					publishStore("1.0", apiName, "admin");
 					Set<String> tenantSet = new TreeSet<String>();
@@ -104,6 +102,14 @@ public class StoreService {
 						String appName = "userportal_" + newStream.getCodiceTenant();
 						StoreService.addSubscriptionForTenant(apiName, appName);
 					}
+				}*/
+
+				try {
+					StoreService.publishStore("1.0", apiName, "admin");
+					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+					ApiManagerFacade.updateStreamSubscriptionIntoStore(httpClient, newStream.getVisibility(), newStream, null, apiName, false, true);
+				} catch (Exception e) {
+					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}
 			}
 
@@ -146,8 +152,10 @@ public class StoreService {
 						throw duplicate;
 				}
 				String apiName = tenant + "." + sensor + "_" + stream + "_stream";
+				/*
 				if (newStream.getPublishStream() != 0) {
 					publishStore("1.0", apiName, "admin");
+					newStream.getv
 					Set<String> tenantSet = new TreeSet<String>();
 					if (newStream.getTenantssharing() != null) {
 						for (Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()) {
@@ -161,6 +169,14 @@ public class StoreService {
 						StoreService.addSubscriptionForTenant(apiName, appName);
 					}
 				}
+				*/
+				try {
+					StoreService.publishStore("1.0", apiName, "admin");
+					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+					ApiManagerFacade.updateStreamSubscriptionIntoStore(httpClient, newStream.getVisibility(), newStream, null, apiName, false, true);
+				} catch (Exception e) {
+					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+				}
 			}
 
 		} catch (Exception e) {
@@ -171,6 +187,7 @@ public class StoreService {
 		return JSON.parse("{OK:1}").toString();
 	}
 
+	/*
 	public static boolean addSubscriptionForTenant(String apiName, String appName) throws Exception {
 
 		QSPStore subscription = new QSPStore();
@@ -190,6 +207,7 @@ public class StoreService {
 
 		return true;
 	}
+	*/
 
 	public static String createApiforStream(Stream newStream, String apiName, boolean update, String json) throws Exception {
 

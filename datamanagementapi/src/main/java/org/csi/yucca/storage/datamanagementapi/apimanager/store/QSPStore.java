@@ -1,27 +1,29 @@
 package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
+//import java.text.SimpleDateFormat;
+//import java.util.List;
+//import java.util.Map;
 
-import org.junit.Test;
+//import org.junit.Test;
 
-public class QSPStore extends CallApiManagerUtil implements CallBack {
+public class QSPStore { //extends CallApiManagerUtil implements CallBack {
 
-	static String confVars;
-	static SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss dd/M/yyyy");
+	//static String confVars;
+	//static SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss dd/M/yyyy");
 	
 	public QSPStore(){
 	
-		loadProperties("QSPstore.properties");
+		//loadProperties("QSPstore.properties");
 	}
 		
+	/*
 	@Test
 	public void run() throws Exception {
 		exec();
 	}
-
+	*/
 	
+	/*
 	public void handler(CallApiManagerUtil test, String action) {
 		JsonMap jm = new JsonMap();
 	    String res =  test.getVar("result");
@@ -78,5 +80,5 @@ public class QSPStore extends CallApiManagerUtil implements CallBack {
 //			}
 //	    }
 	}
-
+	*/
 }

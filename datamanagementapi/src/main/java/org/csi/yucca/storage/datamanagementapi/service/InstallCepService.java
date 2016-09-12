@@ -3,8 +3,6 @@ package org.csi.yucca.storage.datamanagementapi.service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.DELETE;
@@ -24,6 +22,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
@@ -33,7 +32,6 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
-import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.model.types.FileStatus;
 import org.csi.yucca.storage.datamanagementapi.model.types.POJOHdfs;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
@@ -175,7 +173,7 @@ public class InstallCepService {
 			DBObject datasetMetaData = col.findOne(searchQuery);
 			Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(datasetMetaData));
 			
-			DBCollection colStream = db.getCollection(Config.getInstance().getCollectionSupportStream());
+			//DBCollection colStream = db.getCollection(Config.getInstance().getCollectionSupportStream());
 			BasicDBObject streamSearchQuery = new BasicDBObject("configData.idDataset", Long.parseLong(idDataset));
 			if (null != datasetVersionLng) streamSearchQuery.put("configData.datasetVersion",datasetVersionLng.longValue());
 
@@ -358,7 +356,7 @@ public class InstallCepService {
 
 				// Create api in the store
 				String apiName = "";
-				Boolean updateOperation = false;
+				//Boolean updateOperation = false;
 				try {
 					// Insert
 					apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), false, json);
@@ -366,27 +364,43 @@ public class InstallCepService {
 					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 						// Update
 						apiName = StoreService.createApiforStream(newStream, myMeta.getDatasetCode(), true, json);
-						updateOperation = true;
+						//updateOperation = true;
 					} else
 						throw duplicate;
 				}
-				if (!updateOperation){
+				/*if (!updateOperation){
 					//L'operazione di Publish deve essere eseguita solo alla prima installazione
 					if (newStream.getPublishStream() != 0) {
 						StoreService.publishStore("1.0", apiName, "admin");
 						Set<String> tenantSet = new TreeSet<String>();
+						
+						CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
 						if (newStream.getTenantssharing() != null) {
+							
 							for (Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()) {
 								tenantSet.add(tenantSh.getTenantCode());
 								String appName = "userportal_" + tenantSh.getTenantCode();
-								StoreService.addSubscriptionForTenant(apiName, appName);
+								
+								SubscriptionAPIResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient, appName);
+								ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
+								
+								//StoreService.addSubscriptionForTenant(apiName, appName);
 							}
 						}
 						if (!tenantSet.contains(newStream.getCodiceTenant())) {
 							String appName = "userportal_" + newStream.getCodiceTenant();
-							StoreService.addSubscriptionForTenant(apiName, appName);
+							ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
+							
+							//StoreService.addSubscriptionForTenant(apiName, appName);
 						}
 					}
+				}*/
+				try {
+					StoreService.publishStore("1.0", apiName, "admin");
+					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+					ApiManagerFacade.updateStreamSubscriptionIntoStore(httpClient, newStream.getVisibility(), newStream, null, apiName, false, true);
+				} catch (Exception e) {
+					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}
 			}
 		} catch (Exception e) {
