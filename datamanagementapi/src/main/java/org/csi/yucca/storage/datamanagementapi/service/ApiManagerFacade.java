@@ -395,8 +395,7 @@ public class ApiManagerFacade {
 		}
 	}
 	
-	//Per inserire basta fromPrivateToPublic=null e infoOld=null
-	public static void updateStreamSubscriptionIntoStore(CloseableHttpClient httpClient, String visibility, Stream streamNew, Stream streamOld, String apiName, boolean fromPrivateToPublic, boolean fromPublicToPrivate) throws Exception {
+	public static void updateStreamSubscriptionIntoStore(CloseableHttpClient httpClient, String visibility, Stream streamNew, Stream streamOld, String apiName, boolean fromPrivateToPublic, boolean fromPublicToPrivate, boolean insertNewStream) throws Exception {
 		
 		//La Visibility non è cambiata
 		if (!fromPrivateToPublic && !fromPublicToPrivate) {
@@ -456,7 +455,7 @@ public class ApiManagerFacade {
 		} else {
 			//Lo stream è diventato privato, devo aggiungere le sottoscrizioni così come specificato nell'array tenantssharing()
 			for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenantSh : streamNew.getTenantssharing().getTenantsharing()) {
-				if (tenantSh.getIsOwner() != 1) {
+				if ((tenantSh.getIsOwner() != 1) || (insertNewStream)) {
 					String appName = "userportal_" + tenantSh.getTenantCode();
 					ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
 				}
