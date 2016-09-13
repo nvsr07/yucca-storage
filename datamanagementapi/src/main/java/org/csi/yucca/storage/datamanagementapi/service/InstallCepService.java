@@ -301,15 +301,21 @@ public class InstallCepService {
 				sortStream.put("_id", -1);
 
 				DBCursor cursor = col.find(findStream).sort(sortStream);
+				
+				boolean fromPublicToPrivate = false;
+				boolean fromPrivateToPublic = false;
 
 				Long idDataset = null;
-				DBObject oldStream = null;
+				DBObject oldObjStream = null;
+				Stream oldStream = null;
 				if (cursor.hasNext()) {
 
-					oldStream = cursor.next();
+					oldObjStream = cursor.next();
+					POJOStreams pojoOldStreams = gson.fromJson(oldObjStream.toString(), POJOStreams.class);
+					oldStream = pojoOldStreams.getStreams().getStream();
 
 					col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
-					DBObject configData = (DBObject) oldStream.get("configData");
+					DBObject configData = (DBObject) oldObjStream.get("configData");
 					idDataset = ((Number) configData.get("idDataset")).longValue();
 
 					BasicDBObject findDatasets = new BasicDBObject();
@@ -317,7 +323,17 @@ public class InstallCepService {
 					DBObject updateConfig = new BasicDBObject();
 					updateConfig.put("$set", new BasicDBObject("configData.current", 0));
 					col.update(findDatasets, updateConfig, false, true);
-				}
+					
+					if (oldStream.getVisibility() != newStream.getVisibility()) {
+						if (newStream.getVisibility().equals("public")) {
+							fromPrivateToPublic = true;
+						} else {
+							fromPublicToPrivate = true;
+						}
+					}
+				} else 
+					fromPublicToPrivate = true;
+				
 				col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 				Metadata myMeta = MetadataFiller.fillMetadata(newStream);
 
@@ -398,7 +414,7 @@ public class InstallCepService {
 				try {
 					StoreService.publishStore("1.0", apiName, "admin");
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
-					ApiManagerFacade.updateStreamSubscriptionIntoStore(httpClient, newStream.getVisibility(), newStream, null, apiName, false, true);
+					ApiManagerFacade.updateStreamSubscriptionIntoStore(httpClient, newStream.getVisibility(), newStream, oldStream, apiName, false, true);
 				} catch (Exception e) {
 					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}
