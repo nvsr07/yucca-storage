@@ -22,6 +22,10 @@ public class Subscription {
 	private long sandValidityTime;
 	private String hasMultipleEndpoints;
 	
+    public String toString() {
+    	return "    ===> name = " + name + "\n";
+    }
+	
 	public String getName() {
 		return name;
 	}

@@ -1,6 +1,9 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
+
+import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 
 public class Stream {
@@ -99,6 +102,11 @@ public class Stream {
     private StreamTags streamTags;
     @Expose
     private VirtualEntityPositions virtualEntityPositions;
+    
+	public static Stream fromJson(String json) {
+		Gson gson = JSonHelper.getInstance();
+		return gson.fromJson(json, Stream.class);
+	}
     public String getExternalReference() {
 		return externalReference;
 	}

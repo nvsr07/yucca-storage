@@ -336,7 +336,7 @@ public class ApiManagerFacade {
 				
 				for (Tenantsharing oldTenantSh : infoOld.getTenantssharing().getTenantsharing()) {
 					//elimino se questo tenant non è presente in infoNew.getTenantssharing()
-					if (oldTenantSh.getIsOwner() != 1) {
+					//if (oldTenantSh.getIsOwner() != 1) {
 						boolean found = false;
 						String appName = null;
 						for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
@@ -353,11 +353,11 @@ public class ApiManagerFacade {
 									ApiManagerFacade.unSubscribeApi(httpClient, apiName, appName, tenantSubscription.getId());
 							}
 						}
-					}
+					//}
 				}
 				for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
 					//aggiungo se questo tenant non è presente in infoOld.getTenantssharing()
-					if (newTenantSh.getIsOwner() != 1) {
+					//if (newTenantSh.getIsOwner() != 1) {
 						boolean found = false;
 						String appName = null;
 						for (Tenantsharing oldTenantSh : infoOld.getTenantssharing().getTenantsharing()) {
@@ -369,28 +369,28 @@ public class ApiManagerFacade {
 						 
 						if (found)
 							ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
-					}
+					//}
 				}
 			}
 		} else if (fromPrivateToPublic) {
 			//Il DS è diventato public, devo togliere tutte le sottoscrizioni e lasciare quella dell'owner
 			for (Tenantsharing tenantSh : infoNew.getTenantssharing().getTenantsharing()) {
-				if (tenantSh.getIsOwner() != 1) {
+				//if (tenantSh.getIsOwner() != 1) {
 					String appName = "userportal_" + tenantSh.getTenantCode();
 					SubscriptionResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient);
 					for (Subscriptions tenantSubscription : listSubscriptions.getSubscriptions()) {
 						if (tenantSubscription.getName().equals(appName))
 							ApiManagerFacade.unSubscribeApi(httpClient, apiName, appName, tenantSubscription.getId());
 					}
-				}
+				//}
 			}
 		} else {
 			//Il DS è diventato privato, devo aggiungere le sottoscrizioni così come specificato nell'array tenantssharing()
 			for (Tenantsharing tenantSh : infoNew.getTenantssharing().getTenantsharing()) {
-				if (tenantSh.getIsOwner() != 1) {
+				//if (tenantSh.getIsOwner() != 1) {
 					String appName = "userportal_" + tenantSh.getTenantCode();
 					ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
-				}
+				//}
 			}
 		}
 	}

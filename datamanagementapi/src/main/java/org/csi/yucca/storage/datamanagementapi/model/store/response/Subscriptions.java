@@ -19,6 +19,10 @@ public class Subscriptions {
     private long sandValidityTime;
     private Subscription[] subscriptions;
     
+    public String toString() {
+    	return "Tenant subscription ==> name = " + name + ", list of subscription: " + subscriptions.toString();
+    }
+    
 	public int getId() {
 		return id;
 	}
