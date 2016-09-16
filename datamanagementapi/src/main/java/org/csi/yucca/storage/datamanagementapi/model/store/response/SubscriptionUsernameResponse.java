@@ -1,8 +1,8 @@
 package org.csi.yucca.storage.datamanagementapi.model.store.response;
 
-public class SubscriptionResponse {
+public class SubscriptionUsernameResponse {
 	private boolean error;
-	private Apis[] apis;
+	private UsernameResult[] result;
 
 	public SubscriptionUsernameResponse() {
 
@@ -16,11 +16,11 @@ public class SubscriptionResponse {
 		this.error = error;
 	}
 
-	public Apis[] getApis() {
-		return apis;
+	public UsernameResult[] getResult() {
+		return result;
 	}
 
-	public void setApis(Apis[] apis) {
-		this.apis = apis;
+	public void setResult(UsernameResult[] result) {
+		this.result = result;
 	}
 }
