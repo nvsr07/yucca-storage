@@ -1,10 +1,10 @@
 package org.csi.yucca.storage.datamanagementapi.model.store.response;
 
-public class SubscriptionResponse {
+public class SubscriptionAPIResponse {
 	private boolean error;
 	private Apis[] apis;
 
-	public SubscriptionUsernameResponse() {
+	public SubscriptionAPIResponse() {
 
 	}
 
