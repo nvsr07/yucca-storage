@@ -418,7 +418,7 @@ public class InstallCepService {
 				try {
 					StoreService.publishStore("1.0", apiName, "admin");
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
-					ApiManagerFacade.updateStreamSubscriptionIntoStore(httpClient, newStream.getVisibility(), newStream, oldStream, apiName, fromPrivateToPublic, fromPublicToPrivate, insertNewStream);
+					ApiManagerFacade.updateStreamSubscriptionIntoStore(httpClient, newStream.getVisibility(), newStream, apiName);
 				} catch (Exception e) {
 					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}

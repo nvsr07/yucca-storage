@@ -721,7 +721,7 @@ public class MetadataService {
 				try {
 					StoreService.publishStore("1.0", apiName, "admin");
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
-					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, metadata.getInfo().getVisibility(), metadata.getInfo(), null, apiName, false, true);
+					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, metadata.getInfo().getVisibility(), metadata.getInfo(), apiName);
 				} catch (Exception e) {
 					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}
@@ -948,7 +948,7 @@ public class MetadataService {
 			//if (!updateOperation) {
 			StoreService.publishStore("1.0", apiName, "admin");
 			CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
-			ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), existingMetadata.getInfo(), apiName, fromPrivateToPublic, fromPublicToPrivate);
+			ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
 			
 			//}
 		} catch (Exception e) {
