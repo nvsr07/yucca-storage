@@ -27,7 +27,6 @@ public class ErasePublicSubscription {
 	static Logger log = Logger.getLogger(ErasePublicSubscription.class);
 	private static DBCollection collection;
 	private static MongoClient mongo;
-	
 
 	public static void main(String[] args) {
 		log.info("[ErasePublicSubscription::main] - START");
@@ -47,23 +46,24 @@ public class ErasePublicSubscription {
 			searchQuery.put("$and", and);
 
 			log.info(" ======== > SearchQuery " + searchQuery.toString());
-			CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(),
-					Config.getInstance().getStorePassword());
+			CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(
+					Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
 			SubscriptionResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient);
-			
+
 			log.info(" ======== > call eraseDatasetSubscription");
-			//eraseDatasetSubscription(searchQuery, listSubscriptions, httpClient);
-			
+			// eraseDatasetSubscription(searchQuery, listSubscriptions,
+			// httpClient);
+
 			supportDb = Config.getInstance().getDbSupport();
 			supportDatasetCollection = Config.getInstance().getCollectionSupportStream();
 			collection = mongo.getDB(supportDb).getCollection(supportDatasetCollection);
-			
+
 			and = new BasicDBList();
 			and.add(new BasicDBObject("configData.deleted", new BasicDBObject("$not", new BasicDBObject("$eq", 1))));
 			and.add(new BasicDBObject("streams.stream.visibility", "public"));
 			searchQuery = new BasicDBObject();
 			searchQuery.put("$and", and);
-			
+
 			log.info(" ======== > SearchQuery " + searchQuery.toString());
 			log.info(" ======== > call eraseStreamSubscription");
 			eraseStreamSubscription(searchQuery, listSubscriptions, httpClient);
@@ -80,7 +80,8 @@ public class ErasePublicSubscription {
 		log.info("[ErasePublicSubscription::main] - END");
 	}
 
-	private static void eraseDatasetSubscription(BasicDBObject searchQuery, SubscriptionResponse listSubscriptions, CloseableHttpClient httpClient) throws Exception {
+	private static void eraseDatasetSubscription(BasicDBObject searchQuery, SubscriptionResponse listSubscriptions,
+			CloseableHttpClient httpClient) throws Exception {
 		log.info("[ErasePublicSubscription::eraseDatasetSubscription] - START");
 
 		DBCursor cursor = collection.find(searchQuery);
@@ -94,7 +95,7 @@ public class ErasePublicSubscription {
 		}
 
 		Iterator<Metadata> allDatasetIterator = allDataset.iterator();
-		
+
 		while (allDatasetIterator.hasNext()) {
 			Metadata metaData = allDatasetIterator.next();
 			log.info("Dataset => " + metaData.getDatasetCode());
@@ -103,16 +104,18 @@ public class ErasePublicSubscription {
 
 			for (Subscriptions tenantSubscription : listSubscriptions.getSubscriptions()) {
 				if (tenantSubscription.getName().equals(appName)) {
-					log.info("Remove " + tenantSubscription.toString() + ", tenantSubscription=" + tenantSubscription.getName());
-					ApiManagerFacade.unSubscribeApi(httpClient, metaData.getDatasetCode()+"_odata", appName,
-							tenantSubscription.getId());
+					log.info("Remove " + tenantSubscription.toString() + ", tenantSubscription="
+							+ tenantSubscription.getName());
+					ApiManagerFacade.unSubscribeApi(httpClient, metaData.getDatasetCode() + "_odata", appName,
+							tenantSubscription.getId(), "admin");
 				}
 			}
 		}
 		log.info("[ErasePublicSubscription::eraseDatasetSubscription] - END");
 	}
 
-	private static void eraseStreamSubscription(BasicDBObject searchQuery, SubscriptionResponse listSubscriptions, CloseableHttpClient httpClient) throws Exception {
+	private static void eraseStreamSubscription(BasicDBObject searchQuery, SubscriptionResponse listSubscriptions,
+			CloseableHttpClient httpClient) throws Exception {
 		log.info("[ErasePublicSubscription::eraseStreamSubscription] - START");
 
 		DBCursor cursor = collection.find(searchQuery);
@@ -125,7 +128,7 @@ public class ErasePublicSubscription {
 		}
 
 		Iterator<StreamOut> allStreamIterator = allStream.iterator();
-		
+
 		while (allStreamIterator.hasNext()) {
 			StreamOut stream = allStreamIterator.next();
 			log.info("StreamOut => " + stream.getStreamName());
@@ -133,10 +136,14 @@ public class ErasePublicSubscription {
 			log.info("appName => " + appName);
 
 			for (Subscriptions tenantSubscription : listSubscriptions.getSubscriptions()) {
-				if (tenantSubscription.getName().equals(appName)){
-					log.info("Remove " + tenantSubscription.toString() + ", tenantSubscription=" + tenantSubscription.getName());
-					ApiManagerFacade.unSubscribeApi(httpClient, stream.getConfigData().getTenantCode()+"."+stream.getStreams().getStream().getVirtualEntityCode()+"_"+stream.getStreamCode()+"_stream", appName,
-							tenantSubscription.getId());
+				if (tenantSubscription.getName().equals(appName)) {
+					log.info("Remove " + tenantSubscription.toString() + ", tenantSubscription="
+							+ tenantSubscription.getName());
+					ApiManagerFacade.unSubscribeApi(httpClient,
+							stream.getConfigData().getTenantCode() + "."
+									+ stream.getStreams().getStream().getVirtualEntityCode() + "_"
+									+ stream.getStreamCode() + "_stream",
+							appName, tenantSubscription.getId(), "admin");
 				}
 			}
 		}

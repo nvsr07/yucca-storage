@@ -122,13 +122,13 @@ public class ApiManagerFacade {
 			throw new Exception("Add Application " + appName + " for " + apiName + " failed: " + generalResponse.getMessage());
 	}
 	
-	public static void unSubscribeApi(CloseableHttpClient httpclient,String apiName,  String appName, int applicationId) throws Exception {
+	public static void unSubscribeApi(CloseableHttpClient httpclient,String apiName,  String appName, int applicationId, String provider) throws Exception {
 		log.debug("[ApiManagerFacade::subscribeAdminApi] apiName: " + apiName);
 		List<NameValuePair> subscribeAdminApiParams = new LinkedList<NameValuePair>();
 		subscribeAdminApiParams.add(new BasicNameValuePair("action", "removeSubscription"));
 		subscribeAdminApiParams.add(new BasicNameValuePair("name", apiName));
 		subscribeAdminApiParams.add(new BasicNameValuePair("version", "1.0"));
-		subscribeAdminApiParams.add(new BasicNameValuePair("provider", "admin"));
+		subscribeAdminApiParams.add(new BasicNameValuePair("provider", provider));
 		subscribeAdminApiParams.add(new BasicNameValuePair("applicationId", Integer.toString(applicationId)));
 		
 		boolean result = false;
@@ -375,7 +375,7 @@ public class ApiManagerFacade {
 			Subs[] subs = listOfApplication.getSubscriptions();
 			if (visibility.equals("public")) {
 				for (Subs appNames:subs) {
-					ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+					ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), "admin");
 				}
 			} else {
 				for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
@@ -396,7 +396,7 @@ public class ApiManagerFacade {
 						}
 					}
 					if (notFound)
-						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), "admin");
 				}
 				SubscriptionUsernameResponse rawList = ApiManagerFacade.listUsernameSubscriptionByApiName(httpClient, apiName);
 				for (UsernameResult listOfUser:rawList.getResult()) {
@@ -412,7 +412,7 @@ public class ApiManagerFacade {
 								}
 							}
 							if (notFound)
-								ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+								ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), userForSubscription);
 						}
 					}
 				}
@@ -432,7 +432,7 @@ public class ApiManagerFacade {
 			Subs[] subs = listOfApplication.getSubscriptions();
 			if (visibility.equals("public")) {
 				for (Subs appNames:subs) {
-					ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+					ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), "admin");
 				}
 			} else {
 				for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing newTenantSh : streamNew.getTenantssharing().getTenantsharing()) {
@@ -453,7 +453,7 @@ public class ApiManagerFacade {
 						}
 					}
 					if (notFound)
-						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), "admin");
 				}
 				SubscriptionUsernameResponse rawList = ApiManagerFacade.listUsernameSubscriptionByApiName(httpClient, apiName);
 				for (UsernameResult listOfUser:rawList.getResult()) {
@@ -469,7 +469,7 @@ public class ApiManagerFacade {
 								}
 							}
 							if (notFound)
-								ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+								ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), userForSubscription);
 						}
 					}
 				}
