@@ -379,7 +379,7 @@ public class ApiManagerFacade {
 		subscribeAdminApiParams.add(new BasicNameValuePair("apiname", apiname));
 		subscribeAdminApiParams.add(new BasicNameValuePair("username", username));
 		
-		String url = storeBaseUrl + "store/site/blocks/secure/subscription.jag";
+		String url = storeBaseUrl + "site/blocks/secure/subscription.jag";
 		String response = makeHttpGet(httpclient, url, subscribeAdminApiParams);
 
 		SubscriptionByUsernameResponse mySubscriptionResponse = gson.fromJson(response, SubscriptionByUsernameResponse.class);
