@@ -372,19 +372,31 @@ public class ApiManagerFacade {
 			listOfApplication = ApiManagerFacade.listSubscriptionByApiAndUserName(httpClient, apiName, "admin");
 			
 			Subs[] subs = listOfApplication.getSubscriptions();
-			for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
-				boolean foundInDesiderata = false;
+			if (visibility.equals("public")) {
 				for (Subs appNames:subs) {
-					if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {
-						if (visibility.equals("public")) {
-							ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
-						} else {
+					ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+				}
+			} else {
+				for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
+					boolean foundInDesiderata = false;
+					for (Subs appNames:subs) {
+						if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {
 							foundInDesiderata = true;
 						}
 					}
+					if (!foundInDesiderata)
+						ApiManagerFacade.subscribeApi(httpClient, apiName, "userportal_"+newTenantSh.getTenantCode());
 				}
-				if (foundInDesiderata)
-					ApiManagerFacade.subscribeApi(httpClient, apiName, "userportal_"+newTenantSh.getTenantCode());
+				for (Subs appNames:subs) {
+					boolean notFound = true;
+					for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
+						if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {
+							notFound = false;
+						}
+					}
+					if (notFound)
+						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+				}
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
