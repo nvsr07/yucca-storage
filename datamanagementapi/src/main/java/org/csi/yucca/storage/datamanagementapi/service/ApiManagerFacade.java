@@ -479,20 +479,22 @@ public class ApiManagerFacade {
 						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), "admin");
 				}
 				SubscriptionUsernameResponse rawList = ApiManagerFacade.listUsernameSubscriptionByApiName(httpClient, apiName);
-				for (UsernameResult listOfUser:rawList.getResult()) {
-					String userForSubscription = listOfUser.getUsername();
-					if (!userForSubscription.equals("admin")){
-						listOfApplication = ApiManagerFacade.listSubscriptionByApiAndUserName(httpClient, apiName, userForSubscription);
-						
-						for (Subs appNames:subs) {
-							boolean notFound = true;
-							for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing newTenantSh : streamNew.getTenantssharing().getTenantsharing()) {
-								if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {
-									notFound = false;
+				if (rawList.getResult() != null) {
+					for (UsernameResult listOfUser:rawList.getResult()) {
+						String userForSubscription = listOfUser.getUsername();
+						if (!userForSubscription.equals("admin")){
+							listOfApplication = ApiManagerFacade.listSubscriptionByApiAndUserName(httpClient, apiName, userForSubscription);
+							
+							for (Subs appNames:subs) {
+								boolean notFound = true;
+								for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing newTenantSh : streamNew.getTenantssharing().getTenantsharing()) {
+									if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {
+										notFound = false;
+									}
 								}
+								if (notFound)
+									ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), userForSubscription);
 							}
-							if (notFound)
-								ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId(), userForSubscription);
 						}
 					}
 				}
