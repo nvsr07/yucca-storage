@@ -122,13 +122,34 @@ public class ApiManagerFacade {
 			throw new Exception("Add Application " + appName + " for " + apiName + " failed: " + generalResponse.getMessage());
 	}
 	
-	public static void unSubscribeApi(CloseableHttpClient httpclient,String apiName,  String appName, int applicationId, String provider) throws Exception {
+	public static void unSubscribeApi(CloseableHttpClient httpclient,String apiName,  String appName, int applicationId, String username) throws Exception {
+
+		log.debug("[ApiManagerFacade::subscribeAdminApi] apiName: " + apiName);
+		List<NameValuePair> subscribeAdminApiParams = new LinkedList<NameValuePair>();
+		
+		subscribeAdminApiParams.add(new BasicNameValuePair("action", "removeSubscription"));
+		subscribeAdminApiParams.add(new BasicNameValuePair("apiname", apiName));
+		subscribeAdminApiParams.add(new BasicNameValuePair("apiversion", "1.0"));
+		subscribeAdminApiParams.add(new BasicNameValuePair("provider", "admin"));
+		subscribeAdminApiParams.add(new BasicNameValuePair("username", username));
+		subscribeAdminApiParams.add(new BasicNameValuePair("applicationId", Integer.toString(applicationId)));
+		
+		boolean result = false;
+		String url = storeBaseUrl + "site/blocks/secure/subscription.jag";  
+		String response = makeHttpPost(httpclient, url, subscribeAdminApiParams);
+		GeneralResponse generalResponse = gson.fromJson(response, GeneralResponse.class);
+		result = !generalResponse.getError();
+		if (!result)
+			throw new Exception("Remove Application " + appName + " for " + apiName + " failed: " + generalResponse.getMessage());
+	}
+	
+	public static void unSubscribeApiAdmin(CloseableHttpClient httpclient,String apiName,  String appName, int applicationId) throws Exception {
 		log.debug("[ApiManagerFacade::subscribeAdminApi] apiName: " + apiName);
 		List<NameValuePair> subscribeAdminApiParams = new LinkedList<NameValuePair>();
 		subscribeAdminApiParams.add(new BasicNameValuePair("action", "removeSubscription"));
 		subscribeAdminApiParams.add(new BasicNameValuePair("name", apiName));
 		subscribeAdminApiParams.add(new BasicNameValuePair("version", "1.0"));
-		subscribeAdminApiParams.add(new BasicNameValuePair("provider", provider));
+		subscribeAdminApiParams.add(new BasicNameValuePair("provider", "admin"));
 		subscribeAdminApiParams.add(new BasicNameValuePair("applicationId", Integer.toString(applicationId)));
 		
 		boolean result = false;
