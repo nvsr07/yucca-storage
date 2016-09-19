@@ -35,6 +35,7 @@ import org.csi.yucca.storage.datamanagementapi.model.store.response.Subscription
 import org.csi.yucca.storage.datamanagementapi.model.store.response.SubscriptionResponse;
 import org.csi.yucca.storage.datamanagementapi.model.store.response.SubscriptionUsernameResponse;
 import org.csi.yucca.storage.datamanagementapi.model.store.response.Subscriptions;
+import org.csi.yucca.storage.datamanagementapi.model.store.response.UsernameResult;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -397,6 +398,24 @@ public class ApiManagerFacade {
 					if (notFound)
 						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
 				}
+				SubscriptionUsernameResponse rawList = ApiManagerFacade.listUsernameSubscriptionByApiName(httpClient, apiName);
+				for (UsernameResult listOfUser:rawList.getResult()) {
+					String userForSubscription = listOfUser.getUsername();
+					if (!userForSubscription.equals("admin")){
+						listOfApplication = ApiManagerFacade.listSubscriptionByApiAndUserName(httpClient, apiName, userForSubscription);
+						
+						for (Subs appNames:subs) {
+							boolean notFound = true;
+							for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
+								if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {
+									notFound = false;
+								}
+							}
+							if (notFound)
+								ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -436,147 +455,28 @@ public class ApiManagerFacade {
 					if (notFound)
 						ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
 				}
+				SubscriptionUsernameResponse rawList = ApiManagerFacade.listUsernameSubscriptionByApiName(httpClient, apiName);
+				for (UsernameResult listOfUser:rawList.getResult()) {
+					String userForSubscription = listOfUser.getUsername();
+					if (!userForSubscription.equals("admin")){
+						listOfApplication = ApiManagerFacade.listSubscriptionByApiAndUserName(httpClient, apiName, userForSubscription);
+						
+						for (Subs appNames:subs) {
+							boolean notFound = true;
+							for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing newTenantSh : streamNew.getTenantssharing().getTenantsharing()) {
+								if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {
+									notFound = false;
+								}
+							}
+							if (notFound)
+								ApiManagerFacade.unSubscribeApi(httpClient, apiName, null, appNames.getApplicationId());
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	//Per inserire basta fromPrivateToPublic=null e infoOld=null
-	/*public static void updateDatasetSubscriptionIntoStore2(CloseableHttpClient httpClient, String visibility, Info infoNew, Info infoOld, String apiName, boolean fromPrivateToPublic, boolean fromPublicToPrivate) throws Exception {
-		
-		//La Visibility non è cambiata
-		if (!fromPrivateToPublic && !fromPublicToPrivate) {
-			//Agisco solo in caso PRIVATE!!
-			if (visibility.equals("private")) {
-				
-				for (Tenantsharing oldTenantSh : infoOld.getTenantssharing().getTenantsharing()) {
-					//elimino se questo tenant non è presente in infoNew.getTenantssharing()
-					//if (oldTenantSh.getIsOwner() != 1) {
-						boolean found = false;
-						String appName = null;
-						for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
-							if (newTenantSh.getTenantName().equals(oldTenantSh.getTenantCode())) {
-								found = true;
-								appName = "userportal_" + oldTenantSh.getTenantCode();
-							}
-						}
-						
-						if (found){
-							SubscriptionResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient);
-							for (Subscriptions tenantSubscription : listSubscriptions.getSubscriptions()) {
-								if (tenantSubscription.getName().equals(appName))
-									ApiManagerFacade.unSubscribeApi(httpClient, apiName, appName, tenantSubscription.getId());
-							}
-						}
-					//}
-				}
-				for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
-					//aggiungo se questo tenant non è presente in infoOld.getTenantssharing()
-					//if (newTenantSh.getIsOwner() != 1) {
-						boolean found = false;
-						String appName = null;
-						for (Tenantsharing oldTenantSh : infoOld.getTenantssharing().getTenantsharing()) {
-							if (newTenantSh.getTenantName().equals(oldTenantSh.getTenantCode())) {
-								found = true;
-								appName = "userportal_" + newTenantSh.getTenantCode();
-							}
-						}
-						 
-						if (found)
-							ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
-					//}
-				}
-			}
-		} else if (fromPrivateToPublic) {
-			//Il DS è diventato public, devo togliere tutte le sottoscrizioni e lasciare quella dell'owner
-			for (Tenantsharing tenantSh : infoNew.getTenantssharing().getTenantsharing()) {
-				//if (tenantSh.getIsOwner() != 1) {
-					String appName = "userportal_" + tenantSh.getTenantCode();
-					SubscriptionResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient);
-					for (Subscriptions tenantSubscription : listSubscriptions.getSubscriptions()) {
-						if (tenantSubscription.getName().equals(appName))
-							ApiManagerFacade.unSubscribeApi(httpClient, apiName, appName, tenantSubscription.getId());
-					}
-				//}
-			}
-		} else {
-			//Il DS è diventato privato, devo aggiungere le sottoscrizioni così come specificato nell'array tenantssharing()
-			for (Tenantsharing tenantSh : infoNew.getTenantssharing().getTenantsharing()) {
-				//if (tenantSh.getIsOwner() != 1) {
-					String appName = "userportal_" + tenantSh.getTenantCode();
-					ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
-				//}
-			}
-		}
-	}
-	
-	public static void updateStreamSubscriptionIntoStore2(CloseableHttpClient httpClient, String visibility, Stream streamNew, Stream streamOld, String apiName, boolean fromPrivateToPublic, boolean fromPublicToPrivate) throws Exception {
-		
-		//La Visibility non è cambiata
-		if (!fromPrivateToPublic && !fromPublicToPrivate) {
-			//Agisco solo in caso PRIVATE!!
-			if (visibility.equals("private")) {
-				
-				for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing oldTenantSh : streamOld.getTenantssharing().getTenantsharing()) {
-					//elimino se questo tenant non è presente 
-					//if (oldTenantSh.getIsOwner() != 1) {
-						boolean found = false;
-						String appName = null;
-						for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing newTenantSh : streamNew.getTenantssharing().getTenantsharing()) {
-							if (newTenantSh.getTenantName().equals(oldTenantSh.getTenantCode())) {
-								found = true;
-								appName = "userportal_" + oldTenantSh.getTenantCode();
-							}
-						}
-						
-						if (found){
-							SubscriptionResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient);
-							for (Subscriptions tenantSubscription : listSubscriptions.getSubscriptions()) {
-								if (tenantSubscription.getName().equals(appName))
-									ApiManagerFacade.unSubscribeApi(httpClient, apiName, appName, tenantSubscription.getId());
-							}
-						}
-					//}
-				}
-				for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing newTenantSh : streamNew.getTenantssharing().getTenantsharing()) {
-					//aggiungo se questo tenant non è presente 
-					//if (newTenantSh.getIsOwner() != 1) {
-						boolean found = false;
-						String appName = null;
-						for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing oldTenantSh : streamOld.getTenantssharing().getTenantsharing()) {
-							if (newTenantSh.getTenantName().equals(oldTenantSh.getTenantCode())) {
-								found = true;
-								appName = "userportal_" + newTenantSh.getTenantCode();
-							}
-						}
-						 
-						if (found)
-							ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
-					//}
-				}
-			}
-		} else if (fromPrivateToPublic) {
-			//Lo stream è diventato public, devo togliere tutte le sottoscrizioni e lasciare quella dell'owner
-			for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenantSh : streamNew.getTenantssharing().getTenantsharing()) {
-				//if (tenantSh.getIsOwner() != 1) {
-					String appName = "userportal_" + tenantSh.getTenantCode();
-					SubscriptionResponse listSubscriptions = ApiManagerFacade.listSubscription(httpClient);
-					for (Subscriptions tenantSubscription : listSubscriptions.getSubscriptions()) {
-						if (tenantSubscription.getName().equals(appName))
-							ApiManagerFacade.unSubscribeApi(httpClient, apiName, appName, tenantSubscription.getId());
-					}
-				//}
-			}
-		} else {
-			//Lo stream è diventato privato, devo aggiungere le sottoscrizioni così come specificato nell'array tenantssharing()
-			for (org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing tenantSh : streamNew.getTenantssharing().getTenantsharing()) {
-				//if ((tenantSh.getIsOwner() != 1) || (insertNewStream)) {
-					String appName = "userportal_" + tenantSh.getTenantCode();
-					ApiManagerFacade.subscribeApi(httpClient, apiName, appName);
-				//}
-			}
-		}
-	}*/
 }
