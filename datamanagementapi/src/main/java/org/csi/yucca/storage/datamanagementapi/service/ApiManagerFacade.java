@@ -45,6 +45,7 @@ import com.google.gson.Gson;
 public class ApiManagerFacade {
 
 	private static String storeBaseUrl = Config.getInstance().getStoreBaseUrl();
+	private static String publisherBaseUrl = Config.getInstance().getPublisherBaseUrl();
 	private static String apiAdminServiceUrl = Config.getInstance().getApiAdminServiceUrl();
 
 	private static Gson gson = JSonHelper.getInstance();
@@ -360,7 +361,7 @@ public class ApiManagerFacade {
 		subscribeAdminApiParams.add(new BasicNameValuePair("provider", "admin"));
 		subscribeAdminApiParams.add(new BasicNameValuePair("apiname", apiname));
 		
-		String url = storeBaseUrl + "site/blocks/secure/subscription.jag";
+		String url = publisherBaseUrl + "site/blocks/secure/subscription.jag";
 		String response = makeHttpGet(httpclient, url, subscribeAdminApiParams);
 
 		SubscriptionUsernameResponse mySubscriptionResponse = gson.fromJson(response, SubscriptionUsernameResponse.class);
@@ -426,7 +427,7 @@ public class ApiManagerFacade {
 						if (!userForSubscription.equals("admin")){
 							listOfApplication = ApiManagerFacade.listSubscriptionByApiAndUserName(httpClient, apiName, userForSubscription);
 							
-							for (Subs appNames:subs) {
+							for (Subs appNames:listOfApplication.getSubscriptions()) {
 								boolean notFound = true;
 								for (Tenantsharing newTenantSh : infoNew.getTenantssharing().getTenantsharing()) {
 									if (appNames.getApplication().equals("userportal_"+newTenantSh.getTenantCode())) {

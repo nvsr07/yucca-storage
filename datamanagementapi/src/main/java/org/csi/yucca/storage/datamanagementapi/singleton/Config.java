@@ -34,6 +34,7 @@ public class Config {
 	public static final String HTTP_OK = "HTTP_OK";
 	public static final String RESPONSE_OK = "RESPONSE_OK";
 	public static final String STORE_API_ADDRESS = "STORE_API_ADDRESS";
+	public static final String PUBLISHER_BASE_URL = "PUBLISHER_BASE_URL";
 	public static final String USERPORTAL_BASE_URL = "USERPORTAL_BASE_URL";
 	public static final String STORE_BASE_URL = "STORE_BASE_URL";
 	public static final String BASE_EXPOSED_API_URL = "BASE_EXPOSED_API_URL";
@@ -44,15 +45,15 @@ public class Config {
 	public static final String MAIL_FROM = "MAIL_FROM";
 	public static final String MAIL_TO = "MAIL_TO";
 	public static final String MAIL_SERVER = "MAIL_SERVER";
-	public static final String MAIL_SUBJECT_404="MAIL_SUBJECT_404";
-	public static final String MAIL_BODY_404="MAIL_BODY_404";
-	public static final String MAIL_SUBJECT_500="MAIL_SUBJECT_500";
-	public static final String MAIL_BODY_500="MAIL_BODY_500";
-	public static final String MAIL_SUBJECT_200="MAIL_SUBJECT_200";
-	public static final String MAIL_BODY_200="MAIL_BODY_200";
+	public static final String MAIL_SUBJECT_404 = "MAIL_SUBJECT_404";
+	public static final String MAIL_BODY_404 = "MAIL_BODY_404";
+	public static final String MAIL_SUBJECT_500 = "MAIL_SUBJECT_500";
+	public static final String MAIL_BODY_500 = "MAIL_BODY_500";
+	public static final String MAIL_SUBJECT_200 = "MAIL_SUBJECT_200";
+	public static final String MAIL_BODY_200 = "MAIL_BODY_200";
 
 	public static final String DATA_INSERT_BASE_URL = "DATA_INSERT_BASE_URL";
-	
+
 	private static Map<String, String> params = null;
 	private static Config instance = null;
 	static Logger log = Logger.getLogger(Config.class);
@@ -83,6 +84,7 @@ public class Config {
 		params.put(RESPONSE_OK, rb.getString(RESPONSE_OK));
 		params.put(STORE_API_ADDRESS, rb.getString(STORE_API_ADDRESS));
 		params.put(STORE_BASE_URL, rb.getString(STORE_BASE_URL));
+		params.put(PUBLISHER_BASE_URL, rb.getString(PUBLISHER_BASE_URL));
 		params.put(USERPORTAL_BASE_URL, rb.getString(USERPORTAL_BASE_URL));
 		params.put(BASE_EXPOSED_API_URL, rb.getString(BASE_EXPOSED_API_URL));
 		params.put(API_ADMIN_SERVICES_URL, rb.getString(API_ADMIN_SERVICES_URL));
@@ -213,6 +215,10 @@ public class Config {
 		return params.get(STORE_BASE_URL);
 	}
 
+	public String getPublisherBaseUrl() {
+		return params.get(PUBLISHER_BASE_URL);
+	}
+
 	public String getUserportalBaseUrl() {
 		return params.get(USERPORTAL_BASE_URL);
 	}
@@ -220,40 +226,39 @@ public class Config {
 	public String getBaseExposedApiUrl() {
 		return params.get(BASE_EXPOSED_API_URL);
 	}
-	
+
 	public String getDataInsertBaseUrl() {
 		return params.get(DATA_INSERT_BASE_URL);
 	}
-	
 
 	public String getApiAdminServiceUrl() {
 		return params.get(API_ADMIN_SERVICES_URL);
 	}
-	
+
 	public String getApiKnoxSDNETUrl() {
 		return params.get(KNOX_SDNET_URL);
 	}
-	
+
 	public String getKnoxSDNETUser() {
 		return params.get(KNOX_USER);
 	}
-	
+
 	public String getKnoxSDNETPwd() {
 		return params.get(KNOX_PWD);
 	}
-	
+
 	public String getMailFrom() {
 		return params.get(MAIL_FROM);
 	}
-	
+
 	public String getMailTo() {
 		return params.get(MAIL_TO);
 	}
-	
+
 	public String getMailServer() {
 		return params.get(MAIL_SERVER);
 	}
-	
+
 	public static String getMailSubject404() {
 		return params.get(MAIL_SUBJECT_404);
 	}
@@ -285,11 +290,11 @@ public class Config {
 	public static Properties loadServerConfiguration() throws IOException {
 		return loadConfiguration("server.properties");
 	}
-	
+
 	public static Properties loadAuthorizationConfiguration() throws IOException {
 		return loadConfiguration("authorization.properties");
 	}
-	
+
 	private static Properties loadConfiguration(String configPath) throws IOException {
 		log.debug("[Config::loadConfiguration] - START, configPath " + configPath);
 		try {
