@@ -37,6 +37,7 @@ public class Metadata extends AbstractEntity {
 	private ConfigData configData;
 	private Info info;
 	private Opendata opendata;
+	private Dcat dcat;
 
 	public static Metadata fromJson(String json) {
 		Gson gson = JSonHelper.getInstance();
@@ -97,6 +98,22 @@ public class Metadata extends AbstractEntity {
 
 	public void setDatasetVersion(Integer datasetVersion) {
 		this.datasetVersion = datasetVersion;
+	}
+
+	public Opendata getOpendata() {
+		return opendata;
+	}
+
+	public void setOpendata(Opendata opendata) {
+		this.opendata = opendata;
+	}
+
+	public Dcat getDcat() {
+		return dcat;
+	}
+
+	public void setDcat(Dcat dcat) {
+		this.dcat = dcat;
 	}
 
 	public void generateCode() {
@@ -160,21 +177,7 @@ public class Metadata extends AbstractEntity {
 	}
 
 	public static Field[] binaryDatasetBaseFields() {
-		// Field fileNameField = new Field();
-		// fileNameField.setDataType("string");
-		// fileNameField.setFieldName("fileName");
-		// fileNameField.setFieldAlias("File Name");
-		//
-		// Field fileTypeField = new Field();
-		// fileTypeField.setDataType("string");
-		// fileTypeField.setFieldName("fileType");
-		// fileTypeField.setFieldAlias("File Type");
-		//
-		// Field contentTypeField = new Field();
-		// contentTypeField.setDataType("string");
-		// contentTypeField.setFieldName("contentType ");
-		// contentTypeField.setFieldAlias("Content Type");
-
+		
 		Field idBinaryField = new Field();
 		idBinaryField.setDataType("long");
 		idBinaryField.setFieldName("idBinary");
@@ -224,15 +227,6 @@ public class Metadata extends AbstractEntity {
 				contentTypeBinaryField, pathBinaryField, metadataBinaryField };
 	}
 
-	public Opendata getOpendata() {
-		return opendata;
-	}
-
-	public void setOpendata(Opendata opendata) {
-		this.opendata = opendata;
-	}
-
-	
 	public byte[] readDatasetIconBytes() throws IOException{
 		String imageBase64 = this.getInfo().getIcon();
 		BufferedImage imag = null;
