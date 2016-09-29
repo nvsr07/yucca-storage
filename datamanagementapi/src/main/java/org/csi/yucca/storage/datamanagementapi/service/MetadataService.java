@@ -666,7 +666,7 @@ public class MetadataService {
 				metadata.getDcat().setAgentType("PA");
 				metadata.getDcat().setIdentificativo("1995120019");
 				metadata.getDcat().setDescrCat("Catalogo Start Data Piemonte");
-				metadata.getDcat().setEditore((metadata.getOpendata().getAuthor() != null) ? metadata.getOpendata().getAuthor() : "CSI PIEMONTE");
+				metadata.getDcat().setEditore("CSI PIEMONTE");
 				metadata.getDcat().setTitoloCat("CATALOGO SMART DATA");
 				metadata.getDcat().setHomepage("http://userportal.smartdatanet.it");
 				metadata.getDcat().setSpatial("WGS84/UTM 32N");
