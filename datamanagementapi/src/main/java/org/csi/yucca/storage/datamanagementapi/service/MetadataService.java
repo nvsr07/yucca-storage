@@ -659,17 +659,17 @@ public class MetadataService {
 				// opendata
 				if (!"public".equals(metadata.getInfo().getVisibility())) {
 					metadata.setOpendata(null);
-				} else {
-					metadata.getDcat().setDcatReady(false);
-					metadata.getDcat().setAgentName("CSI PIEMONTE");
-					metadata.getDcat().setAgentType("PA");
-					metadata.getDcat().setIdentificativo("1995120019");
-					metadata.getDcat().setDescrCat("Catalogo Start Data Piemonte");
-					metadata.getDcat().setEditore((metadata.getOpendata().getAuthor() != null) ? metadata.getOpendata().getAuthor() : "CSI PIEMONTE");
-					metadata.getDcat().setTitoloCat("CATALOGO SMART DATA");
-					metadata.getDcat().setHomepage("http://userportal.smartdatanet.it");
-					metadata.getDcat().setSpatial("WGS84/UTM 32N");
 				}
+				
+				metadata.getDcat().setDcatReady(true);
+				metadata.getDcat().setAgentName("CSI PIEMONTE");
+				metadata.getDcat().setAgentType("PA");
+				metadata.getDcat().setIdentificativo("1995120019");
+				metadata.getDcat().setDescrCat("Catalogo Start Data Piemonte");
+				metadata.getDcat().setEditore((metadata.getOpendata().getAuthor() != null) ? metadata.getOpendata().getAuthor() : "CSI PIEMONTE");
+				metadata.getDcat().setTitoloCat("CATALOGO SMART DATA");
+				metadata.getDcat().setHomepage("http://userportal.smartdatanet.it");
+				metadata.getDcat().setSpatial("WGS84/UTM 32N");
 
 				Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 
@@ -897,24 +897,25 @@ public class MetadataService {
 				opendata.setLanguage(inputMetadata.getOpendata().getLanguage() == null ? "it" : inputMetadata.getOpendata().getLanguage());
 				opendata.setDataUpdateDate(inputMetadata.getOpendata().getDataUpdateDate());
 				newMetadata.setOpendata(opendata);
-				Dcat dcat = new Dcat();
-				dcat.setDcatReady(false);
-				dcat.setAgentName("CSI PIEMONTE");
-				dcat.setAgentType("PA");
-				dcat.setIdentificativo("1995120019");
-				dcat.setDescrCat("Catalogo Start Data Piemonte");
-				dcat.setEditore((opendata.getAuthor() != null) ? opendata.getAuthor() : "CSI PIEMONTE");
-				dcat.setTitoloCat("CATALOGO SMART DATA");
-				dcat.setHomepage("http://userportal.smartdatanet.it");
-				dcat.setSpatial("WGS84/UTM 32N");
-				dcat.setPuntoContatto(inputMetadata.getDcat().getPuntoContatto());
-				dcat.setVcard(inputMetadata.getDcat().getVcard());
-				dcat.setNomeOrg(inputMetadata.getDcat().getNomeOrg());
-				dcat.setEmailOrg(inputMetadata.getDcat().getEmailOrg());
-				dcat.setTelOrg(inputMetadata.getDcat().getTelOrg());
-				dcat.setUrlOrg(inputMetadata.getDcat().getUrlOrg());
-				newMetadata.setDcat(dcat);
 			}
+
+			Dcat dcat = new Dcat();
+			dcat.setDcatReady(false);
+			dcat.setAgentName("CSI PIEMONTE");
+			dcat.setAgentType("PA");
+			dcat.setIdentificativo("1995120019");
+			dcat.setDescrCat("Catalogo Start Data Piemonte");
+			dcat.setEditore("CSI PIEMONTE");
+			dcat.setTitoloCat("CATALOGO SMART DATA");
+			dcat.setHomepage("http://userportal.smartdatanet.it");
+			dcat.setSpatial("WGS84/UTM 32N");
+			dcat.setPuntoContatto(inputMetadata.getDcat().getPuntoContatto());
+			dcat.setVcard(inputMetadata.getDcat().getVcard());
+			dcat.setNomeOrg(inputMetadata.getDcat().getNomeOrg());
+			dcat.setEmailOrg(inputMetadata.getDcat().getEmailOrg());
+			dcat.setTelOrg(inputMetadata.getDcat().getTelOrg());
+			dcat.setUrlOrg(inputMetadata.getDcat().getUrlOrg());
+			newMetadata.setDcat(dcat);
 
 			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
 			if (newMetadata.getInfo().getTenantssharing() != null) {
