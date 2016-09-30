@@ -370,7 +370,7 @@ public class MetadataService {
 	@GET
 	@Path("/{tenant}/{virtualentityCode}/{streamCode}")
 	@Produces("application/json; charset=UTF-8")
-	public String getFromStreamKey(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode, @PathParam("streamCode") String streamCode) throws NumberFormatException, UnknownHostException {
+	public String getFromStreamKey(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode, @PathParam("streamCode") String streamCode, @QueryParam(value="visibleFrom") String visibleFromParam) throws NumberFormatException, UnknownHostException {
 		// select
 		log.debug("[MetadataService::get] - START - datasetCode: " + virtualentityCode + " - streamCode: " + streamCode);
 		
@@ -379,13 +379,13 @@ public class MetadataService {
 		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
 
-		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode);
+		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode, visibleFromParam);
 		Long idDataset = stream.getConfigData().getIdDataset();
 		
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset, visibleFromParam);
 		
 		String supportApiCollection = Config.getInstance().getCollectionSupportApi();
 

@@ -135,9 +135,6 @@ public class MongoDBMetadataDAO {
 		
 		if (visibleFromParam != null) {
 			
-			//add query
-			//db.getCollection('metadata').find({ $or :[{"info.visibility": "public"}, {"info.tenantssharing.tenantsharing.tenantCode": { $in: ["tst_regpie", "csp", "csi"]}}]}).sort({"_id": -1})
-			
 			BasicDBList or = new BasicDBList();
 			or.add(new BasicDBObject("info.visibility", "public"));
 			
@@ -160,12 +157,29 @@ public class MongoDBMetadataDAO {
 		return metadataLoaded;
 	}
 
-	public Metadata readCurrentMetadataByIdDataset(Long IdDataset) {
+	public Metadata readCurrentMetadataByIdDataset(Long IdDataset, String visibleFromParam) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("idDataset", IdDataset);
 		searchQuery.put("configData.current", 1);
+		
+		if (visibleFromParam != null) {
+			
+			BasicDBList or = new BasicDBList();
+			or.add(new BasicDBObject("info.visibility", "public"));
+			
+			String[] visSplit = StringUtils.split(visibleFromParam, "|");
+			if ((visSplit != null) && (visSplit.length > 0)){
+
+				or.add(new BasicDBObject("info.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
+			}
+
+			searchQuery.put("$or", or);
+		}
 
 		DBObject data = collection.find(searchQuery).one();
+		if (data == null) {
+			return null;
+		}
 		ObjectId id = (ObjectId) data.get("_id");
 		Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(data));
 		metadataLoaded.setId(id.toString());

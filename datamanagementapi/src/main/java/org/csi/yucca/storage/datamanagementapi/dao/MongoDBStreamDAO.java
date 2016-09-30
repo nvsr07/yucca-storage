@@ -3,11 +3,13 @@ package org.csi.yucca.storage.datamanagementapi.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
@@ -83,12 +85,29 @@ public class MongoDBStreamDAO {
 		return streamLoaded;
 	}
 	
-	public StreamOut readCurrentStreamByCode(String virtualentityCode, String streamCode) {
+	public StreamOut readCurrentStreamByCode(String virtualentityCode, String streamCode, String visibleFromParam) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("streamCode", streamCode);
 		searchQuery.put("streams.stream.virtualEntityCode", virtualentityCode);
+		
+		if (visibleFromParam != null) {
+			
+			BasicDBList or = new BasicDBList();
+			or.add(new BasicDBObject("streams.stream.visibility", "public"));
+			
+			String[] visSplit = StringUtils.split(visibleFromParam, "|");
+			if ((visSplit != null) && (visSplit.length > 0)){
+
+				or.add(new BasicDBObject("info.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
+			}
+
+			searchQuery.put("$or", or);
+		}
 	
 		DBObject data = collection.find(searchQuery).sort(new BasicDBObject("configData.datasetVersion", -1)).one();
+		if (data == null) {
+			return null;
+		}
 		ObjectId id = (ObjectId) data.get("_id");
 		StreamOut streamLoaded = StreamOut.fromJson(JSON.serialize(data));
 		streamLoaded.setId(id.toString());
