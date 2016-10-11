@@ -344,6 +344,7 @@ public class StoreService {
 		if (metadata.getInfo().getTags() != null) {
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
 			Map<String, String> domainTranslated = new HashMap<String, String>();
+			Map<String, String> subDomainTranslated = new HashMap<String, String>();
 			for (String lang : Constants.LANGUAGES_SUPPORTED) {
 				ResourceBundle messages = getMessages(lang);
 				List<String> translatedTags = new LinkedList<String>();
@@ -359,9 +360,16 @@ public class StoreService {
 				String translatedDomain = "";
 				if (metadata.getInfo().getDataDomain() != null)
 					translatedDomain = messages.getString(metadata.getInfo().getDataDomain());
-
+				
 				domainTranslated.put(lang, translatedDomain);
 				metadata.getInfo().setDomainTranslated(domainTranslated);
+
+				String translatedSubDomain = "";
+				if (metadata.getInfo().getCodSubDomain() != null)
+					translatedSubDomain = messages.getString(metadata.getInfo().getCodSubDomain());
+				
+				subDomainTranslated.put(lang, translatedSubDomain);
+				metadata.getInfo().setSubDomainTranslated(subDomainTranslated);
 
 			}
 		}
@@ -591,11 +599,13 @@ public class StoreService {
 			//messagesMap.put(lang, ResourceBundle.getBundle("/i18n/MessagesBundle", locale));
 			String tagResource = "";
 			String domainResource = "";
+			String subDomainResource = "";
 
 			tagResource = formatMessages(locale, "tags");
 			domainResource = formatMessages(locale, "domains");
+			subDomainResource = formatMessages(locale, "subdomains");
 			try {
-				messagesMap.put(lang, new PropertyResourceBundle(new StringReader(tagResource + "\n" + domainResource)));
+				messagesMap.put(lang, new PropertyResourceBundle(new StringReader(tagResource + "\n" + domainResource + "\n" + subDomainResource)));
 			} catch (IOException ex) {
 				// TODO Auto-generated catch block
 				ex.printStackTrace();
@@ -657,8 +667,8 @@ public class StoreService {
 		StringBuffer sb = new StringBuffer("");
 		String loc = locale.getLanguage().substring(0, 1).toUpperCase() + locale.getLanguage().substring(1);
 		
-		String label1 = (element.equals("tags") ? "streamTags" : "streamDomains");
-		String label2 = (element.equals("tags") ? "tagCode" : "codDomain");
+		String label1 = (element.equals("tags") ? "streamTags" : (element.equals("domains") ? "streamDomains" : "streamSubDomains"));
+		String label2 = (element.equals("tags") ? "tagCode" : (element.equals("domains") ? "codDomain" : "codSubDomain"));
 		
 		try {
 			JSONObject streamTags = messages.getJSONObject(label1);

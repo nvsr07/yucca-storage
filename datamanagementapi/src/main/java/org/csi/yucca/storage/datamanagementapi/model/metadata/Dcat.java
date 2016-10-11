@@ -35,7 +35,6 @@ public class Dcat {
 	}
 
 	public Dcat() {
-		super();
 	}
 
 	public boolean isDcatReady() {

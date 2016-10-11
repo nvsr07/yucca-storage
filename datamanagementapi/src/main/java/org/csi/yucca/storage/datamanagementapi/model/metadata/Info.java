@@ -42,6 +42,7 @@ public class Info extends AbstractEntity {
 
 	private Map<String, List<String>> tagsTranslated;
 	private Map<String, String> domainTranslated;
+	private Map<String, String> subDomainTranslated;
 
 	public Info() {
 	}
@@ -241,6 +242,14 @@ public class Info extends AbstractEntity {
 
 	public void setDomainTranslated(Map<String, String> domainTranslated) {
 		this.domainTranslated = domainTranslated;
+	}
+
+	public Map<String, String> getSubDomainTranslated() {
+		return subDomainTranslated;
+	}
+
+	public void setSubDomainTranslated(Map<String, String> subDomainTranslated) {
+		this.subDomainTranslated = subDomainTranslated;
 	}
 
 	public String getExternalReference() {
