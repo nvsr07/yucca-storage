@@ -4,6 +4,8 @@ package org.csi.yucca.storage.datamanagementapi.model.streaminput;
 import java.util.List;
 import java.util.Map;
 
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Dcat;
+
 import com.google.gson.annotations.Expose;
 
 
@@ -121,21 +123,19 @@ public class Stream {
     private VirtualEntityPositions virtualEntityPositions;
     @Expose
     private Tenantssharing tenantssharing;
+    @Expose
+    private String externalReference;       
+    @Expose
+    private OpendataInfo opendata;   
+    @Expose
+    private Dcat dcat;
 
     @Expose
 	private Map<String, List<String>> tagsTranslated;
     @Expose
 	private Map<String, String> domainTranslated;
-  
-
-
-    /* YUCCA-505 */
     @Expose
-    private String externalReference;       
-    
-    @Expose
-    private OpendataInfo opendata;
-    
+	private Map<String, String> subDomainTranslated;
 
     public String getExternalReference() {
 		return externalReference;
@@ -151,6 +151,14 @@ public class Stream {
 
 	public void setOpendata(OpendataInfo opendata) {
 		this.opendata = opendata;
+	}
+
+	public Dcat getDcat() {
+		return dcat;
+	}
+
+	public void setDcat(Dcat dcat) {
+		this.dcat = dcat;
 	}
 
 	/**
@@ -1012,6 +1020,15 @@ public class Stream {
 	}
 	
 	
+	public Map<String, String> getSubDomainTranslated() {
+		return subDomainTranslated;
+	}
+
+	public void setSubDomainTranslated(Map<String, String> subDomainTranslated) {
+		this.subDomainTranslated = subDomainTranslated;
+	}
+
+
 	@Expose
     private String virtualEntitySlug;
 	

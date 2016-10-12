@@ -1,6 +1,7 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Dcat;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
@@ -102,6 +103,15 @@ public class Stream {
     private StreamTags streamTags;
     @Expose
     private VirtualEntityPositions virtualEntityPositions;
+	@Expose
+    private Tenantssharing tenantssharing;
+    @Expose
+    private String externalReference;       
+    @Expose
+    private OpendataInfo opendata;   
+    @Expose
+    private Dcat dcat;
+    
     
 	public static Stream fromJson(String json) {
 		Gson gson = JSonHelper.getInstance();
@@ -123,16 +133,12 @@ public class Stream {
 		this.opendata = opendata;
 	}
 
-	@Expose
-    private Tenantssharing tenantssharing;
-
-
-    /* YUCCA-505 */
-    @Expose
-    private String externalReference;       
-    
-    @Expose
-    private OpendataInfo opendata;
+	public Dcat getDcat() {
+		return dcat;
+	}
+	public void setDcat(Dcat dcat) {
+		this.dcat = dcat;
+	}
     
     
     /**

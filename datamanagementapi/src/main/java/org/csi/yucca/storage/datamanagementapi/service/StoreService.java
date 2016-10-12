@@ -313,6 +313,7 @@ public class StoreService {
 		if (pojoStreams2.getStreams().getStream().getStreamTags() != null) {
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
 			Map<String, String> domainTranslated = new HashMap<String, String>();
+			Map<String, String> subDomainTranslated = new HashMap<String, String>();
 			for (String lang : Constants.LANGUAGES_SUPPORTED) {
 				ResourceBundle messages = getMessages(lang);
 
@@ -329,6 +330,13 @@ public class StoreService {
 
 				domainTranslated.put(lang, translatedDomain);
 				pojoStreams2.getStreams().getStream().setDomainTranslated(domainTranslated);
+
+				String translatedSubDomain = "";
+				if (pojoStreams2.getStreams().getStream().getCodSubDomain() != null)
+					translatedSubDomain = messages.getString(pojoStreams2.getStreams().getStream().getCodSubDomain());
+				
+				subDomainTranslated.put(lang, translatedSubDomain);
+				pojoStreams2.getStreams().getStream().setSubDomainTranslated(subDomainTranslated);
 
 			}
 
