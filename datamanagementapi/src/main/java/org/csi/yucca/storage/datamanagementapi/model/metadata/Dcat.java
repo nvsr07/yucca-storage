@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 
 public class Dcat {
 
-	private int dcatReady;
+	private boolean dcatReady;
 	private String agentName;
 	private String agentType;
 	private String identificativo;
@@ -38,15 +38,15 @@ public class Dcat {
 	}
 
 	public boolean isDcatReady() {
-		return dcatReady == 1;
+		return dcatReady;
 	}
 
 	public void setDcatReady(int dcatReady) {
-		this.dcatReady = dcatReady;
+		this.dcatReady = (dcatReady == 1) ? true : false;
 	}
 
 	public void setDcatReady(boolean dcatReady) {
-		this.dcatReady = (dcatReady) ? 1 : 0;
+		this.dcatReady = dcatReady;
 	}
 
 	public String getAgentName() {
