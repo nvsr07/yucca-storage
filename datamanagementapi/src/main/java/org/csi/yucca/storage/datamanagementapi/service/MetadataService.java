@@ -900,7 +900,7 @@ public class MetadataService {
 			}
 
 			Dcat dcat = new Dcat();
-			dcat.setDcatReady(false);
+			dcat.setDcatReady(true);
 			dcat.setAgentName("CSI PIEMONTE");
 			dcat.setAgentType("PA");
 			dcat.setIdentificativo("1995120019");
