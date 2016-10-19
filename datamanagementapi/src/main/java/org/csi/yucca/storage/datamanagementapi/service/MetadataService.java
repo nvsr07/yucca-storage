@@ -44,7 +44,6 @@ import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
 import org.csi.yucca.storage.datamanagementapi.exception.MaxDatasetNumException;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Dcat;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
@@ -661,15 +660,7 @@ public class MetadataService {
 					metadata.setOpendata(null);
 				}
 				
-				metadata.getDcat().setDcatReady(true);
-				metadata.getDcat().setAgentName("CSI PIEMONTE");
-				metadata.getDcat().setAgentType("PA");
-				metadata.getDcat().setIdentificativo("1995120019");
-				metadata.getDcat().setDescrCat("Catalogo Start Data Piemonte");
-				metadata.getDcat().setEditore("CSI PIEMONTE");
-				metadata.getDcat().setTitoloCat("CATALOGO SMART DATA");
-				metadata.getDcat().setHomepage("http://userportal.smartdatanet.it");
-				metadata.getDcat().setSpatial("WGS84/UTM 32N");
+				metadata.setDcatReady(1);
 
 				Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 
@@ -898,24 +889,16 @@ public class MetadataService {
 				opendata.setDataUpdateDate(inputMetadata.getOpendata().getDataUpdateDate());
 				newMetadata.setOpendata(opendata);
 			}
-
-			Dcat dcat = new Dcat();
-			dcat.setDcatReady(true);
-			dcat.setAgentName("CSI PIEMONTE");
-			dcat.setAgentType("PA");
-			dcat.setIdentificativo("1995120019");
-			dcat.setDescrCat("Catalogo Start Data Piemonte");
-			dcat.setEditore("CSI PIEMONTE");
-			dcat.setTitoloCat("CATALOGO SMART DATA");
-			dcat.setHomepage("http://userportal.smartdatanet.it");
-			dcat.setSpatial("WGS84/UTM 32N");
-			dcat.setPuntoContatto(inputMetadata.getDcat().getPuntoContatto());
-			dcat.setVcard(inputMetadata.getDcat().getVcard());
-			dcat.setNomeOrg(inputMetadata.getDcat().getNomeOrg());
-			dcat.setEmailOrg(inputMetadata.getDcat().getEmailOrg());
-			dcat.setTelOrg(inputMetadata.getDcat().getTelOrg());
-			dcat.setUrlOrg(inputMetadata.getDcat().getUrlOrg());
-			newMetadata.setDcat(dcat);
+			
+			newMetadata.setDcatReady(1);
+			newMetadata.setDcatNomeOrg(inputMetadata.getDcatNomeOrg());
+			newMetadata.setDcatEmailOrg(inputMetadata.getDcatEmailOrg());
+			newMetadata.setDcatCreatorName(inputMetadata.getDcatCreatorName());
+			newMetadata.setDcatCreatorType(inputMetadata.getDcatCreatorType());
+			newMetadata.setDcatCreatorId(inputMetadata.getDcatCreatorId());
+			newMetadata.setDcatRightsHolderName(inputMetadata.getDcatRightsHolderName());
+			newMetadata.setDcatRightsHolderType(inputMetadata.getDcatRightsHolderType());
+			newMetadata.setDcatRightsHolderId(inputMetadata.getDcatRightsHolderId());
 
 			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
 			if (newMetadata.getInfo().getTenantssharing() != null) {

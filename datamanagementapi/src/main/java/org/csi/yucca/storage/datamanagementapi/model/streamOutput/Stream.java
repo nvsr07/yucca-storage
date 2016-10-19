@@ -1,7 +1,6 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.streamOutput;
 
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Dcat;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
@@ -110,7 +109,23 @@ public class Stream {
     @Expose
     private OpendataInfo opendata;   
     @Expose
-    private Dcat dcat;
+    private int dcatReady;  
+    @Expose
+	private String dcatCreatorName;  
+    @Expose
+	private String dcatCreatorType;  
+    @Expose
+	private String dcatCreatorId;  
+    @Expose
+	private String dcatRightsHolderName;  
+    @Expose
+	private String dcatRightsHolderType;  
+    @Expose
+	private String dcatRightsHolderId;  
+    @Expose
+	private String dcatNomeOrg;  
+    @Expose
+	private String dcatEmailOrg;
     
     
 	public static Stream fromJson(String json) {
@@ -132,16 +147,64 @@ public class Stream {
 	public void setOpendata(OpendataInfo opendata) {
 		this.opendata = opendata;
 	}
-
-	public Dcat getDcat() {
-		return dcat;
+	public int getDcatReady() {
+		return dcatReady;
 	}
-	public void setDcat(Dcat dcat) {
-		this.dcat = dcat;
+	public void setDcatReady(int dcatReady) {
+		this.dcatReady = dcatReady;
 	}
-    
-    
-    /**
+	public void setDcatReady(Boolean dcatReady) {
+		this.dcatReady = (dcatReady) ? 1 : 0;
+	}
+	public String getDcatCreatorName() {
+		return dcatCreatorName;
+	}
+	public void setDcatCreatorName(String dcatCreatorName) {
+		this.dcatCreatorName = dcatCreatorName;
+	}
+	public String getDcatCreatorType() {
+		return dcatCreatorType;
+	}
+	public void setDcatCreatorType(String dcatCreatorType) {
+		this.dcatCreatorType = dcatCreatorType;
+	}
+	public String getDcatCreatorId() {
+		return dcatCreatorId;
+	}
+	public void setDcatCreatorId(String dcatCreatorId) {
+		this.dcatCreatorId = dcatCreatorId;
+	}
+	public String getDcatRightsHolderName() {
+		return dcatRightsHolderName;
+	}
+	public void setDcatRightsHolderName(String dcatRightsHolderName) {
+		this.dcatRightsHolderName = dcatRightsHolderName;
+	}
+	public String getDcatRightsHolderType() {
+		return dcatRightsHolderType;
+	}
+	public void setDcatRightsHolderType(String dcatRightsHolderType) {
+		this.dcatRightsHolderType = dcatRightsHolderType;
+	}
+	public String getDcatRightsHolderId() {
+		return dcatRightsHolderId;
+	}
+	public void setDcatRightsHolderId(String dcatRightsHolderId) {
+		this.dcatRightsHolderId = dcatRightsHolderId;
+	}
+	public String getDcatNomeOrg() {
+		return dcatNomeOrg;
+	}
+	public void setDcatNomeOrg(String dcatNomeOrg) {
+		this.dcatNomeOrg = dcatNomeOrg;
+	}
+	public String getDcatEmailOrg() {
+		return dcatEmailOrg;
+	}
+	public void setDcatEmailOrg(String dcatEmailOrg) {
+		this.dcatEmailOrg = dcatEmailOrg;
+	}
+	/**
      * 
      * @return
      *     The idVirtualEntity

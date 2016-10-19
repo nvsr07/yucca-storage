@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.Dcat;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
@@ -159,21 +158,15 @@ public class MetadataFiller {
 			myMeta.setOpendata(odataOut);
 		}
 		
-		Dcat dcat = new Dcat();
-		dcat.setDcatReady(false);
-		//dcat.setAgentName("CSI PIEMONTE");
-		//dcat.setAgentType("PA");
-		//dcat.setIdentificativo("1995120019");
-		//dcat.setDescrCat("Catalogo Start Data Piemonte");
-		//dcat.setEditore("CSI PIEMONTE");
-		//dcat.setTitoloCat("CATALOGO SMART DATA");
-		//dcat.setHomepage("http://userportal.smartdatanet.it");
-		//dcat.setSpatial("WGS84/UTM 32N");
-		dcat.setNomeOrg(stream.getDcat().getNomeOrg());
-		dcat.setEmailOrg(stream.getDcat().getEmailOrg());
-		dcat.setTelOrg(stream.getDcat().getTelOrg());
-		dcat.setUrlOrg(stream.getDcat().getUrlOrg());
-		myMeta.setDcat(dcat);
+		myMeta.setDcatReady(1);
+		myMeta.setDcatNomeOrg(stream.getDcatNomeOrg());
+		myMeta.setDcatEmailOrg(stream.getDcatEmailOrg());
+		myMeta.setDcatCreatorName(stream.getDcatCreatorName());
+		myMeta.setDcatCreatorType(stream.getDcatCreatorType());
+		myMeta.setDcatCreatorId(stream.getDcatCreatorId());
+		myMeta.setDcatRightsHolderName(stream.getDcatRightsHolderName());
+		myMeta.setDcatRightsHolderType(stream.getDcatRightsHolderType());
+		myMeta.setDcatRightsHolderId(stream.getDcatRightsHolderId());
 		
 		myMeta.setInfo(info);
 		return myMeta;
