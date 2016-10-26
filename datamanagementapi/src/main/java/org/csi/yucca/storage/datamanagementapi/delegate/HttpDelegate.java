@@ -59,7 +59,7 @@ public class HttpDelegate {
 	}
 	
 	
-	public static String executePost(String targetUrl, String basicUser, String basicPassword, String contentType, String characterEncoding, Map<String, String> parameters, String data) throws IOException {
+	public static String executePost(String targetUrl, String basicUser, String basicPassword, String contentType, String characterEncoding, Map<String, String> parameters, String data) throws Exception {
 		log.debug("[HttpDelegate::executePost] START");
 		String result = "";
 		int resultCode = -1;
@@ -101,6 +101,9 @@ public class HttpDelegate {
 			
 			try {
 				resultCode = httpclient.executeMethod(post);
+				if (resultCode >= 400) {
+					throw new Exception("{'error_name': 'Dataset error in executePost', 'error_code': resultCode, 'output': null, 'message': null}");
+				}
 				log.debug("[HttpDelegate::executePost] - post result: " + resultCode);
 				result = post.getResponseBodyAsString();
 			} finally {
