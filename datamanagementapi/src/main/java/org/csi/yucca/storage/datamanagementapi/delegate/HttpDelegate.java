@@ -101,11 +101,11 @@ public class HttpDelegate {
 			
 			try {
 				resultCode = httpclient.executeMethod(post);
+				result = post.getResponseBodyAsString();
 				if (resultCode >= 400) {
-					throw new Exception("{'error_name': 'Dataset error in executePost', 'error_code': resultCode, 'output': null, 'message': null}");
+					throw new Exception(result);
 				}
 				log.debug("[HttpDelegate::executePost] - post result: " + resultCode);
-				result = post.getResponseBodyAsString();
 			} finally {
 				post.releaseConnection();
 			}

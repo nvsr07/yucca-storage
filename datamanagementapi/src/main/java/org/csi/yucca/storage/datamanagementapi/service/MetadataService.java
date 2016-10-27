@@ -672,6 +672,8 @@ public class MetadataService {
 
 				createDatasetResponse.setMetadata(metadataCreated);
 				createDatasetResponse.setApi(apiCreated);
+				
+				createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_CREATED);
 
 				/*
 				 * Create api in the store
@@ -724,6 +726,7 @@ public class MetadataService {
 					StoreService.publishStore("1.0", apiName, "admin");
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
 					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, metadata.getInfo().getVisibility(), metadata.getInfo(), apiName);
+					createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_PUT_INTO_STORE);
 				} catch (Exception e) {
 					log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
 				}
@@ -732,6 +735,7 @@ public class MetadataService {
 					try { //TODO create data da aggiornare
 						//dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
 						dataUpload.writeData(tenant, metadataCreated);
+						createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_DATA_UPLOAD);
 					} catch (Exception e) {
 						log.error("[MetadataService::createMetadata] - writeFileToMongo ERROR: " + e.getMessage());
 						createDatasetResponse.addErrorMessage(new ErrorMessage(e));
