@@ -83,7 +83,13 @@ public class DataInsertDataUpload extends DataUpload {
 						String curValue = fieldValues[numColumn];
 
 						if (curValue == null || curValue.length() == 0) {
-							values += "\"" + fieldName + "\":  null,";
+							if ("string".equals(typeCode))
+								values += "\"" + fieldName + "\":\"\",";
+							else {
+								SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_INVALIDTYPE, row, lineNumber, numColumn,
+										"Not string value (type) " + typeCode + "  found null");
+								errorCurrentRow.add(curRowErr);
+							}
 						} else {
 
 							try {
