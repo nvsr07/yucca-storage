@@ -35,6 +35,7 @@ public class DataInsertDataUpload extends DataUpload {
 		int numColumnFileIn = 0;
 		String[] nextRow;
 		int lineNumber = 0;
+		items = "[";
 		String item = "{\"datasetCode\":\"" + datasetMetadata.getDatasetCode() + "\",\"datasetVersion\":\"" + datasetMetadata.getDatasetVersion() + "\", \"values\": [";
 		
 		while ((nextRow = reader.readNext()) != null) {
