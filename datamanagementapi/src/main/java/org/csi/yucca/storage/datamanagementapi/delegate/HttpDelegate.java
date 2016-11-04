@@ -103,6 +103,8 @@ public class HttpDelegate {
 				resultCode = httpclient.executeMethod(post);
 				result = post.getResponseBodyAsString();
 				if (resultCode >= 400) {
+					log.error("[HttpDelegate::executePost] - post result: " + resultCode);
+					log.error(post.getResponseHeaders().toString());
 					throw new Exception(result);
 				}
 				log.debug("[HttpDelegate::executePost] - post result: " + resultCode);
