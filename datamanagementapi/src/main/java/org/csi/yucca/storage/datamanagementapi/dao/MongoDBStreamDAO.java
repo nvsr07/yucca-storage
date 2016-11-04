@@ -98,7 +98,8 @@ public class MongoDBStreamDAO {
 			String[] visSplit = StringUtils.split(visibleFromParam, "|");
 			if ((visSplit != null) && (visSplit.length > 0)){
 
-				or.add(new BasicDBObject("info.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
+				//or.add(new BasicDBObject("info.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
+				or.add(new BasicDBObject("streams.stream.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
 			}
 
 			searchQuery.put("$or", or);
