@@ -377,14 +377,19 @@ public class MetadataService {
 		String supportDb = Config.getInstance().getDbSupport();
 		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+		Metadata md = null;
 
 		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode, visibleFromParam);
-		Long idDataset = stream.getConfigData().getIdDataset();
+		if (stream.getConfigData().getIdDataset() != null) {
+			Long idDataset = stream.getConfigData().getIdDataset();
 		
-		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+			String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
-		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset, visibleFromParam);
+			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+			md = metadataDAO.readCurrentMetadataByIdDataset(idDataset, visibleFromParam);
+		}
+		
+		final Metadata metadata = md;
 		
 		String supportApiCollection = Config.getInstance().getCollectionSupportApi();
 
