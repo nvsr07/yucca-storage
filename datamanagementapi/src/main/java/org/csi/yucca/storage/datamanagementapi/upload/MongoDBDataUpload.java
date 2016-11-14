@@ -228,5 +228,11 @@ public class MongoDBDataUpload extends DataUpload{
 			this.formalErrors.addAll(errors);
 
 	}
+
+	@Override
+	public void prepareHeader(Metadata datasetMetadata) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

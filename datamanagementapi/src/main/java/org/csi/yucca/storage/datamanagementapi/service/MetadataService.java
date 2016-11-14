@@ -739,7 +739,8 @@ public class MetadataService {
 				if (csvData != null) {
 					try { //TODO create data da aggiornare
 						//dataUpload.writeFileToMongo(mongo, "DB_" + tenant, "data", metadataCreated);
-						checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadataCreated, skipFirstRow);
+						//checkFileToWriteErrors = dataUpload.checkFileToWrite(csvData, csvSeparator, metadataCreated, skipFirstRow);
+						dataUpload.prepareHeader(metadataCreated);
 						dataUpload.writeData(tenant, metadataCreated);
 						createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_DATA_UPLOAD);
 					} catch (Exception e) {

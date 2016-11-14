@@ -29,4 +29,7 @@ public abstract class DataUpload {
 
 	public abstract void writeData(String tenant, Metadata datasetMetadata) throws Exception;
 
+
+	public abstract void prepareHeader(Metadata datasetMetadata);
+
 }

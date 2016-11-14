@@ -21,9 +21,17 @@ import com.google.gson.Gson;
 
 public class DataInsertDataUpload extends DataUpload {
 
-	String items = "[";
+	private String header = "";
+	private String items = "";
 	int totalCount = 0;
 
+	
+	@Override
+	public void prepareHeader( Metadata datasetMetadata) {
+		header = "[{\"datasetCode\":\"" + datasetMetadata.getDatasetCode() + "\",\"datasetVersion\":\"" + datasetMetadata.getDatasetVersion() + "\", \"values\": [";
+	}
+
+		
 	@Override
 	protected void prepareDataInsert(String dataIn, String separator, Metadata datasetMetadata, boolean skipFirstRow) throws IOException {
 
@@ -35,8 +43,9 @@ public class DataInsertDataUpload extends DataUpload {
 		int numColumnFileIn = 0;
 		String[] nextRow;
 		int lineNumber = 0;
-		items = "[";
-		String item = "{\"datasetCode\":\"" + datasetMetadata.getDatasetCode() + "\",\"datasetVersion\":\"" + datasetMetadata.getDatasetVersion() + "\", \"values\": [";
+		items = "";
+		header = "[{\"datasetCode\":\"" + datasetMetadata.getDatasetCode() + "\",\"datasetVersion\":\"" + datasetMetadata.getDatasetVersion() + "\", \"values\": [";
+		StringBuilder item = new StringBuilder();
 		
 		while ((nextRow = reader.readNext()) != null) {
 			lineNumber++;
@@ -123,15 +132,16 @@ public class DataInsertDataUpload extends DataUpload {
 				errors.addAll(errorCurrentRow);
 				System.out.println("end row ..errors");
 			} else {
-				item += "{" + values.substring(0, values.length() - 1) + "}, ";
+				String itemAdd = "{" + values.substring(0, values.length() - 1) + "},"; 
+				item.append(itemAdd);
 			}
 
 		}
 
-		item = item.substring(0, item.length() - 2) + "]},";
-		items += item;
+		//item = item.delete(start, end);
+		items = item.substring(0, item.length() - 1);
 		totalCount++;
-		items = items.substring(0, items.length() - 1) + "]";
+		//items = items.substring(0, items.length() - 1) + "]";
 		if (reader != null)
 			reader.close();
 
@@ -156,7 +166,7 @@ public class DataInsertDataUpload extends DataUpload {
 
 		String insertApiUrl = Config.getInstance().getDataInsertBaseUrl() + tenantCode;
 
-		String executePost = HttpDelegate.executePost(insertApiUrl, tenantCode, tenantPassword, null, null, null, items);
+		String executePost = HttpDelegate.executePost(insertApiUrl, tenantCode, tenantPassword, null, null, null, header+items+"]}]");
 		System.out.println("resutl: " + executePost);
 	}
 
