@@ -167,7 +167,7 @@ public class DataInsertDataUpload extends DataUpload {
 		String insertApiUrl = Config.getInstance().getDataInsertBaseUrl() + tenantCode;
 
 		String executePost = HttpDelegate.executePost(insertApiUrl, tenantCode, tenantPassword, null, null, null, header+items+"]}]");
-		System.out.println("resutl: " + executePost);
+		//System.out.println("resutl: " + executePost);
 	}
 
 }
