@@ -95,7 +95,7 @@ public class DataInsertDataUpload extends DataUpload {
 
 						String curValue = fieldValues[numColumn];
 
-						if (curValue == null || curValue.length() == 0) {
+						if (curValue == null || curValue.length() == 0 || curValue.trim().isEmpty()) {
 							if ("string".equals(typeCode))
 								values += "\"" + fieldName + "\":\"\",";
 							else {
