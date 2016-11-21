@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.TimeZone;
 
 import org.csi.yucca.storage.datamanagementapi.delegate.HttpDelegate;
@@ -40,6 +41,8 @@ public class DataInsertDataUpload extends DataUpload {
 		char separatorChar = separator.charAt(0);
 		CSVReader reader = new CSVReader(new StringReader(dataIn), separatorChar);
 
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ"); //2014-05-13T17:08:58+0200
+		
 		int numColumnFileIn = 0;
 		String[] nextRow;
 		int lineNumber = 0;
@@ -96,15 +99,19 @@ public class DataInsertDataUpload extends DataUpload {
 							if ("string".equals(typeCode))
 								values += "\"" + fieldName + "\":\"\",";
 							else {
-								SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_INVALIDTYPE, row, lineNumber, numColumn,
-										"Not string value (type) " + typeCode + "  found null");
-								errorCurrentRow.add(curRowErr);
+//								SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_INVALIDTYPE, row, lineNumber, numColumn,
+//										"Not string value (type) " + typeCode + "  found null");
+//								errorCurrentRow.add(curRowErr);
+								values += "\"" + fieldName + "\":null,";
 							}
 						} else {
 
 							try {
 								if ("int".equals(typeCode) || "long".equals(typeCode) || "double".equals(typeCode) || "float".equals(typeCode) || "longitude".equals(typeCode) || "latitude".equals(typeCode))
 									values += "\"" + fieldName + "\":" + curValue + ",";
+								else if ("dateTime".equals(typeCode)) {
+									values += "\"" + fieldName + "\":\"" + sdf.format(formatter.parse(curValue)) + "\",";
+								}
 								else
 									values += "\"" + fieldName + "\":\"" + curValue + "\",";
 
