@@ -302,19 +302,15 @@ public class InstallCepService {
 
 				DBCursor cursor = col.find(findStream).sort(sortStream);
 				
-				boolean fromPublicToPrivate = false;
-				boolean fromPrivateToPublic = false;
-				
-				boolean insertNewStream = false;
 
 				Long idDataset = null;
 				DBObject oldObjStream = null;
-				Stream oldStream = null;
+//				Stream oldStream = null;
 				if (cursor.hasNext()) {
 
 					oldObjStream = cursor.next();
-					POJOStreams pojoOldStreams = gson.fromJson(oldObjStream.toString(), POJOStreams.class);
-					oldStream = pojoOldStreams.getStreams().getStream();
+//					POJOStreams pojoOldStreams = gson.fromJson(oldObjStream.toString(), POJOStreams.class);
+//					oldStream = pojoOldStreams.getStreams().getStream();
 
 					col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 					DBObject configData = (DBObject) oldObjStream.get("configData");
@@ -325,17 +321,6 @@ public class InstallCepService {
 					DBObject updateConfig = new BasicDBObject();
 					updateConfig.put("$set", new BasicDBObject("configData.current", 0));
 					col.update(findDatasets, updateConfig, false, true);
-					
-					if (oldStream.getVisibility() != newStream.getVisibility()) {
-						if (newStream.getVisibility().equals("public")) {
-							fromPrivateToPublic = true;
-						} else {
-							fromPublicToPrivate = true;
-						}
-					}
-				} else {
-					fromPublicToPrivate = true;
-					insertNewStream = true;
 				}
 				
 				col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
@@ -347,7 +332,7 @@ public class InstallCepService {
 				new MongoDBMetadataDAO(mongo, Config.getInstance().getDbSupport(), Config.getInstance().getCollectionSupportDataset()).createMetadata(myMeta, idDataset);
 
 				// Insert Api only for new streams not for updates
-				if (oldStream == null) {
+				if (oldObjStream == null) {
 					log.info("Saving Api for Stream");
 					MyApi api = APIFiller.fillApi(newStream, myMeta);
 					log.info(gson.toJson(api, MyApi.class));
