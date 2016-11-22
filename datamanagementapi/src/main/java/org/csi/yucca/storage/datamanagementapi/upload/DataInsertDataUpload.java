@@ -1,5 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.upload;
 
+import groovy.json.JsonOutput.JsonUnescaped;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
@@ -19,6 +21,8 @@ import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mongodb.util.JSON;
 
 public class DataInsertDataUpload extends DataUpload {
 
@@ -113,7 +117,7 @@ public class DataInsertDataUpload extends DataUpload {
 									values += "\"" + fieldName + "\":\"" + sdf.format(formatter.parse(curValue)) + "\",";
 								}
 								else
-									values += "\"" + fieldName + "\":\"" + curValue + "\",";
+									values += "\"" + fieldName + "\":\"" +JSonHelper.escapeJS(curValue) + "\",";
 
 							} catch (Exception e) {
 								SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_INVALIDTYPE, row, lineNumber, numColumn,
