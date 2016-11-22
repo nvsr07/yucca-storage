@@ -1,13 +1,10 @@
 package org.csi.yucca.storage.datamanagementapi.upload;
 
-import groovy.json.JsonOutput.JsonUnescaped;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.TimeZone;
 
 import org.csi.yucca.storage.datamanagementapi.delegate.HttpDelegate;
@@ -21,8 +18,6 @@ import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mongodb.util.JSON;
 
 public class DataInsertDataUpload extends DataUpload {
 

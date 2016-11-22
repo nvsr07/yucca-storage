@@ -1,7 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.apimanager.store;
 
 /**
- * Questo test case è per l'api manager 1.7 modificato
+ * Questo test case e' per l'api manager 1.7 modificato
  * per la gestione stream smartdata
  */
 
