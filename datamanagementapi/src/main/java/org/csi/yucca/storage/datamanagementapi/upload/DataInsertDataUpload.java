@@ -159,7 +159,7 @@ public class DataInsertDataUpload extends DataUpload {
 		}
 
 		//item = item.delete(start, end);
-		if (items != null && !items.isEmpty())
+		if (item != null && item.length()>0)
 			items = item.substring(0, item.length() - 1);
 		totalCount++;
 		//items = items.substring(0, items.length() - 1) + "]";
