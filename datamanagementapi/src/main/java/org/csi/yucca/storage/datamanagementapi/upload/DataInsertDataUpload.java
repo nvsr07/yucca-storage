@@ -104,15 +104,29 @@ public class DataInsertDataUpload extends DataUpload {
 								values += "\"" + fieldName + "\":null,";
 							}
 						} else {
-
 							try {
-								if ("int".equals(typeCode) || "long".equals(typeCode) || "double".equals(typeCode) || "float".equals(typeCode) || "longitude".equals(typeCode) || "latitude".equals(typeCode))
-									values += "\"" + fieldName + "\":" + curValue + ",";
-								else if ("dateTime".equals(typeCode)) {
+								if ("int".equals(typeCode)) {
+									values += "\"" + fieldName + "\":" + new Integer(curValue).toString() + ",";
+								} else if ("long".equals(typeCode)) {
+									values += "\"" + fieldName + "\":" + new Long(curValue).toString() + ",";
+								} else if ("double".equals(typeCode)) {
+									values += "\"" + fieldName + "\":" + new Double(curValue).toString() + ",";
+								} else if ("float".equals(typeCode)) {
+									values += "\"" + fieldName + "\":" + new Float(curValue).toString() + ",";
+								} else if ("string".equals(typeCode)) {
+									values += "\"" + fieldName + "\":\"" + new String(curValue).toString() + "\",";
+								} else if ("boolean".equals(typeCode)) {
+									values += "\"" + fieldName + "\":" + new Boolean(Boolean.parseBoolean(curValue)).toString() + ",";
+								} else if ("dateTime".equals(typeCode)) {
 									values += "\"" + fieldName + "\":\"" + sdf.format(formatter.parse(curValue)) + "\",";
+								} else if ("longitude".equals(typeCode)) {
+									values += "\"" + fieldName + "\":" + new Double(curValue).toString() + ",";
+								} else if ("latitude".equals(typeCode)) {
+									values += "\"" + fieldName + "\":" + new Double(curValue).toString() + ",";
+								} else {
+									values += "\"" + fieldName + "\":\"" + new String(curValue).toString() + "\",";
 								}
-								else
-									values += "\"" + fieldName + "\":\"" +JSonHelper.escapeJS(curValue) + "\",";
+								
 
 							} catch (Exception e) {
 								SDPBulkInsertException curRowErr = new SDPBulkInsertException(SDPBulkInsertException.ERROR_TYPE_INVALIDTYPE, row, lineNumber, numColumn,
