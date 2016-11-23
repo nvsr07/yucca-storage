@@ -98,6 +98,31 @@ public class StreamService {
 		return Response.ok().entity(iconBytes).type("image/png").build();
 	}
 
+	@GET
+	@Path("/datasetCode/{tenant}/{virtualentityCode}/{streamCode}")
+	@Produces("text/plain")
+	public Response streamDatasetCode(@PathParam("tenant") String tenant, @PathParam("virtualentityCode") String virtualentityCode,
+			@PathParam("streamCode") String streamCode) throws NumberFormatException, UnknownHostException, Exception {
+		log.debug("[MetadataService::datasetIcon] - START tenant: " + tenant + "|streamCode: " + streamCode);
+
+		MongoClient mongo = MongoSingleton.getMongoClient();
+		String supportDb = Config.getInstance().getDbSupport();
+		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
+		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
+
+		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode);
+		Long idDataset = stream.getConfigData().getIdDataset();
+
+		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+
+		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset);
+
+		String datasetCode = metadata.getDatasetCode();
+
+		return Response.ok().entity(datasetCode).type("text/plain").build();
+	}
+	
 	private List<StreamOut> createStreamsYuccaLight(List<StreamOut> streamsIn, MongoDBMetadataDAO metadataDAO, MongoDBApiDAO apiDAO) {
 		List<StreamOut> streamsOut = null;
 		if (streamsIn != null) {
