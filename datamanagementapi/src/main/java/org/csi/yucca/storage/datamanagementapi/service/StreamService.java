@@ -110,13 +110,13 @@ public class StreamService {
 		String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
 		MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
 
-		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode);
+		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode, null);
 		Long idDataset = stream.getConfigData().getIdDataset();
 
 		String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
 
 		MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
-		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset);
+		final Metadata metadata = metadataDAO.readCurrentMetadataByIdDataset(idDataset, null);
 
 		String datasetCode = metadata.getDatasetCode();
 
