@@ -114,7 +114,7 @@ public class DataInsertDataUpload extends DataUpload {
 								} else if ("float".equals(typeCode)) {
 									values += "\"" + fieldName + "\":" + new Float(curValue).toString() + ",";
 								} else if ("string".equals(typeCode)) {
-									values += "\"" + fieldName + "\":\"" + new String(curValue).toString() + "\",";
+									values += "\"" + fieldName + "\":\"" + JSonHelper.escapeJS(curValue) + "\",";
 								} else if ("boolean".equals(typeCode)) {
 									values += "\"" + fieldName + "\":" + new Boolean(Boolean.parseBoolean(curValue)).toString() + ",";
 								} else if ("dateTime".equals(typeCode)) {
@@ -124,7 +124,7 @@ public class DataInsertDataUpload extends DataUpload {
 								} else if ("latitude".equals(typeCode)) {
 									values += "\"" + fieldName + "\":" + new Double(curValue).toString() + ",";
 								} else {
-									values += "\"" + fieldName + "\":\"" + new String(curValue).toString() + "\",";
+									values += "\"" + fieldName + "\":\"" + JSonHelper.escapeJS(curValue) + "\",";
 								}
 								
 
