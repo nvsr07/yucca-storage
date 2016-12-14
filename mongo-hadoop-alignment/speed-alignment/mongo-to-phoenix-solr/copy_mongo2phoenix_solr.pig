@@ -1,7 +1,6 @@
-set mongo.input.query '{idDataset:$idDataset, datasetVersion:$datasetVersion, 
-_id:{$gt: ObjectId(Math.floor((new Date('$data'))/1000).toString(16) + "0000000000000000")}})}'
+set mongo.input.query '{idDataset:$idDataset, datasetVersion:$datasetVersion, _id:{$gt: ObjectId(Math.floor((new Date('$data'))/1000).toString(16) + "0000000000000000")}})}'
 
---set solr.zkhost '$zookeeperQuorum'
+--set solr.zkhost '$solrZookeeperQuorum'
 --set solr.collection '$solrCollection'
 
 mongoData = LOAD 'mongodb://$mongoUsr:$mongoPwd@$mongoHost:$mongoPort/$mongoDB.$mongoCollection?$mongoConnParams'
