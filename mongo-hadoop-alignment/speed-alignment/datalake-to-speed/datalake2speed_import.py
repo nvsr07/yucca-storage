@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+from ... import globalVars
 from org.apache.pig.scripting import Pig
 
 
@@ -9,7 +10,7 @@ mode = sys.argv[2]
 # mode = REPLACE --> delete all record marked as datalake
 # mode = APPEND --> only add new record (using lastId)
 
-collections = {'streamDataset':'measures', 'bulkDataset':'data', 'socialDataset':'social', 'binaryDataset':'media'}
+globalVars.init(tenantCode)
 
 
 
@@ -35,8 +36,11 @@ if mode in ["APPEND", "append"]:
 # read from metadata source (mongoDB) all datasets with
 # availableSpeed = true
 # availableHive = true (getting also dbHiveSchema and dbHiveTable)
-readDatasetListJob = Pig.compileFromFile("""read_mongo_dataset.pig""")
-results = readDatasetListJob.bind({'tenantCode':tenantCode }).runSingle()
+readDatasetListJob = Pig.compileFromFile("""../read_mongo_dataset.pig""")
+readDatasetParams = {
+    'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +', "configData.current":1, "availableSpeed":true, "availableHive":true"}'
+}
+results = readDatasetListJob.bind(readDatasetParams).runSingle()
 if results.isSuccessful():
     print "Dataset list read"
     iter = results.result("datasetList").iterator()
@@ -63,8 +67,7 @@ if results.isSuccessful():
                         aliasString = aliasString + ","
         print aliasString
         copyHive2Mongo = Pig.compileFromFile("""copy_hive2mongo.pig""")
-        results = copyHive2Mongo.bind({'aliasString':aliasString,'idDataset':idDataset, 'datasetVersion':datasetVersion, 'hiveSchema':hiveSchema, 'hiveTable':hiveTable, 'tenantCode':t
-enantCode, 'collection':collections[subtype] }).runSingle()
+        results = copyHive2Mongo.bind({'aliasString':aliasString,'idDataset':idDataset, 'datasetVersion':datasetVersion, 'hiveSchema':hiveSchema, 'hiveTable':hiveTable, 'tenantCode':tenantCode, 'collection':globalVars.collectionName[subtype] }).runSingle()
         if results.isSuccessful():
                 print "Datalake ---> Speed Done!"
         else:

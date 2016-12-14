@@ -13,3 +13,5 @@ datamanagementapi/src/main/resources/local/SDPDataApiSecret.properties
 datamanagementapi/src/main/resources/local/SDPDataApiSecret.properties
 
 datamanagementapi/test-output/
+/.project
+/.pydevproject
