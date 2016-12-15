@@ -2,6 +2,7 @@
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath('__file__') ) ) )
+import globalVars 
 from org.apache.pig.scripting import Pig
 
 if len(sys.argv) != 3:
@@ -18,12 +19,12 @@ Pig.registerJar("../lib/mongo-java-driver-3.4.0.jar")
 Pig.registerJar("../lib/mongo-hadoop-core-1.5.2.jar")
 Pig.registerJar("../lib/mongo-hadoop-pig-1.5.2.jar")
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
-Pig.registerJar("yucca-phoenix-pig.jar")
-#Pig.registerJar("../lib/lucidworks-pig-functions-2.0.3-hd2.jar")
+Pig.registerJar("../lib/yucca-phoenix-pig.jar")
+Pig.registerJar("../lib/lucidworks-pig-functions-2.0.3-hd2.jar")
 
 teantdataJob = Pig.compileFromFile("""../read_mongo_tenant.pig""")
 tenantParams = {
-            'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +'"}'
+            'mongoInputQuery':'{"tenantCode":"' + tenantCode +'"}'
         }
 results = teantdataJob.bind(tenantParams).runSingle()
 
@@ -116,11 +117,8 @@ if results.isSuccessful():
                                     
                 if len(dynamicPhoenixColumns) > 0:
                     dynamicPhoenixColumns = ";" + dynamicPhoenixColumns[1:].upper()
-                
                 importConfig = {
-                    'data' : data,
-                    'idDataset' : idDataset, 
-                    'datasetVersion' : datasetVersion,
+				    'query' : '{idDataset:'+str(idDataset)+', datasetVersion:'+str(datasetVersion)+', _id:{$gt: ObjectId(Math.floor((new Date("'+data+'"))/1000).toString(16) + "0000000000000000")}})}',
                     'mongoDB' : globalVars.collectionDb[subtype],
                     'mongoCollection' : globalVars.collectionName[subtype],
                     'mongoFields' : globalVars.mongoFields[subtype] + dynamicMongoFields,
