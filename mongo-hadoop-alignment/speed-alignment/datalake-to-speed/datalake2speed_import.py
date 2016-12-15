@@ -39,7 +39,7 @@ if mode in ["APPEND", "append"]:
 # availableHive = true (getting also dbHiveSchema and dbHiveTable)
 readDatasetListJob = Pig.compileFromFile("""../read_mongo_dataset.pig""")
 readDatasetParams = {
-    'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +'", "configData.current":1, "availableSpeed":true, "availableHive":true"}'
+    'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +'", "configData.current":1, "availableSpeed":true, "availableHive":true}'
 }
 results = readDatasetListJob.bind(readDatasetParams).runSingle()
 if results.isSuccessful():
