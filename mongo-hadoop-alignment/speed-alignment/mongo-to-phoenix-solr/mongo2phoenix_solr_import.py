@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import sys
-from ... import globalVars
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath('__file__') ) ) )
 from org.apache.pig.scripting import Pig
 
 if len(sys.argv) != 3:
@@ -13,12 +14,12 @@ data = sys.argv[2]
 
 globalVars.init(tenantCode)
 
-Pig.registerJar("mongo-java-driver-3.4.0.jar")
-Pig.registerJar("mongo-hadoop-core-1.5.2.jar")
-Pig.registerJar("mongo-hadoop-pig-1.5.2.jar")
+Pig.registerJar("../lib/mongo-java-driver-3.4.0.jar")
+Pig.registerJar("../lib/mongo-hadoop-core-1.5.2.jar")
+Pig.registerJar("../lib/mongo-hadoop-pig-1.5.2.jar")
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
 Pig.registerJar("yucca-phoenix-pig.jar")
-#Pig.registerJar("solr-pig-functions-2.2.6.jar")
+#Pig.registerJar("../lib/lucidworks-pig-functions-2.0.3-hd2.jar")
 
 teantdataJob = Pig.compileFromFile("""../read_mongo_tenant.pig""")
 tenantParams = {
@@ -75,7 +76,7 @@ if results.isSuccessful():
         
         metadataJob = Pig.compileFromFile("""../read_mongo_dataset.pig""")
         datasetParams = {
-            'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +'"}'
+            'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode + '"}'
         }
         results = metadataJob.bind(datasetParams).runSingle()
         
