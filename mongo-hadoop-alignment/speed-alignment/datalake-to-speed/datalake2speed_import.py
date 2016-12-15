@@ -14,11 +14,11 @@ globalVars.init(tenantCode)
 
 
 
-Pig.registerJar("mongo-java-driver-3.4.0.jar")
-Pig.registerJar("mongo-hadoop-core-1.5.2.jar")
-Pig.registerJar("mongo-hadoop-pig-1.5.2.jar")
+Pig.registerJar("../lib/mongo-java-driver-3.4.0.jar")
+Pig.registerJar("../lib/mongo-hadoop-core-1.5.2.jar")
+Pig.registerJar("../lib/mongo-hadoop-pig-1.5.2.jar")
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
-#Pig.registerJar("yucca-phoenix-pig.jar")
+#Pig.registerJar("../lib/yucca-phoenix-pig.jar")
 
 if mode in ["APPEND", "append"]:
         # read from metadata source (mongoDB) lastIdDatalake2Speed for tenant
