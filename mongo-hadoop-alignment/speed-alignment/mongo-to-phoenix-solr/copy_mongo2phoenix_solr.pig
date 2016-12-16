@@ -9,9 +9,6 @@ USING com.mongodb.hadoop.pig.MongoLoader('$mongoFields', 'id') as ($pigSchema);
 STORE mongoData INTO 'hbase://$phoenixSchema.$phoenixTable/$phoenixColumns'
 USING it.csi.yucca.phoenix.pig.YuccaPhoenixHBaseStorage('$zookeeperQuorum','-batchSize 10');
 
-<<<<<<< HEAD
+
 solrData = FOREACH mongoData GENERATE $solrFields;
-=======
-solrData = FOREACH mongoData GENERATE $solrFields
->>>>>>> refs/remotes/origin/master
 STORE solrData INTO 'SOLR' USING com.lucidworks.hadoop.pig.SolrStoreFunc();
