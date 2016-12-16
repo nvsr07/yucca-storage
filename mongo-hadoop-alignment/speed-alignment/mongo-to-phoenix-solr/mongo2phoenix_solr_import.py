@@ -17,9 +17,10 @@ tenantCode = sys.argv[1]
 data = sys.argv[2]
 
 dt = datetime.datetime.strptime(data, '%Y/%m/%d')
-secondsFromEpoch = (dt - datetime.datetime(1970,1,1)).total_seconds()
+deltat = dt - datetime.datetime(1970,1,1)
+secondsFromEpoch = (deltat.microseconds + (deltat.seconds + deltat.days * 24 * 3600) * 10**6) / 10**6
 timeOffset = time.altzone if time.daylight else time.timezone
-maxObjectId = str(format(int(floor(secondsFromEpoch + timeOffset)), 'x')) + "0000000000000000" 
+maxObjectId = (str(hex(int(floor(secondsFromEpoch + timeOffset)))) + "0000000000000000")[2:]
 
 globalVars.init(tenantCode)
 
@@ -120,14 +121,15 @@ if results.isSuccessful():
                     dynamicMongoFields += ', ' + name
                     dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
                     dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
-                    dynamicSolrFields += ", '" + name + globalVars.dataTypeSuffixes[dataType] + "', $" + str(solrFieldsNum)
+                    solrField = globalVars.timeToSolrTime("$" + str(solrFieldsNum)) if globalVars.isTimeType(dataType) else "$" + str(solrFieldsNum) 
+                    dynamicSolrFields += ", '" + name + globalVars.dataTypeSuffixes[dataType] + "', " + solrField 
                     solrFieldsNum += 1
                                     
                 if len(dynamicPhoenixColumns) > 0:
                     dynamicPhoenixColumns = ";" + dynamicPhoenixColumns[1:].upper()
                 
                 importConfig = {
-                    'query' : '{idDataset:'+str(idDataset)+', datasetVersion:'+str(datasetVersion)+', _id:{\$gt: {"$oid": "'+ maxObjectId +'"}}}',
+                    'query' : '{idDataset:'+str(idDataset)+', datasetVersion:'+str(datasetVersion)+', _id:{$lt: {"$oid": "'+ maxObjectId +'"}}}',
                     'mongoDB' : globalVars.collectionDb[subtype],
                     'mongoCollection' : globalVars.collectionName[subtype],
                     'mongoFields' : globalVars.mongoFields[subtype] + dynamicMongoFields,
@@ -141,9 +143,9 @@ if results.isSuccessful():
                 
                 importResults = importJob.bind(importConfig).runSingle()
                 if importResults.isSuccessful():
-                    print 'Dataset: ' + idDataset + ' version: ' + datasetVersion + ' imported successfully'
+                    print 'Dataset: ' + str(idDataset) + ' version: ' + str(datasetVersion) + ' imported successfully'
                 else:
-                    raise 'Dataset: ' + idDataset + ' version: ' + datasetVersion + ' import failed'
+                    raise 'Dataset: ' + str(idDataset) + ' version: ' + str(datasetVersion) + ' import failed'
                 
                 '''      
                 print 'idDataset: ' + str(importConfig['idDataset'])
@@ -159,8 +161,8 @@ if results.isSuccessful():
                 print 'solrFields: ' + importConfig['solrFields']
                 '''
                 
-            else:
-                raise "Pig job failed to access MongoDB metadata"
+        else:
+            raise "Pig job failed to access MongoDB metadata"
             
 else:
     raise "Pig job failed to access MongoDB tenantdata"

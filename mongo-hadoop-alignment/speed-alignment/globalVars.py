@@ -1,5 +1,14 @@
 #!/usr/bin/python
 
+def timeToSolrTime(param):
+    return "ToString(" + param + ", 'yyyy-MM-dd HH:mm:ss.SSSZ')"
+
+def isTimeType(dataType):
+    if dataType in ['data', 'date', 'datetimeOffset', 'dateTime', 'time']:
+        return True
+    else:
+        return False
+
 dataTypeSuffixes = {
     'boolean' : '_b',
     'string' : '_s',
@@ -81,15 +90,15 @@ pigSchema = {
 
 phoenixColumns = {
     'bulkDataset' : 'ID,IDDATASET_L,DATASETVERSION_L',
-    'streamDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,ID,SENSOR_S,STREAMCODE_S',
-    'socialDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,ID,SENSOR_S,STREAMCODE_S',
+    'streamDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,SENSOR_S,STREAMCODE_S',
+    'socialDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,SENSOR_S,STREAMCODE_S',
     'binaryDataset' : 'ID,IDDATASET_L,DATASETVERSION_L'
 }
 
 solrFields = {
     'bulkDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2",
-    'streamDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt', $3, 'sensor_s', $4, 'streamCode_s', $5",
-    'socialDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt', $3, 'sensor_s', $4, 'streamCode_s', $5",
+    'streamDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt'," + timeToSolrTime("$3") + ", 'sensor_s', $4, 'streamCode_s', $5",
+    'socialDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt'," + timeToSolrTime("$3") + ", 'sensor_s', $4, 'streamCode_s', $5",
     'binaryDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2"
 }
 
