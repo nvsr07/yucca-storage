@@ -87,10 +87,10 @@ phoenixColumns = {
 }
 
 solrFields = {
-    'bulkDataset' : '$0 as id, "idDataset_l", $1, "datasetVersion_l", $2',
-    'streamDataset' : '$0 as id, "idDataset_l", $1, "datasetVersion_l", $2, "time_dt", $3, "sensor_s", $4, "streamCode_s", $5',
-    'socialDataset' : '$0 as id, "idDataset_l", $1, "datasetVersion_l", $2, "time_dt", $3, "sensor_s", $4, "streamCode_s", $5',
-    'binaryDataset' : '$0 as id, "idDataset_l", $1, "datasetVersion_l", $2'
+    'bulkDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2",
+    'streamDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt', $3, 'sensor_s', $4, 'streamCode_s', $5",
+    'socialDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt', $3, 'sensor_s', $4, 'streamCode_s', $5",
+    'binaryDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2"
 }
 
 solrFieldsNum = { 

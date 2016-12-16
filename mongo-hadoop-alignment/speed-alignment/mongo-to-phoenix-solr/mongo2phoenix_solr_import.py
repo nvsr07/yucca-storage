@@ -2,7 +2,11 @@
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath('__file__') ) ) )
+import globalVars 
 from org.apache.pig.scripting import Pig
+from math import floor
+import datetime
+import time
 
 if len(sys.argv) != 3:
     print "Usage: " + sys.argv[0] + " tenantCode data"
@@ -12,18 +16,23 @@ if len(sys.argv) != 3:
 tenantCode = sys.argv[1]
 data = sys.argv[2]
 
+dt = datetime.datetime.strptime(data, '%Y/%m/%d')
+secondsFromEpoch = (dt - datetime.datetime(1970,1,1)).total_seconds()
+timeOffset = time.altzone if time.daylight else time.timezone
+maxObjectId = str(format(int(floor(secondsFromEpoch + timeOffset)), 'x')) + "0000000000000000" 
+
 globalVars.init(tenantCode)
 
 Pig.registerJar("../lib/mongo-java-driver-3.4.0.jar")
 Pig.registerJar("../lib/mongo-hadoop-core-1.5.2.jar")
 Pig.registerJar("../lib/mongo-hadoop-pig-1.5.2.jar")
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
-Pig.registerJar("yucca-phoenix-pig.jar")
-#Pig.registerJar("../lib/lucidworks-pig-functions-2.0.3-hd2.jar")
+Pig.registerJar("../lib/yucca-phoenix-pig.jar")
+Pig.registerJar("../lib/lucidworks-pig-functions-2.0.3-hd2.jar")
 
 teantdataJob = Pig.compileFromFile("""../read_mongo_tenant.pig""")
 tenantParams = {
-            'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +'"}'
+            'mongoInputQuery':'{"tenantCode":"' + tenantCode +'"}'
         }
 results = teantdataJob.bind(tenantParams).runSingle()
 
@@ -111,16 +120,14 @@ if results.isSuccessful():
                     dynamicMongoFields += ', ' + name
                     dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
                     dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
-                    dynamicSolrFields += ', "' + name + globalVars.dataTypeSuffixes[dataType] + '", $' + str(solrFieldsNum)
+                    dynamicSolrFields += ", '" + name + globalVars.dataTypeSuffixes[dataType] + "', $" + str(solrFieldsNum)
                     solrFieldsNum += 1
                                     
                 if len(dynamicPhoenixColumns) > 0:
                     dynamicPhoenixColumns = ";" + dynamicPhoenixColumns[1:].upper()
                 
                 importConfig = {
-                    'data' : data,
-                    'idDataset' : idDataset, 
-                    'datasetVersion' : datasetVersion,
+                    'query' : '{idDataset:'+str(idDataset)+', datasetVersion:'+str(datasetVersion)+', _id:{\$gt: {"$oid": "'+ maxObjectId +'"}}}',
                     'mongoDB' : globalVars.collectionDb[subtype],
                     'mongoCollection' : globalVars.collectionName[subtype],
                     'mongoFields' : globalVars.mongoFields[subtype] + dynamicMongoFields,
