@@ -125,9 +125,12 @@ if results.isSuccessful():
                                     
                 if len(dynamicPhoenixColumns) > 0:
                     dynamicPhoenixColumns = ";" + dynamicPhoenixColumns[1:].upper()
-                
                 importConfig = {
+<<<<<<< HEAD
                     'query' : '{idDataset:'+str(idDataset)+', datasetVersion:'+str(datasetVersion)+', _id:{\$gt: {"$oid": "'+ maxObjectId +'"}}}',
+=======
+				    'query' : '{idDataset:'+str(idDataset)+', datasetVersion:'+str(datasetVersion)+', _id:{$gt: ObjectId(Math.floor((new Date("'+data+'"))/1000).toString(16) + "0000000000000000")}})}',
+>>>>>>> refs/remotes/origin/master
                     'mongoDB' : globalVars.collectionDb[subtype],
                     'mongoCollection' : globalVars.collectionName[subtype],
                     'mongoFields' : globalVars.mongoFields[subtype] + dynamicMongoFields,
