@@ -372,6 +372,34 @@ public class StoreService {
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
 			Map<String, String> domainTranslated = new HashMap<String, String>();
 			Map<String, String> subDomainTranslated = new HashMap<String, String>();
+			// check all tags
+			try {
+				for (String lang : Constants.LANGUAGES_SUPPORTED) {
+					System.out.println("check tag");
+					ResourceBundle messages = getMessages(lang);
+					for (org.csi.yucca.storage.datamanagementapi.model.metadata.Tag tag : metadata.getInfo().getTags()) {
+						if (messages.getString(tag.getTagCode()) == null)
+							throw new Exception("Tag " + tag.getTagCode() + " not found");
+					}
+
+					if (metadata.getInfo().getDataDomain()  != null) {
+						if (messages.getString(metadata.getInfo().getDataDomain() ) == null)
+							throw new Exception("Domain " + metadata.getInfo().getDataDomain() + " not found");
+					}
+
+					if (metadata.getInfo().getCodSubDomain() != null) {
+						if (messages.getString(metadata.getInfo().getCodSubDomain()) == null)
+							throw new Exception("Subdomain " + metadata.getInfo().getCodSubDomain() + " not found");
+					}
+				}
+
+			} catch (Exception e) {
+				System.out.println("Tag not found" + e.getMessage());
+				e.printStackTrace();
+				log.debug("Tag not found" + e.getMessage());
+				messagesMap = null;
+			}
+
 			for (String lang : Constants.LANGUAGES_SUPPORTED) {
 				ResourceBundle messages = getMessages(lang);
 				List<String> translatedTags = new LinkedList<String>();
