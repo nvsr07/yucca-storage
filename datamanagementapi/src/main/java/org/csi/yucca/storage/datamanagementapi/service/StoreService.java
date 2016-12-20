@@ -57,7 +57,7 @@ public class StoreService {
 	static Logger log = Logger.getLogger(StoreService.class);
 
 	public static int API_FIELD_MAX_LENGTH = 600;
-	
+
 	@POST
 	@Path("/apiCreateApiStore")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -88,21 +88,18 @@ public class StoreService {
 				}
 
 				/*
-				if (newStream.getPublishStream() != 0) {
-					publishStore("1.0", apiName, "admin");
-					Set<String> tenantSet = new TreeSet<String>();
-					if (newStream.getTenantssharing() != null) {
-						for (Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()) {
-							tenantSet.add(tenantSh.getTenantCode());
-							String appName = "userportal_" + tenantSh.getTenantCode();
-							StoreService.addSubscriptionForTenant(apiName, appName);
-						}
-					}
-					if (!tenantSet.contains(newStream.getCodiceTenant())) {
-						String appName = "userportal_" + newStream.getCodiceTenant();
-						StoreService.addSubscriptionForTenant(apiName, appName);
-					}
-				}*/
+				 * if (newStream.getPublishStream() != 0) { publishStore("1.0",
+				 * apiName, "admin"); Set<String> tenantSet = new
+				 * TreeSet<String>(); if (newStream.getTenantssharing() != null)
+				 * { for (Tenantsharing tenantSh :
+				 * newStream.getTenantssharing().getTenantsharing()) {
+				 * tenantSet.add(tenantSh.getTenantCode()); String appName =
+				 * "userportal_" + tenantSh.getTenantCode();
+				 * StoreService.addSubscriptionForTenant(apiName, appName); } }
+				 * if (!tenantSet.contains(newStream.getCodiceTenant())) {
+				 * String appName = "userportal_" + newStream.getCodiceTenant();
+				 * StoreService.addSubscriptionForTenant(apiName, appName); } }
+				 */
 
 				try {
 					StoreService.publishStore("1.0", apiName, "admin");
@@ -153,23 +150,18 @@ public class StoreService {
 				}
 				String apiName = tenant + "." + sensor + "_" + stream + "_stream";
 				/*
-				if (newStream.getPublishStream() != 0) {
-					publishStore("1.0", apiName, "admin");
-					newStream.getv
-					Set<String> tenantSet = new TreeSet<String>();
-					if (newStream.getTenantssharing() != null) {
-						for (Tenantsharing tenantSh : newStream.getTenantssharing().getTenantsharing()) {
-							tenantSet.add(tenantSh.getTenantCode());
-							String appName = "userportal_" + tenantSh.getTenantCode();
-							StoreService.addSubscriptionForTenant(apiName, appName);
-						}
-					}
-					if (!tenantSet.contains(newStream.getCodiceTenant())) {
-						String appName = "userportal_" + newStream.getCodiceTenant();
-						StoreService.addSubscriptionForTenant(apiName, appName);
-					}
-				}
-				*/
+				 * if (newStream.getPublishStream() != 0) { publishStore("1.0",
+				 * apiName, "admin"); newStream.getv Set<String> tenantSet = new
+				 * TreeSet<String>(); if (newStream.getTenantssharing() != null)
+				 * { for (Tenantsharing tenantSh :
+				 * newStream.getTenantssharing().getTenantsharing()) {
+				 * tenantSet.add(tenantSh.getTenantCode()); String appName =
+				 * "userportal_" + tenantSh.getTenantCode();
+				 * StoreService.addSubscriptionForTenant(apiName, appName); } }
+				 * if (!tenantSet.contains(newStream.getCodiceTenant())) {
+				 * String appName = "userportal_" + newStream.getCodiceTenant();
+				 * StoreService.addSubscriptionForTenant(apiName, appName); } }
+				 */
 				try {
 					StoreService.publishStore("1.0", apiName, "admin");
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
@@ -188,26 +180,26 @@ public class StoreService {
 	}
 
 	/*
-	public static boolean addSubscriptionForTenant(String apiName, String appName) throws Exception {
-
-		QSPStore subscription = new QSPStore();
-
-		subscription.setVar("apimanConsoleAddress", Config.getInstance().getConsoleAddress());
-		subscription.setVar("username", Config.getInstance().getStoreUsername());
-		subscription.setVar("password", Config.getInstance().getStorePassword());
-		subscription.setVar("httpok", Config.getInstance().getHttpOk());
-		subscription.setVar("ok", Config.getInstance().getResponseOk());
-
-		subscription.setVar("apiVersion", "1.0");
-		subscription.setVar("apiName", apiName);
-		subscription.setVar("appName", appName);
-		subscription.setVar("P", "");
-
-		subscription.run();
-
-		return true;
-	}
-	*/
+	 * public static boolean addSubscriptionForTenant(String apiName, String
+	 * appName) throws Exception {
+	 * 
+	 * QSPStore subscription = new QSPStore();
+	 * 
+	 * subscription.setVar("apimanConsoleAddress",
+	 * Config.getInstance().getConsoleAddress());
+	 * subscription.setVar("username", Config.getInstance().getStoreUsername());
+	 * subscription.setVar("password", Config.getInstance().getStorePassword());
+	 * subscription.setVar("httpok", Config.getInstance().getHttpOk());
+	 * subscription.setVar("ok", Config.getInstance().getResponseOk());
+	 * 
+	 * subscription.setVar("apiVersion", "1.0"); subscription.setVar("apiName",
+	 * apiName); subscription.setVar("appName", appName);
+	 * subscription.setVar("P", "");
+	 * 
+	 * subscription.run();
+	 * 
+	 * return true; }
+	 */
 
 	public static String createApiforStream(Stream newStream, String apiName, boolean update, String json) throws Exception {
 
@@ -216,14 +208,15 @@ public class StoreService {
 		AddStream objStream = new AddStream();
 		objStream.setProperties(update);
 
-		//ImageProcessor processor = new ImageProcessor();
-		//String imageBase64 = newStream.getStreamIcon();
+		// ImageProcessor processor = new ImageProcessor();
+		// String imageBase64 = newStream.getStreamIcon();
 
-		//String path = "images/";
-		//String fileName = newStream.getCodiceStream() + ".png";
+		// String path = "images/";
+		// String fileName = newStream.getCodiceStream() + ".png";
 
-		//boolean addTwitter = newStream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
-		//processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
+		// boolean addTwitter = newStream.getIdTipoVe() ==
+		// Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
+		// processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(newStream.getVisibility())) {
@@ -262,7 +255,7 @@ public class StoreService {
 		objStream.setVar("httpok", Config.getInstance().getHttpOk());
 		objStream.setVar("ok", Config.getInstance().getResponseOk());
 
-		//objStream.setVar("icon", path + fileName);
+		// objStream.setVar("icon", path + fileName);
 		objStream.setVar("apiVersion", "1.0");
 		objStream.setVar("apiName", apiFinalName);
 		objStream.setVar("context", "/api/" + apiName);
@@ -282,7 +275,8 @@ public class StoreService {
 
 		objStream.setVar("virtualEntityCode", newStream.getCodiceVirtualEntity() != null ? newStream.getCodiceVirtualEntity() : "");
 		objStream.setVar("virtualEntityName", newStream.getVirtualEntityName() != null ? newStream.getVirtualEntityName() : "");
-		objStream.setVar("virtualEntityDescription", newStream.getVirtualEntityDescription() != null ? Util.safeSubstring(newStream.getVirtualEntityDescription(), API_FIELD_MAX_LENGTH) : "");
+		objStream.setVar("virtualEntityDescription",
+				newStream.getVirtualEntityDescription() != null ? Util.safeSubstring(newStream.getVirtualEntityDescription(), API_FIELD_MAX_LENGTH) : "");
 		String tags = "";
 
 		if (newStream.getDomainStream() != null) {
@@ -311,6 +305,31 @@ public class StoreService {
 		pojoStreams2.getStreams().getStream().setStreamIcon("");
 
 		if (pojoStreams2.getStreams().getStream().getStreamTags() != null) {
+			// check all tags
+			try {
+				for (String lang : Constants.LANGUAGES_SUPPORTED) {
+					ResourceBundle messages = getMessages(lang);
+					for (Tag tag : pojoStreams2.getStreams().getStream().getStreamTags().getTag()) {
+						if (messages.getString(tag.getTagCode()) == null)
+							throw new Exception("Tag " + tag.getTagCode() + " not found");
+					}
+
+					if (pojoStreams2.getStreams().getStream().getDomainStream() != null) {
+						if (messages.getString(pojoStreams2.getStreams().getStream().getDomainStream()) == null)
+							throw new Exception("Domain " + pojoStreams2.getStreams().getStream().getDomainStream() + " not found");
+					}
+
+					if (pojoStreams2.getStreams().getStream().getCodSubDomain() != null) {
+						if (messages.getString(pojoStreams2.getStreams().getStream().getCodSubDomain()) == null)
+							throw new Exception("Subdomain " + pojoStreams2.getStreams().getStream().getCodSubDomain() + " not found");
+					}
+				}
+
+			} catch (Exception e) {
+				log.debug("Tag not found" + e.getMessage());
+				messagesMap = null;
+			}
+
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
 			Map<String, String> domainTranslated = new HashMap<String, String>();
 			Map<String, String> subDomainTranslated = new HashMap<String, String>();
@@ -334,7 +353,7 @@ public class StoreService {
 				String translatedSubDomain = "";
 				if (pojoStreams2.getStreams().getStream().getCodSubDomain() != null)
 					translatedSubDomain = messages.getString(pojoStreams2.getStreams().getStream().getCodSubDomain());
-				
+
 				subDomainTranslated.put(lang, translatedSubDomain);
 				pojoStreams2.getStreams().getStream().setSubDomainTranslated(subDomainTranslated);
 
@@ -368,14 +387,14 @@ public class StoreService {
 				String translatedDomain = "";
 				if (metadata.getInfo().getDataDomain() != null)
 					translatedDomain = messages.getString(metadata.getInfo().getDataDomain());
-				
+
 				domainTranslated.put(lang, translatedDomain);
 				metadata.getInfo().setDomainTranslated(domainTranslated);
 
 				String translatedSubDomain = "";
 				if (metadata.getInfo().getCodSubDomain() != null)
 					translatedSubDomain = messages.getString(metadata.getInfo().getCodSubDomain());
-				
+
 				subDomainTranslated.put(lang, translatedSubDomain);
 				metadata.getInfo().setSubDomainTranslated(subDomainTranslated);
 
@@ -394,17 +413,19 @@ public class StoreService {
 		AddStream addStream = new AddStream();
 		addStream.setProperties(update);
 
-	//	ImageProcessor processor = new ImageProcessor();
-	//	String imageBase64 = metadata.getInfo().getIcon();
+		// ImageProcessor processor = new ImageProcessor();
+		// String imageBase64 = metadata.getInfo().getIcon();
 
-	//	String path = "images/";
-	//	String fileName = metadata.getDatasetCode() + ".png";
+		// String path = "images/";
+		// String fileName = metadata.getDatasetCode() + ".png";
 
-	//	boolean addTwitter = false;
-	//	if (metadata.getConfigData() != null && metadata.getConfigData().getSubtype() == Metadata.CONFIG_DATA_SUBTYPE_SOCIAL_DATASET)
-	//		addTwitter = true;
+		// boolean addTwitter = false;
+		// if (metadata.getConfigData() != null &&
+		// metadata.getConfigData().getSubtype() ==
+		// Metadata.CONFIG_DATA_SUBTYPE_SOCIAL_DATASET)
+		// addTwitter = true;
 
-		//processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
+		// processor.doProcessOdata(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(metadata.getInfo().getVisibility())) {
@@ -444,7 +465,7 @@ public class StoreService {
 		addStream.setVar("httpok", Config.getInstance().getHttpOk());
 		addStream.setVar("ok", Config.getInstance().getResponseOk());
 
-		//addStream.setVar("icon", path + fileName);
+		// addStream.setVar("icon", path + fileName);
 		addStream.setVar("apiVersion", "1.0");
 		addStream.setVar("apiName", apiFinalName);
 		addStream.setVar("context", "/api/" + apiName);// ds_Voc_28;
@@ -498,12 +519,13 @@ public class StoreService {
 		AddStream addStream = new AddStream();
 		addStream.setProperties(update);
 
-		//ImageProcessor processor = new ImageProcessor();
-		//String imageBase64 = newStream.getStreamIcon();
-		//String path = "images/";
-		//String fileName = newStream.getCodiceStream() + ".png";
-		//boolean addTwitter = newStream.getIdTipoVe() == Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
-		//processor.doProcessStream(imageBase64, path, fileName, addTwitter);
+		// ImageProcessor processor = new ImageProcessor();
+		// String imageBase64 = newStream.getStreamIcon();
+		// String path = "images/";
+		// String fileName = newStream.getCodiceStream() + ".png";
+		// boolean addTwitter = newStream.getIdTipoVe() ==
+		// Constants.VIRTUAL_ENTITY_TWITTER_TYPE_ID;
+		// processor.doProcessStream(imageBase64, path, fileName, addTwitter);
 
 		// FIXME get the list of roles(tenants) from the stream info
 		if ("public".equals(newStream.getVisibility())) {
@@ -542,7 +564,7 @@ public class StoreService {
 		addStream.setVar("httpok", Config.getInstance().getHttpOk());
 		addStream.setVar("ok", Config.getInstance().getResponseOk());
 
-		//addStream.setVar("icon", path + fileName);
+		// addStream.setVar("icon", path + fileName);
 		addStream.setVar("icon", "");
 		addStream.setVar("apiVersion", "1.0");
 		addStream.setVar("apiName", tenant + "." + sensor + "_" + stream + "_stream");
@@ -564,13 +586,13 @@ public class StoreService {
 		addStream.setVar("virtualEntityCode", newStream.getCodiceVirtualEntity() != null ? newStream.getCodiceVirtualEntity() : "");
 		addStream.setVar("virtualEntityName", newStream.getVirtualEntityName() != null ? newStream.getVirtualEntityName() : "");
 		addStream.setVar("virtualEntityDescription", newStream.getVirtualEntityDescription() != null ? newStream.getVirtualEntityDescription() : "");
-		
+
 		addStream.setVar("extra_latitude", "");
 		addStream.setVar("extra_longitude", "");
-		if (newStream.getVirtualEntityPositions() != null){
-			if (newStream.getVirtualEntityPositions().getPosition() != null){
+		if (newStream.getVirtualEntityPositions() != null) {
+			if (newStream.getVirtualEntityPositions().getPosition() != null) {
 				List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Position> position = newStream.getVirtualEntityPositions().getPosition();
-				if (position.get(0) != null){
+				if (position.get(0) != null) {
 					addStream.setVar("extra_latitude", position.get(0).getLat().toString());
 					addStream.setVar("extra_longitude", position.get(0).getLon().toString());
 				}
@@ -604,7 +626,8 @@ public class StoreService {
 		if (messagesMap.get(lang) == null) {
 			Locale locale = new Locale(lang);
 
-			//messagesMap.put(lang, ResourceBundle.getBundle("/i18n/MessagesBundle", locale));
+			// messagesMap.put(lang,
+			// ResourceBundle.getBundle("/i18n/MessagesBundle", locale));
 			String tagResource = "";
 			String domainResource = "";
 			String subDomainResource = "";
@@ -622,20 +645,20 @@ public class StoreService {
 		}
 		return messagesMap.get(lang);
 	}
-	
+
 	public static Properties parsePropertiesString(String s) {
-	    // grr at load() returning void rather than the Properties object
-	    // so this takes 3 lines instead of "return new Properties().load(...);"
-	    final Properties p = new Properties();
-	    try {
+		// grr at load() returning void rather than the Properties object
+		// so this takes 3 lines instead of "return new Properties().load(...);"
+		final Properties p = new Properties();
+		try {
 			p.load(new StringReader(s));
 		} catch (IOException ex) {
 			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
-	    return p;
+		return p;
 	}
-	
+
 	private static JSONObject loadMessages(Locale currentLocale, String element) {
 		InputStream is = null;
 		JSONObject json = null;
@@ -668,23 +691,23 @@ public class StoreService {
 	}
 
 	protected static String formatMessages(Locale locale, String element) {
-		
+
 		JSONObject messages = loadMessages(locale, element);
-		
+
 		log.debug("[StoreService::formatMessages] - START");
 		StringBuffer sb = new StringBuffer("");
 		String loc = locale.getLanguage().substring(0, 1).toUpperCase() + locale.getLanguage().substring(1);
-		
+
 		String label1 = (element.equals("tags") ? "streamTags" : (element.equals("domains") ? "streamDomains" : "streamSubDomains"));
 		String label2 = (element.equals("tags") ? "tagCode" : (element.equals("domains") ? "codDomain" : "codSubDomain"));
-		
+
 		try {
 			JSONObject streamTags = messages.getJSONObject(label1);
 			JSONArray elements = streamTags.getJSONArray("element");
-			for(int i = 0 ; i < elements.length() ; i++){
+			for (int i = 0; i < elements.length(); i++) {
 				String tagCode = elements.getJSONObject(i).getString(label2);
-				String langEl = elements.getJSONObject(i).getString("lang"+loc);
-			    sb.append(tagCode + " = " + langEl + "\n");
+				String langEl = elements.getJSONObject(i).getString("lang" + loc);
+				sb.append(tagCode + " = " + langEl + "\n");
 			}
 
 		} catch (JSONException ex) {
@@ -768,8 +791,7 @@ public class StoreService {
 		removeDoc.setVar("provider", provider);
 		removeDoc.setVar("P", "");
 		removeDoc.run();
-		
-	
+
 		return true;
 	}
 
