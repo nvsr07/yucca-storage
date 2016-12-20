@@ -327,7 +327,7 @@ public class StoreService {
 
 			} catch (Exception e) {
 				log.debug("Tag not found" + e.getMessage());
-				messagesMap = null;
+				messagesMap = new HashMap<String, ResourceBundle>();
 			}
 
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
@@ -375,7 +375,6 @@ public class StoreService {
 			// check all tags
 			try {
 				for (String lang : Constants.LANGUAGES_SUPPORTED) {
-					System.out.println("check tag");
 					ResourceBundle messages = getMessages(lang);
 					for (org.csi.yucca.storage.datamanagementapi.model.metadata.Tag tag : metadata.getInfo().getTags()) {
 						if (messages.getString(tag.getTagCode()) == null)
@@ -394,10 +393,9 @@ public class StoreService {
 				}
 
 			} catch (Exception e) {
-				System.out.println("Tag not found" + e.getMessage());
 				e.printStackTrace();
 				log.debug("Tag not found" + e.getMessage());
-				messagesMap = null;
+				messagesMap = new HashMap<String, ResourceBundle>();
 			}
 
 			for (String lang : Constants.LANGUAGES_SUPPORTED) {
