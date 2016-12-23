@@ -49,11 +49,11 @@ dataType2Phoenix = {
     'int' : 'integer',
     'long' : 'bigint',
     'double' : 'double',
-    'data' : 'date',
-    'date' : 'date',
+    'data' : 'timestamp',
+    'date' : 'timestamp',
     'datetimeOffset' : 'timestamp',
     'dateTime' : 'timestamp',
-    'time' : 'time',
+    'time' : 'timestamp',
     'float' : 'float',
     'longitude' : 'double',
     'latitude' : 'double',
@@ -90,8 +90,8 @@ pigSchema = {
 
 phoenixColumns = {
     'bulkDataset' : 'ID,IDDATASET_L,DATASETVERSION_L',
-    'streamDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,SENSOR_S,STREAMCODE_S',
-    'socialDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,SENSOR_S,STREAMCODE_S',
+    'streamDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_dt,SENSOR_S,STREAMCODE_S',
+    'socialDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_dt,SENSOR_S,STREAMCODE_S',
     'binaryDataset' : 'ID,IDDATASET_L,DATASETVERSION_L'
 }
 

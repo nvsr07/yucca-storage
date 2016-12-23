@@ -12,8 +12,7 @@ mongoData = LOAD 'mongodb://$mongoUsr:$mongoPwd@$mongoHost:$mongoPort/$mongoDB.$
 USING com.mongodb.hadoop.pig.MongoLoader('$mongoFields', 'id') as ($pigSchema);
 
 STORE mongoData INTO 'hbase://$phoenixSchema.$phoenixTable/$phoenixColumns'
-USING it.csi.yucca.phoenix.pig.YuccaPhoenixHBaseStorage('$zookeeperQuorum','-batchSize 10');
+USING it.csi.yucca.phoenix.pig.YuccaPhoenixHBaseStorage('$zookeeperQuorum', '-batchSize 50000');
 
-
-solrData = FOREACH mongoData GENERATE $solrFields;
+solrData = FOREACH mongoData GENERATE $solrFields; 
 STORE solrData INTO 'output/solrTmp' USING com.lucidworks.hadoop.pig.SolrStoreFunc();
