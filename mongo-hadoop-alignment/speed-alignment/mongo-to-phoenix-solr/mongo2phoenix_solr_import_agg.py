@@ -10,6 +10,9 @@ import datetime
 import time
 sys.path.append('../lib/jyson-1.0.2.jar')
 from com.xhaus.jyson import JysonCodec as json
+from subprocess import call
+import java.util as util
+import java.io as javaio
 
 if len(sys.argv) != 3:
     print "Usage: " + sys.argv[0] + " tenantCode data"
@@ -34,60 +37,66 @@ Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
 Pig.registerJar("../lib/yucca-phoenix-pig.jar")
 Pig.registerJar("../lib/lucidworks-pig-functions-2.0.3-hd2.jar")
 
-teantdataJob = Pig.compileFromFile("""../read_mongo_tenant.pig""")
-tenantParams = {
-            'mongoInputQuery':'{"tenantCode":"' + tenantCode +'"}'
-        }
-results = teantdataJob.bind(tenantParams).runSingle()
+props = util.Properties()
+#add try catch for this
+propertiesfis = javaio.FileInputStream("mongo_parameters_prod.txt")
+props.load(propertiesfis)
 
-if results.isSuccessful():
+mongo1 = props.getProperty('mongoHost') + ":" + props.getProperty('mongoPort') + "/DB_SUPPORT"
+mongo2 = " -u " + props.getProperty('mongoUsr')
+mongo3 = " -p " + props.getProperty('mongoPwd') + ''' --authenticationDatabase admin  --quiet --eval "'''
 
-    iter = results.result("tenantInfo").iterator()
-    if iter.hasNext():
-        tuple = iter.next()
-
-        if tuple.get(2) is not None:
-            globalVars.collectionName['bulkDataset'] = tuple.get(2)
-        if tuple.get(3) is not None:
-            globalVars.collectionDb['bulkDataset'] = tuple.get(3)
-        if tuple.get(4) is not None:
-            globalVars.collectionName['streamDataset'] = tuple.get(4)
-        if tuple.get(5) is not None:
-            globalVars.collectionDb['streamDataset'] = tuple.get(5)
-        if tuple.get(6) is not None:
-            globalVars.collectionName['socialDataset'] = tuple.get(6)
-        if tuple.get(7) is not None:
-            globalVars.collectionDb['socialDataset'] = tuple.get(7)
-        if tuple.get(8) is not None:
-            globalVars.collectionName['binaryDataset'] = tuple.get(8)
-        if tuple.get(9) is not None:
-            globalVars.collectionDb['binaryDataset'] = tuple.get(9)
-        if tuple.get(10) is not None:
-            globalVars.phoenixTableName['bulkDataset'] = tuple.get(10)
-        if tuple.get(11) is not None:
-            globalVars.phoenixSchemaName['bulkDataset'] = tuple.get(11)
-        if tuple.get(12) is not None:
-            globalVars.phoenixTableName['streamDataset'] = tuple.get(12)
-        if tuple.get(13) is not None:
-            globalVars.phoenixSchemaName['streamDataset'] = tuple.get(13)
-        if tuple.get(14) is not None:
-            globalVars.phoenixTableName['binaryDataset'] = tuple.get(14)
-        if tuple.get(15) is not None:
-            globalVars.phoenixSchemaName['binaryDataset'] = tuple.get(15)
-        if tuple.get(16) is not None:
-            globalVars.phoenixTableName['socialDataset'] = tuple.get(16)
-        if tuple.get(17) is not None:
-            globalVars.phoenixSchemaName['socialDataset'] = tuple.get(17)
-        if tuple.get(18) is not None:
-            globalVars.solrCollectionName['bulkDataset'] = tuple.get(18)
-        if tuple.get(19) is not None:
-            globalVars.solrCollectionName['streamDataset'] = tuple.get(19)
-        if tuple.get(20) is not None:
-            globalVars.solrCollectionName['binaryDataset'] = tuple.get(20)
-        if tuple.get(21) is not None:
-            globalVars.solrCollectionName['socialDataset'] = tuple.get(21)
-
-        with open('data.json') as metadata_file:
+callResult = call("mongo " + mongo1 + " " + mongo2 + " " + mongo3 + " var param1='" + tenantCode + "' " + ''' "  ../list_tenant_defaults.js > tenant.json''', shell = True)
+if callResult == 0:
+    
+    with open('tenant.json') as tenantdata_file:
+        tenantdata = json.loads(tenantdata_file.read())
+    
+    if tenantdata['dataCollectionName'] is not None:
+        globalVars.collectionName['bulkDataset'] = tenantdata['dataCollectionName']
+    if tenantdata['dataCollectionDb'] is not None:
+        globalVars.collectionDb['bulkDataset'] = tenantdata['dataCollectionDb']
+    if tenantdata['measuresCollectionName'] is not None:
+        globalVars.collectionName['streamDataset'] = tenantdata['measuresCollectionName']
+    if tenantdata['measuresCollectionDb'] is not None:
+        globalVars.collectionDb['streamDataset'] = tenantdata['measuresCollectionDb']
+    if tenantdata['socialCollectionName'] is not None:
+        globalVars.collectionName['socialDataset'] = tenantdata['socialCollectionName']
+    if tenantdata['socialCollectionDb'] is not None:
+        globalVars.collectionDb['socialDataset'] = tenantdata['socialCollectionDb']
+    if tenantdata['mediaCollectionName'] is not None:
+        globalVars.collectionName['binaryDataset'] = tenantdata['mediaCollectionName']
+    if tenantdata['mediaCollectionDb'] is not None:
+        globalVars.collectionDb['binaryDataset'] = tenantdata['mediaCollectionDb']
+    if tenantdata['dataPhoenixTableName'] is not None:
+        globalVars.phoenixTableName['bulkDataset'] = tenantdata['dataPhoenixTableName']
+    if tenantdata['dataPhoenixSchemaName'] is not None:
+        globalVars.phoenixSchemaName['bulkDataset'] = tenantdata['dataPhoenixSchemaName']
+    if tenantdata['measuresPhoenixTableName'] is not None:
+        globalVars.phoenixTableName['streamDataset'] = tenantdata['measuresPhoenixTableName']
+    if tenantdata['measuresPhoenixSchemaName'] is not None:
+        globalVars.phoenixSchemaName['streamDataset'] = tenantdata['measuresPhoenixSchemaName']
+    if tenantdata['mediaPhoenixTableName'] is not None:
+        globalVars.phoenixTableName['binaryDataset'] = tenantdata['mediaPhoenixTableName']
+    if tenantdata['mediaPhoenixSchemaName'] is not None:
+        globalVars.phoenixSchemaName['binaryDataset'] = tenantdata['mediaPhoenixSchemaName']
+    if tenantdata['socialPhoenixTableName'] is not None:
+        globalVars.phoenixTableName['socialDataset'] = tenantdata['socialPhoenixTableName']
+    if tenantdata['socialPhoenixSchemaName'] is not None:
+        globalVars.phoenixSchemaName['socialDataset'] = tenantdata['socialPhoenixSchemaName']
+    if tenantdata['dataSolrCollectionName'] is not None:
+        globalVars.solrCollectionName['bulkDataset'] = tenantdata['dataSolrCollectionName']
+    if tenantdata['measuresSolrCollectionName'] is not None:
+        globalVars.solrCollectionName['streamDataset'] = tenantdata['measuresSolrCollectionName']
+    if tenantdata['mediaSolrCollectionName'] is not None:
+        globalVars.solrCollectionName['binaryDataset'] = tenantdata['mediaSolrCollectionName']
+    if tenantdata['socialSolrCollectionName'] is not None:
+        globalVars.solrCollectionName['socialDataset'] = tenantdata['socialSolrCollectionName']
+    
+    callResult = call("mongo " + mongo1 + " " + mongo2 + " " + mongo3 + " var param1='" + tenantCode + "' " + ''' "  ../list_mongo_dataset_fields.js > dataset.json''', shell = True)
+    if callResult == 0:
+        
+        with open('dataset.json') as metadata_file:
             metadata = json.loads(metadata_file.read())
 
         importJob = Pig.compileFromFile("""copy_mongo2phoenix_solr.pig""")
@@ -151,8 +160,10 @@ if results.isSuccessful():
             print 'phoenixTable: ' + importConfig['phoenixTable']
             print 'phoenixColumns:' + importConfig['phoenixColumns']
             print 'solrCollection: ' + importConfig['solrCollection'],
-            print 'solrFields: ' + importConfig['solrFields']
+            print 'solrFields: ' + importConfig['solrFields'],
             print ''
             '''
+    else:
+        print "Pig job failed to access MongoDB metadata"
 else:
-    print "Pig job failed to access MongoDB tenantdata"
+    print "Pig job failed to access MongoDB tenant"
