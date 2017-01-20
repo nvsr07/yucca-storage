@@ -380,6 +380,7 @@ public class MetadataService {
 		Metadata md = null;
 
 		final StreamOut stream = streamDAO.readCurrentStreamByCode(virtualentityCode, streamCode, visibleFromParam);
+		
 		if (stream.getConfigData().getIdDataset() != null) {
 			Long idDataset = stream.getConfigData().getIdDataset();
 		
