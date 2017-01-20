@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -24,7 +26,7 @@ public class Metadata extends AbstractEntity {
 	public static final String CONFIG_DATA_SUBTYPE_SOCIAL_DATASET = "socialDataset";
 	public static final String CONFIG_DATA_TYPE_API = "api";
 	public static final String CONFIG_DATA_SUBTYPE_API_MULTI_BULK = "apiMultiBulk";
-	
+
 	public static final String CONFIG_DATA_DEFAULT_COLLECTION_SOCIAL = "social";
 
 	private String id;
@@ -37,7 +39,7 @@ public class Metadata extends AbstractEntity {
 	private ConfigData configData;
 	private Info info;
 	private Opendata opendata;
-	
+
 	private int dcatReady;
 	private String dcatCreatorName;
 	private String dcatCreatorType;
@@ -202,12 +204,11 @@ public class Metadata extends AbstractEntity {
 									// 12 _ idDataset
 
 			String prefix = "";
-			if (getConfigData() != null && (CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(getConfigData().getSubtype()) || CONFIG_DATA_SUBTYPE_SOCIAL_DATASET.equals(getConfigData().getSubtype())))
+			if (getConfigData() != null
+					&& (CONFIG_DATA_SUBTYPE_STREAM_DATASET.equals(getConfigData().getSubtype()) || CONFIG_DATA_SUBTYPE_SOCIAL_DATASET.equals(getConfigData().getSubtype())))
 				prefix = "ds_";
 			else if (getConfigData() != null && CONFIG_DATA_SUBTYPE_BINARY_DATASET.equals(getConfigData().getSubtype()))
 				prefix = "bn_";
-			
-			
 
 			String datasetNameSafe = "";
 			if (getInfo() != null)
@@ -254,7 +255,7 @@ public class Metadata extends AbstractEntity {
 	}
 
 	public static Field[] binaryDatasetBaseFields() {
-		
+
 		Field idBinaryField = new Field();
 		idBinaryField.setDataType("long");
 		idBinaryField.setFieldName("idBinary");
@@ -300,11 +301,11 @@ public class Metadata extends AbstractEntity {
 		metadataBinaryField.setFieldName("metadataBinary");
 		metadataBinaryField.setFieldAlias("Metadata");
 
-		return new Field[] { idBinaryField, filenameBinaryField, aliasNameBinaryField, sizeBinaryField, insertDateBinaryField, lastUpdateDateBinaryField,
-				contentTypeBinaryField, pathBinaryField, metadataBinaryField };
+		return new Field[] { idBinaryField, filenameBinaryField, aliasNameBinaryField, sizeBinaryField, insertDateBinaryField, lastUpdateDateBinaryField, contentTypeBinaryField,
+				pathBinaryField, metadataBinaryField };
 	}
 
-	public byte[] readDatasetIconBytes() throws IOException{
+	public byte[] readDatasetIconBytes() throws IOException {
 		String imageBase64 = this.getInfo().getIcon();
 		BufferedImage imag = null;
 
@@ -331,6 +332,20 @@ public class Metadata extends AbstractEntity {
 		byte[] iconBytes = baos.toByteArray();
 		baos.close();
 		return iconBytes;
+	}
+
+	public boolean hasFieldNameDuplicate() {
+		Set<String> hashSet = new HashSet<String>();
+		boolean hasDuplicate = false;
+		if (this.getInfo() != null && this.getInfo().getFields() != null) {
+			for (Field field : this.getInfo().getFields()) {
+				if (!hashSet.add(field.getFieldName())) {
+					hasDuplicate = true;
+					break;
+				}
+			}
+		}
+		return hasDuplicate;
 	}
 
 }
