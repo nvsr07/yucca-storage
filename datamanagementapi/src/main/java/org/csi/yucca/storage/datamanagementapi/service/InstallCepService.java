@@ -3,6 +3,7 @@ package org.csi.yucca.storage.datamanagementapi.service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.DELETE;
@@ -144,6 +145,17 @@ public class InstallCepService {
 			wr = colDati.remove(searchQuery);
 
 			System.out.println("wr: " + wr);
+			
+			
+			// remove file list
+			String supportDb = Config.getInstance().getDbSupport();
+			String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+
+			Metadata existingMetadata = metadataDAO.readCurrentMetadataByIdDataset(Long.parseLong(idDataset),  null);
+			existingMetadata.getInfo().setFileNames(new LinkedList<String>());
+			metadataDAO.updateMetadata(existingMetadata);
+
 
 		}catch (Exception e) {
 			e.printStackTrace();
