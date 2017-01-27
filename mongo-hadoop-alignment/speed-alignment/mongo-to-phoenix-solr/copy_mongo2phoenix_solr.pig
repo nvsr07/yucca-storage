@@ -2,17 +2,19 @@ set pig.datetime.default.tz '+00:00'
 
 set mongo.input.query '$query'
 
-set solr.zkhost '$solrZookeeperQuorum'
-set solr.collection '$solrCollection'
+--set solr.zkhost '$solrZookeeperQuorum'
+--set solr.collection '$solrCollection'
 
-rmf output/solrTmp
-mkdir output/solrTmp
+--rmf output/solrTmp
+--mkdir output/solrTmp
 
 mongoData = LOAD 'mongodb://$mongoUsr:$mongoPwd@$mongoHost:$mongoPort/$mongoDB.$mongoCollection?$mongoConnParams'
 USING com.mongodb.hadoop.pig.MongoLoader('$mongoFields', 'id') as ($pigSchema);
 
-STORE mongoData INTO 'hbase://$phoenixSchema.$phoenixTable/$phoenixColumns'
-USING it.csi.yucca.phoenix.pig.YuccaPhoenixHBaseStorage('$zookeeperQuorum', '-batchSize 50000');
+mongoDataSanitized = FOREACH mongoData GENERATE $sanitizedFields; 
 
-solrData = FOREACH mongoData GENERATE $solrFields; 
-STORE solrData INTO 'output/solrTmp' USING com.lucidworks.hadoop.pig.SolrStoreFunc();
+STORE mongoDataSanitized INTO 'hbase://$phoenixSchema.$phoenixTable/$phoenixColumns'
+USING it.csi.yucca.phoenix.pig.YuccaPhoenixHBaseStorage('$zookeeperQuorum', '-batchSize 1000');
+
+--solrData = FOREACH mongoData GENERATE $solrFields; 
+--STORE solrData INTO 'output/solrTmp' USING com.lucidworks.hadoop.pig.SolrStoreFunc();

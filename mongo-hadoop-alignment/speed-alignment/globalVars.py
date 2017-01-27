@@ -1,4 +1,7 @@
 #!/usr/bin/python
+from math import floor
+import datetime
+import time
 
 def timeToSolrTime(param):
     return "ToString(" + param + ", 'yyyy-MM-dd HH:mm:ss.SSSZ')"
@@ -8,6 +11,14 @@ def isTimeType(dataType):
         return True
     else:
         return False
+
+def dateToObjectId(dateString):
+    dt = datetime.datetime.strptime(dateString, '%Y/%m/%d')
+    deltat = dt - datetime.datetime(1970,1,1)
+    secondsFromEpoch = (deltat.microseconds + (deltat.seconds + deltat.days * 24 * 3600) * 10**6) / 10**6
+    timeOffset = time.altzone if time.daylight else time.timezone
+    objectId = (str(hex(int(floor(secondsFromEpoch + timeOffset)))) + "0000000000000000")[2:]
+    return objectId
 
 dataTypeSuffixes = {
     'boolean' : '_b',
@@ -31,13 +42,15 @@ dataType2Pig = {
     'string' : 'chararray',
     'int' : 'int',
     'long' : 'long',
-    'double' : 'double',
+    #'double' : 'double',
+    'double' : 'chararray',
     'data' : 'datetime',
     'date' : 'datetime',
     'datetimeOffset' : 'datetime',
     'dateTime' : 'datetime',
     'time' : 'datetime',
-    'float' : 'float',
+    #'float' : 'float',
+    'float' : 'chararray',
     'longitude' : 'double',
     'latitude' : 'double',
     'binary' : 'chararray'
@@ -90,8 +103,8 @@ pigSchema = {
 
 phoenixColumns = {
     'bulkDataset' : 'ID,IDDATASET_L,DATASETVERSION_L',
-    'streamDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_dt,SENSOR_S,STREAMCODE_S',
-    'socialDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_dt,SENSOR_S,STREAMCODE_S',
+    'streamDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,SENSOR_S,STREAMCODE_S',
+    'socialDataset' : 'ID,IDDATASET_L,DATASETVERSION_L,TIME_DT,SENSOR_S,STREAMCODE_S',
     'binaryDataset' : 'ID,IDDATASET_L,DATASETVERSION_L'
 }
 
@@ -107,6 +120,13 @@ solrFieldsNum = {
     'streamDataset' : 6,
     'socialDataset' : 6,
     'binaryDataset' : 3
+}
+
+sanitizedFields = {
+    'bulkDataset' : "id, idDataset_l, datasetVersion_l", 
+    'streamDataset' : "id, idDataset_l, datasetVersion_l, time_dt, sensor_s, streamCode_s",
+    'socialDataset' : "id, idDataset_l, datasetVersion_l, time_dt, sensor_s, streamCode_s",
+    'binaryDataset' : "id, idDataset_l, datasetVersion_l"
 }
 
 collectionDb = phoenixSchemaName = solrCollectionName =  {
