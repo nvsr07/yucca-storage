@@ -93,15 +93,16 @@ if callResult == 0:
                 dataType = field['dataType']
 
                 dynamicMongoFields += ', ' + name
-                dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
                 dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
 #                solrField = globalVars.timeToSolrTime("$" + str(solrFieldsNum)) if globalVars.isTimeType(dataType) else "$" + str(solrFieldsNum)
 #                dynamicSolrFields += ", '" + name + globalVars.dataTypeSuffixes[dataType] + "', " + solrField
 #                solrFieldsNum += 1
                                 
                 if (dataType == 'float' or dataType == 'double'):
+                    dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':chararray'
                     sanitizedFields += ", ((org.apache.pig.piggybank.evaluation.IsNumeric(" + name + globalVars.dataTypeSuffixes[dataType] + ")==true)?(" + dataType + ")" + name + globalVars.dataTypeSuffixes[dataType] +":null)"
                 else:
+                    dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
                     sanitizedFields += ", " + name + globalVars.dataTypeSuffixes[dataType] 
                 
             if len(dynamicPhoenixColumns) > 0:
