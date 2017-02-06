@@ -144,7 +144,7 @@ public class HttpDelegate {
 			DeleteMethod delete = new DeleteMethod(targetUrl);
 			
 
-			contentType = "application/x-www-form-urlencoded";
+			//contentType = "application/x-www-form-urlencoded";
 			delete.setRequestHeader("Content-Type", contentType);
 
 			HttpClient httpclient = new HttpClient();

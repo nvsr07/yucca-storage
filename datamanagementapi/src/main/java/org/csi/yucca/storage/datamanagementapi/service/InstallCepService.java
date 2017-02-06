@@ -107,15 +107,15 @@ public class InstallCepService {
 	}
 
 	private String deleteDatasetApiAdmin(String tenant, String idDataset, String datasetVersion) throws IOException {
-		log.debug("[::deleteDatasetApiAdmin] deleteDatasetApiAdmin START: tenant" + tenant + ", idDataset: " + idDataset + ", datasetVersion: " + datasetVersion );
+		log.debug("[::deleteDatasetApiAdmin] deleteDatasetApiAdmin START: tenant" + tenant + ", idDataset: " + idDataset + ", datasetVersion: " + datasetVersion);
 		// int-sdnet-intapi.sdp.csi.it:90/insertdataapi/dataset/delete/tst_csp/695/1
-		String deleteApiUrl = Config.getInstance().getDataDeleteBaseUrl() + tenant + "/" +idDataset;
-		if(datasetVersion!=null)
+		String deleteApiUrl = Config.getInstance().getDataDeleteBaseUrl() + "dataset/delete/" + tenant + "/" + idDataset;
+		if (datasetVersion != null)
 			deleteApiUrl += "/" + datasetVersion;
 		log.info("[InstallCepService::deleteDatasetApiAdmin] deleteApiUrl:  " + deleteApiUrl);
 
 		return HttpDelegate.executeDelete(deleteApiUrl, null, null, null);
-		
+
 	}
 
 	private String deleteDatasetData(String tenant, String idDataset, String datasetVersion) throws UnknownHostException {
