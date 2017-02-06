@@ -53,7 +53,8 @@ public class Config {
 	public static final String MAIL_BODY_200 = "MAIL_BODY_200";
 
 	public static final String DATA_INSERT_BASE_URL = "DATA_INSERT_BASE_URL";
-
+	public static final String DATA_DELETE_BASE_URL = "DATA_DELETE_BASE_URL";
+	
 	private static Map<String, String> params = null;
 	private static Config instance = null;
 	static Logger log = Logger.getLogger(Config.class);
@@ -99,6 +100,8 @@ public class Config {
 		params.put(MAIL_SUBJECT_200, rb.getString(MAIL_SUBJECT_200));
 		params.put(MAIL_BODY_200, rb.getString(MAIL_BODY_200));
 		params.put(DATA_INSERT_BASE_URL, rb.getString(DATA_INSERT_BASE_URL));
+		params.put(DATA_DELETE_BASE_URL, rb.getString(DATA_DELETE_BASE_URL));
+		
 
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
@@ -229,6 +232,10 @@ public class Config {
 
 	public String getDataInsertBaseUrl() {
 		return params.get(DATA_INSERT_BASE_URL);
+	}
+	
+	public String getDataDeleteBaseUrl() {
+		return params.get(DATA_DELETE_BASE_URL);
 	}
 
 	public String getApiAdminServiceUrl() {

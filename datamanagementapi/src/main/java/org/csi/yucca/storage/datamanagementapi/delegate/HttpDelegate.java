@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -46,7 +47,7 @@ public class HttpDelegate {
 			HttpClient httpclient = new HttpClient();
 			try {
 				resultCode = httpclient.executeMethod(get);
-				log.debug("[HttpDelegate::executeGet] - post result: " + resultCode);
+				log.debug("[HttpDelegate::executeGet] - get result: " + resultCode);
 				result = get.getResponseBodyAsString();
 			} finally {
 				get.releaseConnection();
@@ -117,5 +118,49 @@ public class HttpDelegate {
 		}
 		return result;
 	}
+
+	public static String executeDelete(String targetUrl, String contentType, String characterEncoding, Map<String, String> parameters) throws IOException {
+		log.debug("[HttpDelegate::executeDelete] START");
+		String result = "";
+		int resultCode = -1;
+		try {
+
+			if (contentType == null)
+				contentType = "application/json";
+			if (characterEncoding == null)
+				characterEncoding = "UTF-8";
+
+			log.debug("[HttpDelegate::executeDelete] - targetUrl: " + targetUrl);
+
+			if (parameters != null) {
+				for (String key : parameters.keySet()) {
+					targetUrl += key + "=" + parameters.get(key).replaceAll("  ", " ").replaceAll(" ", "%20").
+							replaceAll("\\[", "%5B").replaceAll("\\]", "%5D").replaceAll(">", "%3E").replaceAll("<", "%3C") + "&";
+				}
+
+			}
+
+			log.debug("[HttpDelegate::executeDelete] - targetUrl: " + targetUrl);
+			DeleteMethod delete = new DeleteMethod(targetUrl);
+			
+
+			contentType = "application/x-www-form-urlencoded";
+			delete.setRequestHeader("Content-Type", contentType);
+
+			HttpClient httpclient = new HttpClient();
+			try {
+				resultCode = httpclient.executeMethod(delete);
+				log.debug("[HttpDelegate::executeDelete] - delete result: " + resultCode);
+				result = delete.getResponseBodyAsString();
+			} finally {
+				delete.releaseConnection();
+			}
+
+		} finally {
+			log.debug("[HttpDelegate::executeDelete] END");
+		}
+		return result;
+	}
 	
+
 }
