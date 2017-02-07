@@ -11,14 +11,15 @@ from subprocess import call
 import java.util as util
 import java.io as javaio
     
-if len(sys.argv) != 4:
-    print "Usage: " + sys.argv[0] + " tenantCode start-date end-date"
+if len(sys.argv) != 5:
+    print "Usage: " + sys.argv[0] + " tenantCode start-date end-date parameters-file"
     print "Data format: yyyy/MM/dd"
     sys.exit()
 
 tenantCode = sys.argv[1]
 startDate = sys.argv[2]
 endDate = sys.argv[3]
+paramFile = sys.argv[4]
 
 globalVars.init(tenantCode)
 minObjectId = globalVars.dateToObjectId(startDate)
@@ -34,7 +35,7 @@ Pig.registerJar("/usr/hdp/current/pig-client/piggybank.jar")
 
 props = util.Properties()
 #add try catch for this
-propertiesfis = javaio.FileInputStream("mongo_parameters.txt")
+propertiesfis = javaio.FileInputStream(paramFile)
 props.load(propertiesfis)
 
 mongo1 = props.getProperty('mongoHost') + ":" + props.getProperty('mongoPort') + "/DB_SUPPORT"
@@ -79,18 +80,17 @@ if callResult == 0:
         for m in metadata:
 
             subtype = m['_id']['subtype']
-
-            if subtype == 'binaryDataset':
-                continue
-
             dynamicMongoFields = dynamicPigSchema = dynamicPhoenixColumns = dynamicSolrFields = ''
  #           solrFieldsNum = globalVars.solrFieldsNum[subtype]
-            sanitizedFields = globalVars .sanitizedFields[subtype]
+            sanitizedFields = globalVars.sanitizedFields[subtype]
             
             for field in m['_id']['fields']:
 
                 name = field['fieldName']
                 dataType = field['dataType']
+                
+                if subtype == 'binaryDataset' and (name == 'urlDownloadBinary' or name == 'idBinary'):
+                    continue
 
                 dynamicMongoFields += ', ' + name
                 dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
@@ -104,6 +104,13 @@ if callResult == 0:
                 else:
                     dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
                     sanitizedFields += ", " + name + globalVars.dataTypeSuffixes[dataType] 
+                
+            if subtype == 'binaryDataset': 
+                dynamicMongoFields += ', idBinary, pathHdfsBinary, tenantBinary'
+                dynamicPhoenixColumns += ',VARCHAR#idBinary_s,VARCHAR#pathHdfsBinary_s,VARCHAR#tenantBinary_s'
+                dynamicPigSchema += ', idBinary_s:chararray, pathHdfsBinary_s:chararray, tenantBinary_s:chararray'
+                sanitizedFields += ', idBinary_s, pathHdfsBinary_s, tenantBinary_s'
+#                dynamicSolrFields += ", 'idBinary_s', $" + str(solrFieldsNum) + ", 'pathHdfsBinary_s', $" + str(solrFieldsNum + 1) + ", 'tenantBinary_s', $" + str(solrFieldsNum + 2)               
                 
             if len(dynamicPhoenixColumns) > 0:
                 dynamicPhoenixColumns = ";" + dynamicPhoenixColumns[1:].upper()
