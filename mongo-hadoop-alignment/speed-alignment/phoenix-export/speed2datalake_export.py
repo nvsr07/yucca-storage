@@ -74,32 +74,15 @@ for tenant in allTenants:
         print "FATAL ERROR while reading data for tenant " + tenantCode
         sys.exit(1)
     
-    globalVars.init(tenantCode)
-    
     with open(outDir + '/tenant.'  + str(pid) + '.json') as tenantdata_file:
-        tenantdata = json.loads(tenantdata_file.read())
+        tenantData = json.loads(tenantdata_file.read())
     
-    if('dataPhoenixSchemaName' not in tenantdata.keys() and 'measuresPhoenixSchemaName' not in tenantdata.keys() and 
-       'mediaPhoenixSchemaName' not in tenantdata.keys() and 'socialPhoenixSchemaName' not in tenantdata.keys()):
+    if('dataPhoenixSchemaName' not in tenantData.keys() and 'measuresPhoenixSchemaName' not in tenantData.keys() and 
+       'mediaPhoenixSchemaName' not in tenantData.keys() and 'socialPhoenixSchemaName' not in tenantData.keys()):
         print "Skipping tenant " + tenantCode + " because is still on MongDB "
         continue
     
-    globalVars.collectionName['bulkDataset'] = tenantdata.get('dataCollectionName', globalVars.collectionName['bulkDataset'])
-    globalVars.collectionDb['bulkDataset'] = tenantdata.get('dataCollectionDb', globalVars.collectionDb['bulkDataset'])
-    globalVars.collectionName['streamDataset'] = tenantdata.get('measuresCollectionName', globalVars.collectionName['streamDataset'])
-    globalVars.collectionDb['streamDataset'] = tenantdata.get('measuresCollectionDb', globalVars.collectionDb['streamDataset'])
-    globalVars.collectionName['socialDataset'] = tenantdata.get('socialCollectionName', globalVars.collectionName['socialDataset'])
-    globalVars.collectionDb['socialDataset'] = tenantdata.get('socialCollectionDb', globalVars.collectionDb['socialDataset'])
-    globalVars.collectionName['binaryDataset'] = tenantdata.get('mediaCollectionName', globalVars.collectionName['binaryDataset']) 
-    globalVars.collectionDb['binaryDataset'] = tenantdata.get('mediaCollectionDb', globalVars.collectionDb['binaryDataset'])
-    globalVars.phoenixTableName['bulkDataset'] = tenantdata.get('dataPhoenixTableName', globalVars.phoenixTableName['bulkDataset'])
-    globalVars.phoenixSchemaName['bulkDataset'] = tenantdata.get('dataPhoenixSchemaName', globalVars.phoenixSchemaName['bulkDataset'])
-    globalVars.phoenixTableName['streamDataset'] = tenantdata.get('measuresPhoenixTableName', globalVars.phoenixTableName['streamDataset'])
-    globalVars.phoenixSchemaName['streamDataset'] = tenantdata.get('measuresPhoenixSchemaName', globalVars.phoenixSchemaName['streamDataset'])
-    globalVars.phoenixTableName['binaryDataset'] = tenantdata.get('mediaPhoenixTableName', globalVars.phoenixTableName['binaryDataset'])
-    globalVars.phoenixSchemaName['binaryDataset'] = tenantdata.get('mediaPhoenixSchemaName', globalVars.phoenixSchemaName['binaryDataset'])      
-    globalVars.phoenixTableName['socialDataset'] = tenantdata.get('socialPhoenixTableName', globalVars.phoenixTableName['socialDataset'])
-    globalVars.phoenixSchemaName['socialDataset'] = tenantdata.get('socialPhoenixSchemaName', globalVars.phoenixSchemaName['socialDataset'])
+    globalVars.init(tenantCode, tenantData)
      
     callResult = call("mongo " + mongoConnectString + " " + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' "  list_dataset_conv.js > ''' + outDir + '''/lista_dataset.''' + str(pid) + ".json", shell = True)
     if callResult == 0:
@@ -114,8 +97,7 @@ for tenant in allTenants:
 
             subtype = m['configData']['subtype']
             dynamicPigSchema = dynamicPhoenixColumns = phoenixColumns = ''
-            solrFieldsNum = globalVars.solrFieldsNum[subtype]
-
+            
             for field in m['info']['fields']:
 
                 name = field['fieldName']

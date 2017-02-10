@@ -21,7 +21,6 @@ startDate = sys.argv[2]
 endDate = sys.argv[3]
 paramFile = sys.argv[4]
 
-globalVars.init(tenantCode)
 minObjectId = globalVars.dateToObjectId(startDate)
 maxObjectId = globalVars.dateToObjectId(endDate)
 
@@ -46,28 +45,9 @@ callResult = call("mongo " + mongo1 + " " + mongo2 + " " + mongo3 + " var param1
 if callResult == 0:
     
     with open('tenant.json') as tenantdata_file:
-        tenantdata = json.loads(tenantdata_file.read())
+        tenantData = json.loads(tenantdata_file.read())
         
-    globalVars.collectionName['bulkDataset'] = tenantdata.get('dataCollectionName', globalVars.collectionName['bulkDataset'])
-    globalVars.collectionDb['bulkDataset'] = tenantdata.get('dataCollectionDb', globalVars.collectionDb['bulkDataset'])
-    globalVars.collectionName['streamDataset'] = tenantdata.get('measuresCollectionName', globalVars.collectionName['streamDataset'])
-    globalVars.collectionDb['streamDataset'] = tenantdata.get('measuresCollectionDb', globalVars.collectionDb['streamDataset'])
-    globalVars.collectionName['socialDataset'] = tenantdata.get('socialCollectionName', globalVars.collectionName['socialDataset'])
-    globalVars.collectionDb['socialDataset'] = tenantdata.get('socialCollectionDb', globalVars.collectionDb['socialDataset'])
-    globalVars.collectionName['binaryDataset'] = tenantdata.get('mediaCollectionName', globalVars.collectionName['binaryDataset']) 
-    globalVars.collectionDb['binaryDataset'] = tenantdata.get('mediaCollectionDb', globalVars.collectionDb['binaryDataset'])
-    globalVars.phoenixTableName['bulkDataset'] = tenantdata.get('dataPhoenixTableName', globalVars.phoenixTableName['bulkDataset'])
-    globalVars.phoenixSchemaName['bulkDataset'] = tenantdata.get('dataPhoenixSchemaName', globalVars.phoenixSchemaName['bulkDataset'])
-    globalVars.phoenixTableName['streamDataset'] = tenantdata.get('measuresPhoenixTableName', globalVars.phoenixTableName['streamDataset'])
-    globalVars.phoenixSchemaName['streamDataset'] = tenantdata.get('measuresPhoenixSchemaName', globalVars.phoenixSchemaName['streamDataset'])
-    globalVars.phoenixTableName['binaryDataset'] = tenantdata.get('mediaPhoenixTableName', globalVars.phoenixTableName['binaryDataset'])
-    globalVars.phoenixSchemaName['binaryDataset'] = tenantdata.get('mediaPhoenixSchemaName', globalVars.phoenixSchemaName['binaryDataset'])      
-    globalVars.phoenixTableName['socialDataset'] = tenantdata.get('socialPhoenixTableName', globalVars.phoenixTableName['socialDataset'])
-    globalVars.phoenixSchemaName['socialDataset'] = tenantdata.get('socialPhoenixSchemaName', globalVars.phoenixSchemaName['socialDataset'])
-#    globalVars.solrCollectionName['bulkDataset'] = tenantdata.get('dataSolrCollectionName', globalVars.solrCollectionName['bulkDataset'])
-#    globalVars.solrCollectionName['streamDataset'] = tenantdata.get('measuresSolrCollectionName', globalVars.solrCollectionName['streamDataset'])
-#    globalVars.solrCollectionName['binaryDataset'] = tenantdata.get('mediaSolrCollectionName', globalVars.solrCollectionName['binaryDataset']) 
-#    globalVars.solrCollectionName['socialDataset'] = tenantdata.get('socialSolrCollectionName', globalVars.solrCollectionName['socialDataset'])
+    globalVars.init(tenantCode, tenantData)
     
     callResult = call("mongo " + mongo1 + " " + mongo2 + " " + mongo3 + " var param1='" + tenantCode + "' " + ''' "  ../list_mongo_dataset_fields.js > dataset.json''', shell = True)
     if callResult == 0:
@@ -86,7 +66,7 @@ if callResult == 0:
             
             for field in m['_id']['fields']:
 
-                name = field['fieldName']
+                name = field['fieldName'].strip()
                 dataType = field['dataType']
                 
                 if subtype == 'binaryDataset' and (name == 'urlDownloadBinary' or name == 'idBinary'):

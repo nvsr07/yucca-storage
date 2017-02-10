@@ -71,20 +71,6 @@ dataType2Phoenix = {
     'binary' : 'varchar'
 }
 
-collectionName = {
-    'bulkDataset' : 'data',
-    'streamDataset' : 'measures',
-    'socialDataset' : 'social',
-    'binaryDataset' : 'media'
-}
-
-phoenixTableName = {
-    'bulkDataset' : 'data',
-    'streamDataset' : 'measures',
-    'socialDataset' : 'social',
-    'binaryDataset' : 'media'
-}
-
 mongoFields = {
     'bulkDataset' : 'id, idDataset, datasetVersion',
     'streamDataset' : 'id, idDataset, datasetVersion, time, sensor, streamCode',
@@ -127,35 +113,54 @@ sanitizedFields = {
     'binaryDataset' : "id, idDataset_l, datasetVersion_l"
 }
 
-collectionDb = phoenixSchemaName = solrCollectionName =  {
+collectionName = collectionDb = phoenixSchemaName = phoenixTableName = solrCollectionName =  {
     'bulkDataset' : '',
     'streamDataset' : '',
     'socialDataset' : '',
     'binaryDataset' : ''
 }
 
-def init(tenantCode):
+def init(tenantCode, tenantData = None):
+    
+    if tenantData is None:
+        tenantData = {}
+     
+    global collectionName
+    collectionName = {
+        'bulkDataset' : tenantData.get('dataCollectionName', 'data'),
+        'streamDataset' : tenantData.get('measuresCollectionName', 'measures'),
+        'socialDataset' : tenantData.get('socialCollectionName', 'social'),
+        'binaryDataset' : tenantData.get('mediaCollectionName', 'media')
+    }
     
     global collectionDb
     collectionDb = {
-        'bulkDataset' : 'DB_' + tenantCode,
-        'streamDataset' : 'DB_' + tenantCode,
-        'socialDataset' : 'DB_' + tenantCode,
-        'binaryDataset' : 'DB_' + tenantCode
+        'bulkDataset' : tenantData.get('dataCollectionDb', 'DB_' + tenantCode),
+        'streamDataset' : tenantData.get('measuresCollectionDb', 'DB_' + tenantCode),
+        'socialDataset' : tenantData.get('socialCollectionDb', 'DB_' + tenantCode),
+        'binaryDataset' : tenantData.get('mediaCollectionDb', 'DB_' + tenantCode)
         }
 
     global phoenixSchemaName
     phoenixSchemaName = {
-        'bulkDataset' : 'sdp_' + tenantCode,
-        'streamDataset' : 'sdp_' + tenantCode,
-        'socialDataset' : 'sdp_' + tenantCode,
-        'binaryDataset' : 'sdp_' + tenantCode
+        'bulkDataset' : tenantData.get('dataPhoenixSchemaName', 'sdp_' + tenantCode),
+        'streamDataset' : tenantData.get('measuresPhoenixSchemaName', 'sdp_' + tenantCode),
+        'socialDataset' : tenantData.get('socialPhoenixSchemaName', 'sdp_' + tenantCode),
+        'binaryDataset' : tenantData.get('mediaPhoenixSchemaName', 'sdp_' + tenantCode)
+    }
+    
+    global phoenixTableName
+    phoenixTableName = {
+        'bulkDataset' : tenantData.get('dataPhoenixTableName', 'data'),
+        'streamDataset' : tenantData.get('measuresPhoenixTableName', 'measures'),
+        'socialDataset' : tenantData.get('socialPhoenixTableName', 'social'),
+        'binaryDataset' : tenantData.get('mediaPhoenixTableName', 'media')
     }
     
     global solrCollectionName
     solrCollectionName = {
-        'bulkDataset' : 'sdp_' + tenantCode + '_data',
-        'streamDataset' : 'sdp_' + tenantCode + '_measures',
-        'socialDataset' : 'sdp_' + tenantCode + '_social',
-        'binaryDataset' : 'sdp_' + tenantCode + '_media'
+        'bulkDataset' : tenantData.get('dataSolrCollectionName', 'sdp_' + tenantCode + '_data'),
+        'streamDataset' : tenantData.get('measuresSolrCollectionName', 'sdp_' + tenantCode + '_measures'),
+        'socialDataset' : tenantData.get('socialSolrCollectionName', 'sdp_' + tenantCode + '_social'),
+        'binaryDataset' : tenantData.get('mediaSolrCollectionName', 'sdp_' + tenantCode + '_media')
     }
