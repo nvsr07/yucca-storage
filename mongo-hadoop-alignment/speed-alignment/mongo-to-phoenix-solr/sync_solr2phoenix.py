@@ -55,7 +55,7 @@ if callResult == 0:
         for m in metadata:
 
             subtype = m['_id']['subtype']
-            dynamicPigSchema = phoenixColumns = phoenixDynamicColumns = phoenixUpsertColumns = ''
+            phoenixColumns = phoenixDynamicColumns = phoenixUpsertColumns = ''
             
             for field in m['_id']['fields']:
 
@@ -67,14 +67,12 @@ if callResult == 0:
                 
                 phoenixColumns += ',' + name + globalVars.dataTypeSuffixes[dataType] 
                 phoenixDynamicColumns += ',' + name + globalVars.dataTypeSuffixes[dataType] + '\ ' + globalVars.dataType2Phoenix[dataType]
-                phoenixUpsertColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]             
-                dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
+                phoenixUpsertColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
                 
             if subtype == 'binaryDataset': 
                 phoenixColumns += ',idBinary_s,pathHdfsBinary_s,tenantBinary_s' 
                 phoenixDynamicColumns += ',idBinary_s\ VARCHAR,pathHdfsBinary_s\ VARCHAR,tenantBinary_s\ VARCHAR'
                 phoenixUpsertColumns += ',VARCHAR#idBinary_s,VARCHAR#pathHdfsBinary_s,VARCHAR#tenantBinary_s'
-                dynamicPigSchema += ', idBinary_s:chararray, pathHdfsBinary_s:chararray, tenantBinary_s:chararray'          
                 
             if len(phoenixUpsertColumns) > 0:
                 phoenixUpsertColumns = ";" + phoenixUpsertColumns[1:].upper()        
@@ -89,7 +87,6 @@ if callResult == 0:
                 'minObjectId' : minObjectId,
                 'maxObjectId' : maxObjectId,
                 'query' : query,
-                'pigSchema' : globalVars.pigSchema[subtype] + dynamicPigSchema,
                 'phoenixSchema' : globalVars.phoenixSchemaName[subtype].upper(),
                 'phoenixTable' :  globalVars.phoenixTableName[subtype].upper(),
                 'phoenixColumns' : globalVars.phoenixColumns[subtype] + phoenixColumns.upper(),

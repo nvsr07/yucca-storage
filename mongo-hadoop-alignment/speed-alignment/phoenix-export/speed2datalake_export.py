@@ -96,14 +96,13 @@ for tenant in allTenants:
         for m in metadata:
 
             subtype = m['configData']['subtype']
-            dynamicPigSchema = dynamicPhoenixColumns = phoenixColumns = ''
+            dynamicPhoenixColumns = phoenixColumns = ''
             
             for field in m['info']['fields']:
 
                 name = field['fieldName'].strip()
                 dataType = field['dataType']
 
-                dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
                 phoenixColumns += ',' + name + globalVars.dataTypeSuffixes[dataType] 
                 dynamicPhoenixColumns += name + globalVars.dataTypeSuffixes[dataType] + '\ ' + globalVars.dataType2Phoenix[dataType] + ','
                         
@@ -133,7 +132,6 @@ for tenant in allTenants:
                 'maxObjectId' : newTS,
                 'idDataset_l' : m['idDataset'],
                 'datasetVersion_l' : m['datasetVersion'],
-                'pigSchema' : globalVars.pigSchema[subtype] + dynamicPigSchema,
                 'phoenixSchema' : globalVars.phoenixSchemaName[subtype].upper(),
                 'phoenixTable' :  globalVars.phoenixTableName[subtype].upper(),
                 'phoenixColumns' : globalVars.phoenixColumns[subtype] + phoenixColumns.upper(),
