@@ -72,10 +72,10 @@ dataType2Phoenix = {
 }
 
 mongoFields = {
-    'bulkDataset' : 'id, idDataset, datasetVersion',
-    'streamDataset' : 'id, idDataset, datasetVersion, time, sensor, streamCode',
-    'socialDataset' : 'id, idDataset, datasetVersion, time, sensor, streamCode',
-    'binaryDataset' : 'id, idDataset, datasetVersion'
+    'bulkDataset' : "(chararray)$0#'_id', (int)$0#'idDataset', (int)$0#'datasetVersion'",
+    'streamDataset' : "(chararray)$0#'_id', (int)$0#'idDataset', (int)$0#'datasetVersion', (datetime)$0#'time', (chararray)$0#'sensor', (chararray)$0#'streamCode'",
+    'socialDataset' : "(chararray)$0#'_id', (int)$0#'idDataset', (int)$0#'datasetVersion', (datetime)$0#'time', (chararray)$0#'sensor', (chararray)$0#'streamCode'",
+    'binaryDataset' : "(chararray)$0#'_id', (int)$0#'idDataset', (int)$0#'datasetVersion'"
 }
 
 pigSchema = {

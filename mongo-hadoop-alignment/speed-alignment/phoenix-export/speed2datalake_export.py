@@ -100,7 +100,7 @@ for tenant in allTenants:
             
             for field in m['info']['fields']:
 
-                name = field['fieldName']
+                name = field['fieldName'].strip()
                 dataType = field['dataType']
 
                 dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]

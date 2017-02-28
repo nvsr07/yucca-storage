@@ -29,7 +29,6 @@ Pig.registerJar("../lib/mongo-hadoop-core-1.5.2.jar")
 Pig.registerJar("../lib/mongo-hadoop-pig-1.5.2.jar")
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
 Pig.registerJar("../lib/yucca-phoenix-pig.jar")
-#Pig.registerJar("../lib/lucidworks-pig-functions-2.0.3-hd2.jar")
 Pig.registerJar("/usr/hdp/current/pig-client/piggybank.jar")
 
 props = util.Properties()
@@ -60,9 +59,8 @@ if callResult == 0:
         for m in metadata:
 
             subtype = m['_id']['subtype']
-            dynamicMongoFields = dynamicPigSchema = dynamicPhoenixColumns = dynamicSolrFields = ''
- #           solrFieldsNum = globalVars.solrFieldsNum[subtype]
-            sanitizedFields = globalVars.sanitizedFields[subtype]
+            dynamicMongoFields = ''
+            dynamicPhoenixColumns = ''
             
             for field in m['_id']['fields']:
 
@@ -72,26 +70,17 @@ if callResult == 0:
                 if subtype == 'binaryDataset' and (name == 'urlDownloadBinary' or name == 'idBinary'):
                     continue
 
-                dynamicMongoFields += ', ' + name
                 dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
-#                solrField = globalVars.timeToSolrTime("$" + str(solrFieldsNum)) if globalVars.isTimeType(dataType) else "$" + str(solrFieldsNum)
-#                dynamicSolrFields += ", '" + name + globalVars.dataTypeSuffixes[dataType] + "', " + solrField
-#                solrFieldsNum += 1
-                                
+                  
                 if (dataType == 'float' or dataType == 'double'):
-                    dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':chararray'
-                    sanitizedFields += ", ((org.apache.pig.piggybank.evaluation.IsNumeric(" + name + globalVars.dataTypeSuffixes[dataType] + ")==true)?(" + dataType + ")" + name + globalVars.dataTypeSuffixes[dataType] +":null)"
+                    dynamicMongoFields += ", ((org.apache.pig.piggybank.evaluation.IsNumeric($0#'" + name + "')==true)?(" + globalVars.dataType2Pig[dataType] + ")$0#'" + name + "':null)"
                 else:
-                    dynamicPigSchema +=  ', ' + name + globalVars.dataTypeSuffixes[dataType] + ':' + globalVars.dataType2Pig[dataType]
-                    sanitizedFields += ", " + name + globalVars.dataTypeSuffixes[dataType] 
+                    dynamicMongoFields += ", (" + globalVars.dataType2Pig[dataType] + ")$0#'" + name + "'" 
                 
             if subtype == 'binaryDataset': 
-                dynamicMongoFields += ', idBinary, pathHdfsBinary, tenantBinary'
-                dynamicPhoenixColumns += ',VARCHAR#idBinary_s,VARCHAR#pathHdfsBinary_s,VARCHAR#tenantBinary_s'
-                dynamicPigSchema += ', idBinary_s:chararray, pathHdfsBinary_s:chararray, tenantBinary_s:chararray'
-                sanitizedFields += ', idBinary_s, pathHdfsBinary_s, tenantBinary_s'
-#                dynamicSolrFields += ", 'idBinary_s', $" + str(solrFieldsNum) + ", 'pathHdfsBinary_s', $" + str(solrFieldsNum + 1) + ", 'tenantBinary_s', $" + str(solrFieldsNum + 2)               
-                
+                dynamicMongoFields += ", (chararray)$0#'idBinary', (chararray)$0#'pathHdfsBinary', (chararray)$0#'tenantBinary'"
+                dynamicPhoenixColumns += ',VARCHAR#idBinary_s,VARCHAR#pathHdfsBinary_s,VARCHAR#tenantBinary_s'                
+            
             if len(dynamicPhoenixColumns) > 0:
                 dynamicPhoenixColumns = ";" + dynamicPhoenixColumns[1:].upper()
 
@@ -103,13 +92,9 @@ if callResult == 0:
                     'mongoDB' : globalVars.collectionDb[subtype],
                     'mongoCollection' : globalVars.collectionName[subtype],
                     'mongoFields' : globalVars.mongoFields[subtype] + dynamicMongoFields,
-                    'pigSchema' : globalVars.pigSchema[subtype] + dynamicPigSchema,
                     'phoenixSchema' : globalVars.phoenixSchemaName[subtype],
                     'phoenixTable' :  globalVars.phoenixTableName[subtype],
-                    'phoenixColumns' : globalVars.phoenixColumns[subtype] + dynamicPhoenixColumns,
-#                    'solrCollection' : globalVars.solrCollectionName[subtype],
-#                    'solrFields' : globalVars.solrFields[subtype] + dynamicSolrFields,
-                    'sanitizedFields' : sanitizedFields
+                    'phoenixColumns' : globalVars.phoenixColumns[subtype] + dynamicPhoenixColumns
                 }
     
                 importResults = importJob.bind(importConfig).runSingle()
