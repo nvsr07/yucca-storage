@@ -4,5 +4,5 @@
 var env = {};
 env.TENANT=param1;
 
-myArr=db.metadata.find({"configData.tenantCode":env.TENANT},{idDataset:1,datasetCode:1,datasetVersion:1,configData:1,"info.fields":1}).toArray();
+myArr=db.metadata.find({"configData.tenantCode":env.TENANT,"configData.deleted":{$nin:[1]}},{idDataset:1,datasetCode:1,datasetVersion:1,configData:1,"info.fields":1}).toArray();
 printjson(myArr);
