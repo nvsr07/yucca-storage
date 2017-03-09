@@ -105,7 +105,11 @@ for tenant in allTenants:
 
                 phoenixColumns += ',' + name + globalVars.dataTypeSuffixes[dataType] 
                 dynamicPhoenixColumns += name + globalVars.dataTypeSuffixes[dataType] + '\ ' + globalVars.dataType2Phoenix[dataType] + ','
-                        
+            
+            if subtype == 'binaryDataset': 
+                phoenixColumns += ',idBinary_s,pathHdfsBinary_s,tenantBinary_s'
+                dynamicPhoenixColumns += ',VARCHAR#idBinary_s,VARCHAR#pathHdfsBinary_s,VARCHAR#tenantBinary_s'                
+            
             flagpriv = m['info']['visibility']
             if flagpriv == "private":
                 dirper = 750
