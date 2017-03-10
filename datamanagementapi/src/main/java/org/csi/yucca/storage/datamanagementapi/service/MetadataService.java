@@ -688,6 +688,10 @@ public class MetadataService {
 					 * Create api in the store
 					 */
 					String apiName = "";
+					
+					log.info("[MetadataService::createMetadata] - CALL API PUB SOLR");
+					
+					
 					try {
 						apiName = StoreService.createApiforBulk(metadata, false, datasetMetadata);
 					} catch (Exception duplicate) {
@@ -701,6 +705,7 @@ public class MetadataService {
 							log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 						}
 					}
+					log.info("[MetadataService::createMetadata] - END API PUB SOLR");
 					/*
 					 * try {
 					 * 

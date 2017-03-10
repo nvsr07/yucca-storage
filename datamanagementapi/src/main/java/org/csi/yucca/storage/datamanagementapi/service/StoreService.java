@@ -437,9 +437,11 @@ public class StoreService {
 	}
 
 	public static String createApiforBulk(Metadata metadata, boolean update, String jsonFile) throws Exception {
+		String apiFinalName=null; 
+		try {
 
 		String apiName = metadata.getDatasetCode();
-		String apiFinalName = metadata.getDatasetCode() + "_odata";
+		apiFinalName = metadata.getDatasetCode() + "_odata";
 
 		AddStream addStream = new AddStream();
 		addStream.setProperties(update);
@@ -538,7 +540,6 @@ public class StoreService {
 		
 		//SOLR
 		//addStream.setVar("content", contentJson);
-		try {
 		Metadata metadatan = Metadata.fromJson(contentJson);
 		SearchEngineMetadata newdocument = new SearchEngineMetadata();
 		newdocument.setupEngine(metadatan);
