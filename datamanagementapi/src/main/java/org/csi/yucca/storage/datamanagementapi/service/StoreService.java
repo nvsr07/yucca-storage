@@ -544,9 +544,11 @@ public class StoreService {
 		Gson gson = JSonHelper.getInstance();
 		String newJsonDoc= gson.toJson(newdocument);
 		addStream.setVar("content", newJsonDoc);
-		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();	
+		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
+		solrServer.setDefaultCollection("sdp_int_metasearch");
 		SolrInputDocument doc = newdocument.getSolrDocument();
 		doc.addField("id", ""+System.currentTimeMillis());
+		
 		solrServer.add("sdp_int_metasearch",doc);
 		solrServer.commit();
 		//addStream.run();
