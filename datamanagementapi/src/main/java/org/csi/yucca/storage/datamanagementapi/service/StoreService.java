@@ -546,7 +546,7 @@ public class StoreService {
 		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();	
 		SolrInputDocument doc = newdocument.getSolrDocument();
 		solrServer.add("sdp_int_metasearch",doc);
-
+		solrServer.commit();
 		//addStream.run();
 
 		return apiFinalName;
