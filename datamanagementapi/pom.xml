@@ -169,7 +169,6 @@
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
 		    <version>5.2.1</version>
-		    
             <type>jar</type>
         </dependency>		
 	</dependencies>

@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -545,6 +546,7 @@ public class StoreService {
 		addStream.setVar("content", newJsonDoc);
 		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();	
 		SolrInputDocument doc = newdocument.getSolrDocument();
+		doc.addField("id", ""+System.currentTimeMillis());
 		solrServer.add("sdp_int_metasearch",doc);
 		solrServer.commit();
 		//addStream.run();
