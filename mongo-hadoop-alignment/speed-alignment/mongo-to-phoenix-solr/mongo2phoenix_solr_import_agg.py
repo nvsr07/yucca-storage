@@ -73,7 +73,7 @@ if callResult == 0:
                 dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
                 
                 if (dataType == 'float' or dataType == 'double'):
-                    dynamicMongoFields += ", ((org.apache.pig.piggybank.evaluation.IsNumeric($0#'" + name + "')==true)?(" + globalVars.dataType2Pig[dataType] + ")$0#'" + name + "':null)"
+                    dynamicMongoFields += ", ((org.apache.pig.piggybank.evaluation.IsNumeric((chararray)$0#'" + name + "')==true)?(" + globalVars.dataType2Pig[dataType] + ")$0#'" + name + "':null)"
                 else:
                     dynamicMongoFields += ", (" + globalVars.dataType2Pig[dataType] + ")$0#'" + name + "'" 
                 
