@@ -538,6 +538,7 @@ public class StoreService {
 		
 		//SOLR
 		//addStream.setVar("content", contentJson);
+		try {
 		Metadata metadatan = Metadata.fromJson(contentJson);
 		SearchEngineMetadata newdocument = new SearchEngineMetadata();
 		newdocument.setupEngine(metadatan);
@@ -551,6 +552,9 @@ public class StoreService {
 		
 		solrServer.add("sdp_int_metasearch",doc);
 		solrServer.commit();
+		} catch (Exception e) {
+			e.printStackTrace();throw e;
+		}
 		//addStream.run();
 
 		return apiFinalName;
