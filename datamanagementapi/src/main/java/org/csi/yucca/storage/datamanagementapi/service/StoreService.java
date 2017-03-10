@@ -27,14 +27,18 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.RemoveDoc;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.SearchEngineMetadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
+import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
@@ -529,9 +533,21 @@ public class StoreService {
 
 		// DT Add document
 		String contentJson = extractMetadataContentForDocument(jsonFile);
-		addStream.setVar("content", contentJson);
+		
+		
+		//SOLR
+		//addStream.setVar("content", contentJson);
+		Metadata metadatan = Metadata.fromJson(contentJson);
+		SearchEngineMetadata newdocument = new SearchEngineMetadata();
+		newdocument.setupEngine(metadatan);
+		Gson gson = JSonHelper.getInstance();
+		String newJsonDoc= gson.toJson(newdocument);
+		addStream.setVar("content", newJsonDoc);
+		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();	
+		SolrInputDocument doc = newdocument.getSolrDocument();
+		solrServer.add("sdp_int_metasearch",doc);
 
-		addStream.run();
+		//addStream.run();
 
 		return apiFinalName;
 	}
@@ -804,6 +820,8 @@ public class StoreService {
 
 		publish.run();
 
+		
+		//TODO - solr
 		RemoveDoc removeDoc = new RemoveDoc();
 		removeDoc.setVar("apimanConsoleAddress", Config.getInstance().getConsoleAddress());
 		removeDoc.setVar("username", Config.getInstance().getStoreUsername());

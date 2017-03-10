@@ -51,6 +51,10 @@ public class Config {
 	public static final String MAIL_BODY_500 = "MAIL_BODY_500";
 	public static final String MAIL_SUBJECT_200 = "MAIL_SUBJECT_200";
 	public static final String MAIL_BODY_200 = "MAIL_BODY_200";
+	
+	public static final String SDP_SOLR_URL = "SDP_SOLR_URL";
+	
+	
 
 	public static final String DATA_INSERT_BASE_URL = "DATA_INSERT_BASE_URL";
 	public static final String DATA_DELETE_BASE_URL = "DATA_DELETE_BASE_URL";
@@ -101,6 +105,7 @@ public class Config {
 		params.put(MAIL_BODY_200, rb.getString(MAIL_BODY_200));
 		params.put(DATA_INSERT_BASE_URL, rb.getString(DATA_INSERT_BASE_URL));
 		params.put(DATA_DELETE_BASE_URL, rb.getString(DATA_DELETE_BASE_URL));
+		params.put(SDP_SOLR_URL, rb.getString(SDP_SOLR_URL));
 		
 
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
@@ -118,6 +123,10 @@ public class Config {
 		return instance;
 	}
 
+	public String getSolrUrl() {
+		return params.get(SDP_SOLR_URL);
+	}	
+	
 	public String[] getMongoHost() {
 		return params.get(MONGO_HOST).split(";");
 	}
