@@ -653,7 +653,7 @@ public class SearchEngineMetadata {
 		this.setDomainLangIT(metadata.getInfo().getDomainTranslated().get("it")); //TODO
 		//this.setEntityType(metadata.getInfo());
 		//this.setId(dcatCreatorId);
-		//TODO LISTA //this.setJsonFields(jsonFields);
+		
 		
 		Gson gson = JSonHelper.getInstance();
 		this.setJsonFields( gson.toJson(metadata.getInfo().getFields()));
@@ -677,7 +677,7 @@ public class SearchEngineMetadata {
 		}
 		this.setSdpComponentsName(listaNomiCampi);
 		
-		//TODO lista this.setSdpComponentsName(sdpComponentsName); //
+		
 		//this.setSoCode(metadata.getInfo().get);
 		//this.setSoDescription(soDescription);
 		//this.setSoName(soName);
@@ -685,9 +685,19 @@ public class SearchEngineMetadata {
 		this.setSubdomainCode(metadata.getInfo().getCodSubDomain());
 		this.setSubdomainLangEN(metadata.getInfo().getSubDomainTranslated().get("en"));
 		this.setSubdomainLangIT(metadata.getInfo().getSubDomainTranslated().get("it"));
-		//TODO lista this.setTagCode(tagCode);
-		//this.setTagLangEN(tagLangEN);
-		//this.setTagLangit(tagLangEN);
+		
+		ArrayList<String> listaCodiciTag= null;
+		for (Tag tg : metadata.getInfo().getTags()) {
+			if (null==listaCodiciTag) {
+				listaCodiciTag=new ArrayList<String>();
+			}
+			listaCodiciTag.add(tg.getTagCode());
+		}
+		this.setTagCode(listaCodiciTag);
+		this.setTagLangEN(metadata.getInfo().getTagsTranslated().get("en"));
+		this.setTagLangIT(metadata.getInfo().getTagsTranslated().get("en"));
+		
+
 		this.setTenantCode(metadata.getConfigData().getTenantCode());
 		//this.setTenantDescription(metadata.getConfigData().get);
 		//this.setTenantName(metadata.getConfigData().);
