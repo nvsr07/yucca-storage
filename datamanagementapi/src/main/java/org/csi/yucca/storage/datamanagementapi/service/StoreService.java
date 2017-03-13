@@ -558,6 +558,7 @@ public class StoreService {
 		solrServer.add("sdp_int_metasearch",doc);
 		solrServer.commit();
 		} catch (Exception e) {
+			log.info("[StoreService::createApiForBulk] ERROREEEEE ");
 			e.printStackTrace();throw e;
 		}
 		//addStream.run();
