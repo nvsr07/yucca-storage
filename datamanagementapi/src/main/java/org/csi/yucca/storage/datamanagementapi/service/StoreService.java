@@ -551,6 +551,10 @@ public class StoreService {
 		SolrInputDocument doc = newdocument.getSolrDocument();
 		doc.addField("id", ""+System.currentTimeMillis());
 		
+		
+		
+		log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
+
 		solrServer.add("sdp_int_metasearch",doc);
 		solrServer.commit();
 		} catch (Exception e) {
