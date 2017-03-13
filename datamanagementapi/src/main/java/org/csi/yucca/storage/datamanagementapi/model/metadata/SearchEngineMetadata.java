@@ -669,14 +669,14 @@ public class SearchEngineMetadata {
 		//this.setOrganizationDescription(organizationDescription);
 		//TODO lista this.setPhenomenon(phenomenon);
 		
-		/*
+		
 		ArrayList<String> listaNomiCampi= null;
 		for (Field ff : metadata.getInfo().getFields()) {
 			if (listaNomiCampi==null) listaNomiCampi=new ArrayList<String>();
 			listaNomiCampi.add(ff.getFieldName());
 		}
 		this.setSdpComponentsName(listaNomiCampi);
-		*/
+		
 		//TODO lista this.setSdpComponentsName(sdpComponentsName); //
 		//this.setSoCode(metadata.getInfo().get);
 		//this.setSoDescription(soDescription);
