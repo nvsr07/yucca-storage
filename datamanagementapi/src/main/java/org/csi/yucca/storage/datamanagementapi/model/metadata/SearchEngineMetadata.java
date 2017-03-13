@@ -1,5 +1,6 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.solr.common.SolrInputDocument;
@@ -638,6 +639,8 @@ public class SearchEngineMetadata {
 		this.setDcatCreatorId(metadata.getDcatCreatorId());
 		this.setDcatCreatorName(metadata.getDcatCreatorName());
 		this.setDcatCreatorType(metadata.getDcatCreatorType());
+		
+		
 		//this.setDcatDataUpdate(metadata.getdcat);
 		this.setDcatEmailOrg(metadata.getDcatEmailOrg());
 		this.setDcatNomeOrg(metadata.getDcatNomeOrg());
@@ -651,6 +654,11 @@ public class SearchEngineMetadata {
 		//this.setEntityType(metadata.getInfo());
 		//this.setId(dcatCreatorId);
 		//TODO LISTA //this.setJsonFields(jsonFields);
+		
+		Gson gson = JSonHelper.getInstance();
+		this.setJsonFields( gson.toJson(metadata.getInfo().getFields()));
+
+		
 		//this.setJsonSo(jsonSo);
 		//this.setLat(metadata.getInfo().get);
 		this.setLicenceDescription(metadata.getInfo().getDisclaimer()); /// TODO disclaimer?
@@ -660,6 +668,15 @@ public class SearchEngineMetadata {
 		//this.setOrganizationCode(metadata.getConfigData().);
 		//this.setOrganizationDescription(organizationDescription);
 		//TODO lista this.setPhenomenon(phenomenon);
+		
+		
+		ArrayList<String> listaNomiCampi= null;
+		for (Field ff : metadata.getInfo().getFields()) {
+			if (listaNomiCampi==null) listaNomiCampi=new ArrayList<String>();
+			listaNomiCampi.add(ff.getFieldName());
+		}
+		this.setSdpComponentsName(listaNomiCampi);
+		
 		//TODO lista this.setSdpComponentsName(sdpComponentsName); //
 		//this.setSoCode(metadata.getInfo().get);
 		//this.setSoDescription(soDescription);
