@@ -631,90 +631,37 @@ public class SearchEngineMetadata {
 	
 	public void setupEngine(Stream st) {
 		
-		Metadata metadata=MetadataFiller.fillMetadata(st);
+		Metadata meta=MetadataFiller.fillMetadata(st);
+		this.setupEngine(meta);
 		
-		this.setCopyright(metadata.getInfo().getCopyright());
-		this.setDatasetCode(metadata.getDatasetCode());
-		this.setDatasetDescription(metadata.getInfo().getDescription());
-		this.setDatasetSubtype(metadata.getConfigData().getSubtype());
+		
 		//this.setDatasetTypeDescription(datasetTypeDescription);
-		this.setDataseType(metadata.getConfigData().getType());
-		this.setDcatCreatorId(metadata.getDcatCreatorId());
-		this.setDcatCreatorName(metadata.getDcatCreatorName());
-		this.setDcatCreatorType(metadata.getDcatCreatorType());
 		
 		
 		//this.setDcatDataUpdate(metadata.getdcat);
-		this.setDcatEmailOrg(metadata.getDcatEmailOrg());
-		this.setDcatNomeOrg(metadata.getDcatNomeOrg());
-		this.setDcatReady(""+metadata.getDcatReady());
-		this.setDcatRightsHolderId(metadata.getDcatRightsHolderId());
-		this.setDcatRightsHolderName(metadata.getDcatRightsHolderName());
-		this.setDcatRightsHolderType(metadata.getDcatRightsHolderType());
-		this.setDomainCode(metadata.getInfo().getDataDomain());
-		this.setDomainLangEN(metadata.getInfo().getDomainTranslated().get("en")); //TODO
-		this.setDomainLangIT(metadata.getInfo().getDomainTranslated().get("it")); //TODO
+
 		//this.setEntityType(metadata.getInfo());
 		//this.setId(dcatCreatorId);
 		
 		
-		Gson gson = JSonHelper.getInstance();
-		this.setJsonFields( gson.toJson(metadata.getInfo().getFields()));
-
-		
-		//this.setJsonSo(jsonSo);
-		if (st.getVirtualEntityPositions() != null && st.getVirtualEntityPositions().getPosition() != null) {
-				List<org.csi.yucca.storage.datamanagementapi.model.streaminput.Position> position = st.getVirtualEntityPositions().getPosition();
-				if (position.get(0) != null) {
-					this.setLat( position.get(0).getLat().toString());
-					this.setLon( position.get(0).getLon().toString());
-				}
-			}
-		
-		
-		this.setLicenceDescription(metadata.getInfo().getDisclaimer()); /// TODO disclaimer?
-		this.setLicenseCode(metadata.getInfo().getLicense()); //TODO licence
-		this.setName(metadata.getInfo().getDatasetName());
 		//this.setOrganizationCode(metadata.getConfigData().);
 		//this.setOrganizationDescription(organizationDescription);
 		//TODO lista this.setPhenomenon(phenomenon);
 		
 		
-		ArrayList<String> listaNomiCampi= null;
-		for (Field ff : metadata.getInfo().getFields()) {
-			if (listaNomiCampi==null) listaNomiCampi=new ArrayList<String>();
-			listaNomiCampi.add(ff.getFieldName());
-		}
-		this.setSdpComponentsName(listaNomiCampi);
 		
 		
 		this.setSoCode(st.getCodiceVirtualEntity());
 		this.setSoDescription(st.getVirtualEntityDescription());
 		this.setSoName(st.getVirtualEntityName());
 		this.setStreamCode(st.getCodiceStream());
-		this.setSubdomainCode(metadata.getInfo().getCodSubDomain());
-		this.setSubdomainLangEN(metadata.getInfo().getSubDomainTranslated().get("en"));
-		this.setSubdomainLangIT(metadata.getInfo().getSubDomainTranslated().get("it"));
 		
-		ArrayList<String> listaCodiciTag= null;
-		for (Tag tg : metadata.getInfo().getTags()) {
-			if (null==listaCodiciTag) {
-				listaCodiciTag=new ArrayList<String>();
-			}
-			listaCodiciTag.add(tg.getTagCode());
-		}
-		this.setTagCode(listaCodiciTag);
-		this.setTagLangEN(metadata.getInfo().getTagsTranslated().get("en"));
-		this.setTagLangIT(metadata.getInfo().getTagsTranslated().get("en"));
 		
 
-		this.setTenantCode(metadata.getConfigData().getTenantCode());
 		//this.setTenantDescription(st.getd);
 		//this.setTenantName(metadata.getConfigData().);
 		//this.setTenantsCode(tenantsCode);
 		//this.setTwt* non usati
-		this.setVersion(""+metadata.getDatasetVersion());
-		this.setVisibility(metadata.getInfo().getVisibility());		
 		
 	}
 	

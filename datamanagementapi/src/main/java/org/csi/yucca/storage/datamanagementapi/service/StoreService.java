@@ -296,7 +296,7 @@ public class StoreService {
 		objStream.setVar("tags", Util.safeSubstring(tags, API_FIELD_MAX_LENGTH));
 
 		// DT Add document
-		String datasetInput = extractContentForDocument(json);
+		String datasetInput = extractContentForDocument(json,newStream.getCodiceTenant() != null ? newStream.getCodiceTenant() : "");
 		objStream.setVar("content", datasetInput);
 
 		objStream.run();
@@ -304,7 +304,7 @@ public class StoreService {
 		return apiFinalName;
 	}
 
-	private static String extractContentForDocument(String json) {
+	private static String extractContentForDocument(String json, String tenantCode) {
 		Gson gson = JSonHelper.getInstance();
 		POJOStreams pojoStreams2 = gson.fromJson(json, POJOStreams.class);
 		pojoStreams2.getStreams().getStream().setStreamIcon("");
@@ -364,6 +364,11 @@ public class StoreService {
 
 			}
 
+		}
+		
+		if (null!=tenantCode && tenantCode.trim().length()>0) {
+			pojoStreams2.getStreams().getStream().setOrganizationCode(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgcode"));
+			pojoStreams2.getStreams().getStream().setOrganizationDescription(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgdesc"));		
 		}
 
 		return gson.toJson(pojoStreams2);
@@ -676,9 +681,31 @@ public class StoreService {
 
 		addStream.setVar("tags", tags);
 
-		String datasetInput = extractContentForDocument(json);
-		addStream.setVar("content", datasetInput);
+		String datasetInput = extractContentForDocument(json,newStream.getCodiceTenant() != null ? newStream.getCodiceTenant() : "");
+		//addStream.setVar("content", datasetInput);
+		
+		Gson gson = JSonHelper.getInstance();
+		POJOStreams pojoStreams2 = gson.fromJson(datasetInput, POJOStreams.class);		
 
+		//SOLR
+				SearchEngineMetadata newdocument = new SearchEngineMetadata();
+				newdocument.setupEngine(pojoStreams2.getStreams().getStream());
+				String newJsonDoc= gson.toJson(newdocument);
+				//addStream.setVar("content", newJsonDoc);
+				CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
+				solrServer.setDefaultCollection("sdp_int_metasearch");
+				SolrInputDocument doc = newdocument.getSolrDocument();
+				doc.addField("id", ""+System.currentTimeMillis());
+				
+				
+				
+				log.info("[StoreService::createStream] - ---------------------" + doc.toString());
+
+				solrServer.add("sdp_int_metasearch",doc);
+				solrServer.commit();
+						
+		
+		
 		addStream.run();
 		return true;
 	}

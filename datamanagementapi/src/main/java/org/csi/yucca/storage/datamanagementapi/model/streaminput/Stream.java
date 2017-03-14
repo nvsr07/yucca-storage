@@ -150,6 +150,27 @@ public class Stream {
 	private Map<String, String> domainTranslated;
     @Expose
 	private Map<String, String> subDomainTranslated;
+    
+    @Expose
+	private String organizationCode;
+    
+    @Expose
+	private String organizationDescription;
+	public String getOrganizationCode() {
+		return organizationCode;
+	}
+
+	public void setOrganizationCode(String organizationCode) {
+		this.organizationCode = organizationCode;
+	}
+
+	public String getOrganizationDescription() {
+		return organizationDescription;
+	}
+
+	public void setOrganizationDescription(String organizationDescription) {
+		this.organizationDescription = organizationDescription;
+	}
 
     public String getExternalReference() {
 		return externalReference;

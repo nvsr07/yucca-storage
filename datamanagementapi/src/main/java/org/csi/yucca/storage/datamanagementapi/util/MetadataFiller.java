@@ -44,6 +44,9 @@ public class MetadataFiller {
 		cf.setDatasetStatus(stream.getDeploymentStatusCode());
 		cf.setIdTenant(stream.getIdTenant());
 		cf.setTenantCode(stream.getCodiceTenant());
+		
+		cf.setOrganizationCode(stream.getOrganizationCode());
+		cf.setOrganizationDescription(stream.getOrganizationDescription());
 
 		myMeta.setConfigData(cf);
 
