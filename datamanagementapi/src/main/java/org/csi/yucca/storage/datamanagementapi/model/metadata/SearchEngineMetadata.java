@@ -731,7 +731,7 @@ public class SearchEngineMetadata {
 		}
 		this.setTagCode(listaCodiciTag);
 		this.setTagLangEN(metadata.getInfo().getTagsTranslated().get("en"));
-		this.setTagLangIT(metadata.getInfo().getTagsTranslated().get("en"));
+		this.setTagLangIT(metadata.getInfo().getTagsTranslated().get("it"));
 		
 
 		this.setTenantCode(metadata.getConfigData().getTenantCode());

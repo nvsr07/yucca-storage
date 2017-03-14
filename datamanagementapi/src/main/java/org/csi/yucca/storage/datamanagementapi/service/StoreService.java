@@ -297,7 +297,9 @@ public class StoreService {
 
 		// DT Add document
 		String datasetInput = extractContentForDocument(json,newStream.getCodiceTenant() != null ? newStream.getCodiceTenant() : "");
-		objStream.setVar("content", datasetInput);
+		
+		//SOLR
+		//objStream.setVar("content", datasetInput);
 
 		objStream.run();
 
