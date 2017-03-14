@@ -77,6 +77,9 @@ public class MetadataFiller {
 		info.setRequestorName(stream.getNomeRichiedente());
 		info.setRequestorSurname(stream.getCognomeRichiedente());
 		info.setVisibility(stream.getVisibility());
+		info.setDomainTranslated(stream.getDomainTranslated());
+		info.setSubDomainTranslated(stream.getSubDomainTranslated());
+		info.setTagsTranslated(stream.getTagsTranslated());
 
 		Tenantssharing tenantsShare = new Tenantssharing();
 		List<Tenantsharing> listaTenant = new ArrayList<Tenantsharing>();
