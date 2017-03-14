@@ -8,6 +8,24 @@ public class ConfigData extends AbstractEntity {
 
 	private Long idTenant;
 	private String tenantCode;
+	private String organizationCode;
+	private String organizationDescription;
+	public String getOrganizationCode() {
+		return organizationCode;
+	}
+
+	public void setOrganizationCode(String organizationCode) {
+		this.organizationCode = organizationCode;
+	}
+
+	public String getOrganizationDescription() {
+		return organizationDescription;
+	}
+
+	public void setOrganizationDescription(String organizationDescription) {
+		this.organizationDescription = organizationDescription;
+	}
+
 	private String collection;
 	private String database;
 	private String type;

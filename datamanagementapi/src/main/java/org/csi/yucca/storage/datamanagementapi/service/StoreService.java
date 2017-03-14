@@ -369,7 +369,7 @@ public class StoreService {
 		return gson.toJson(pojoStreams2);
 	}
 
-	private static String extractMetadataContentForDocument(String jsonMetadata) {
+	private static String extractMetadataContentForDocument(String jsonMetadata,String tenantCode) {
 		Gson gson = JSonHelper.getInstance();
 		Metadata metadata = Metadata.fromJson(jsonMetadata);
 
@@ -431,6 +431,12 @@ public class StoreService {
 
 			}
 		}
+
+		
+		metadata.getConfigData().setOrganizationCode(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgcode"));
+		metadata.getConfigData().setOrganizationDescription(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgdesc"));
+		
+		
 
 		return gson.toJson(metadata);
 
@@ -535,7 +541,7 @@ public class StoreService {
 		addStream.setVar("tags", Util.safeSubstring(tags, API_FIELD_MAX_LENGTH));
 
 		// DT Add document
-		String contentJson = extractMetadataContentForDocument(jsonFile);
+		String contentJson = extractMetadataContentForDocument(jsonFile,metadata.getConfigData().getTenantCode() != null ? metadata.getConfigData().getTenantCode() : "");
 		
 		
 		//SOLR
@@ -545,7 +551,7 @@ public class StoreService {
 		newdocument.setupEngine(metadatan);
 		Gson gson = JSonHelper.getInstance();
 		String newJsonDoc= gson.toJson(newdocument);
-		addStream.setVar("content", newJsonDoc);
+		//addStream.setVar("content", newJsonDoc);
 		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
 		solrServer.setDefaultCollection("sdp_int_metasearch");
 		SolrInputDocument doc = newdocument.getSolrDocument();
@@ -557,11 +563,13 @@ public class StoreService {
 
 		solrServer.add("sdp_int_metasearch",doc);
 		solrServer.commit();
+		
+		addStream.run();
+
 		} catch (Exception e) {
 			log.info("[StoreService::createApiForBulk] ERROREEEEE ");
 			e.printStackTrace();throw e;
 		}
-		//addStream.run();
 
 		return apiFinalName;
 	}
@@ -676,7 +684,23 @@ public class StoreService {
 	}
 
 	private static Map<String, ResourceBundle> messagesMap = new HashMap<String, ResourceBundle>();
+	private static Map<String, String> tenantOrganizaionMap = new HashMap<String, String>();
 
+	private static Map<String, String> getTenantOrganizaionMap(String tenantCode) {
+
+		if (tenantOrganizaionMap.get(tenantCode+"____orgcode") == null) {
+			try {
+				tenantOrganizaionMap.putAll(loadTenants());
+			} catch (Exception ex) {
+				// TODO Auto-generated catch block
+				ex.printStackTrace();
+			}
+
+		}
+		return tenantOrganizaionMap;
+	}
+	
+	
 	private static ResourceBundle getMessages(String lang) {
 
 		if (messagesMap.get(lang) == null) {
@@ -737,6 +761,45 @@ public class StoreService {
 		return json;
 	}
 
+	private static HashMap<String, String> loadTenants() {
+		InputStream is = null;
+		JSONObject json = null;
+		HashMap<String, String> ret= new HashMap<String, String>();;
+		try {
+			String tagsDomainsURL = Config.getInstance().getApiAdminServiceUrl();
+			is = new URL(tagsDomainsURL + "/tenants/").openStream();
+
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			String jsonText = null;
+			jsonText = readAll(rd);
+			json = new JSONObject(jsonText);
+
+			is.close();
+			
+			
+			
+			JSONArray elements = json.getJSONObject("tenants").getJSONArray("tenant");
+			for (int i = 0; i < elements.length(); i++) {
+				String codice = elements.getJSONObject(i).getString("organizationCode");
+				String codiceTenant = elements.getJSONObject(i).getString("tenantCode");
+				String desc = elements.getJSONObject(i).getString("organizationDescription");
+
+				ret.put(codiceTenant+"____orgdesc", desc);
+				ret.put(codiceTenant+"____orgcode", desc);
+			}
+			
+			
+			
+		} catch (JSONException ex) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		return ret;
+	}
+	
+	
 	private static String readAll(Reader rd) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		int cp;
