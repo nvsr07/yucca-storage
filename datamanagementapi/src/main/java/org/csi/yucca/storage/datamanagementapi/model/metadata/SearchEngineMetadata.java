@@ -819,27 +819,31 @@ public class SearchEngineMetadata {
 		
 		
 		ArrayList<String> listaCodiciTenantsSh= null;
-//		for (Tenantsharing ts : metadata.getInfo().getTenantssharing().getTenantsharing()) {
-//			if (null==listaCodiciTenantsSh) {
-//				listaCodiciTenantsSh=new ArrayList<String>();
-//			}
-//			listaCodiciTenantsSh.add(ts.getTenantCode());
-//		}
-//		this.setTenantsCode(listaCodiciTenantsSh);
+		if (null!=metadata.getInfo().getTenantssharing() && null!=metadata.getInfo().getTenantssharing().getTenantsharing()) {
+			
+			for (Tenantsharing ts : metadata.getInfo().getTenantssharing().getTenantsharing()) {
+				if (null==listaCodiciTenantsSh) {
+					listaCodiciTenantsSh=new ArrayList<String>();
+				}
+				listaCodiciTenantsSh.add(ts.getTenantCode());
+			}
+			this.setTenantsCode(listaCodiciTenantsSh);
+		}
 		
 		
 		this.setVersion(""+metadata.getDatasetVersion());
 		this.setVisibility(metadata.getInfo().getVisibility());
 		
 		
-		
-//		this.setOpendata(metadata.getOpendata().isOpendata());
-//		if (metadata.getOpendata().isOpendata()) {
-//			this.setOpendataAuthor(metadata.getOpendata().getAuthor());
-//			this.setOpendataLanguage(metadata.getOpendata().getLanguage());
-//			this.setOpendataMetaUpdateDate(""+metadata.getOpendata().getMetadaUpdateDate());
-//			this.setOpendataUpdateDate(""+metadata.getOpendata().getDataUpdateDate());
-//		}
+		if(null!=metadata.getOpendata()) {
+			this.setOpendata(metadata.getOpendata().isOpendata());
+			if (metadata.getOpendata().isOpendata()) {
+				this.setOpendataAuthor(metadata.getOpendata().getAuthor());
+				this.setOpendataLanguage(metadata.getOpendata().getLanguage());
+				this.setOpendataMetaUpdateDate(""+metadata.getOpendata().getMetadaUpdateDate());
+				this.setOpendataUpdateDate(""+metadata.getOpendata().getDataUpdateDate());
+			}
+		}
 		
 		
 		
