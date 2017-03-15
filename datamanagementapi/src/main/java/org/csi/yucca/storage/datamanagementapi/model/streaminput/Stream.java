@@ -139,7 +139,9 @@ public class Stream {
 	private String dcatRightsHolderType;  
     @Expose
 	private String dcatRightsHolderId;  
-    @Expose
+
+
+	@Expose
 	private String dcatNomeOrg;  
     @Expose
 	private String dcatEmailOrg;
@@ -156,6 +158,28 @@ public class Stream {
     
     @Expose
 	private String organizationDescription;
+    
+    @Expose
+	private String tenantName;
+    @Expose
+	private String tenantDescription;
+    public String getTenantName() {
+		return tenantName;
+	}
+
+	public void setTenantName(String tenantName) {
+		this.tenantName = tenantName;
+	}
+
+	public String getTenantDescription() {
+		return tenantDescription;
+	}
+
+	public void setTenantDescription(String tenantDescription) {
+		this.tenantDescription = tenantDescription;
+	}
+
+    
 	public String getOrganizationCode() {
 		return organizationCode;
 	}

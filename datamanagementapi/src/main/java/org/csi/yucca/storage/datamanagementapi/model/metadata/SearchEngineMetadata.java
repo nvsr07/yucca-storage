@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.solr.common.SolrInputDocument;
+import org.csi.yucca.storage.datamanagementapi.model.streaminput.Element;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -644,10 +645,12 @@ public class SearchEngineMetadata {
 		//this.setId(dcatCreatorId);
 		
 		
-		//this.setOrganizationCode(metadata.getConfigData().);
-		//this.setOrganizationDescription(organizationDescription);
 		//TODO lista this.setPhenomenon(phenomenon);
 		
+		ArrayList<String> arraylistphen= new ArrayList<String>();
+		for (Element el : st.getComponenti().getElement()) {
+			arraylistphen.add(el.getPhenomenon());
+		}
 		
 		
 		
@@ -656,12 +659,22 @@ public class SearchEngineMetadata {
 		this.setSoName(st.getVirtualEntityName());
 		this.setStreamCode(st.getCodiceStream());
 		
-		
 
-		//this.setTenantDescription(st.getd);
-		//this.setTenantName(metadata.getConfigData().);
-		//this.setTenantsCode(tenantsCode);
-		//this.setTwt* non usati
+		this.setTwtCount(""+st.getTwtCount());
+		this.setTwtGeolocLat(""+st.getTwtGeolocLat());
+		this.setTwtGeolocLon(""+st.getTwtGeolocLon());
+		this.setTwtGeolocRadius(""+st.getTwtGeolocRadius());
+		this.setTwtGeolocUnit(""+st.getTwtGeolocUnit());
+		this.setTwtLang(st.getTwtLang());
+		//this.setTwtLastSearchId(st.getTwt);
+		this.setTwtLocale(st.getTwtLocale());
+		this.setTwtQuery(st.getTwtQuery());
+		this.setTwtRatePercentage(""+st.getTwtRatePercentage());
+		this.setTwtResultType(st.getTwtResultType());
+		this.setTwtUntil(st.getTwtUntil());
+		
+		
+		
 		
 	}
 	
@@ -714,10 +727,7 @@ public class SearchEngineMetadata {
 		this.setSdpComponentsName(listaNomiCampi);
 		
 		
-		//this.setSoCode(metadata.getInfo().get);
-		//this.setSoDescription(soDescription);
-		//this.setSoName(soName);
-		//this.setStreamCode(streamCode);
+
 		this.setSubdomainCode(metadata.getInfo().getCodSubDomain());
 		this.setSubdomainLangEN(metadata.getInfo().getSubDomainTranslated().get("en"));
 		this.setSubdomainLangIT(metadata.getInfo().getSubDomainTranslated().get("it"));
@@ -735,10 +745,23 @@ public class SearchEngineMetadata {
 		
 
 		this.setTenantCode(metadata.getConfigData().getTenantCode());
-		//this.setTenantDescription(metadata.getConfigData().get);
-		//this.setTenantName(metadata.getConfigData().);
-		//this.setTenantsCode(tenantsCode);
-		//this.setTwt* non usati
+		this.setTenantDescription(metadata.getConfigData().getTenantDescription());
+		this.setTenantName(metadata.getConfigData().getTenantName());
+		
+		
+		
+		
+		
+		ArrayList<String> listaCodiciTenantsSh= null;
+		for (Tenantsharing ts : metadata.getInfo().getTenantssharing().getTenantsharing()) {
+			if (null==listaCodiciTenantsSh) {
+				listaCodiciTenantsSh=new ArrayList<String>();
+			}
+			listaCodiciTenantsSh.add(ts.getTenantCode());
+		}
+		this.setTenantsCode(listaCodiciTenantsSh);
+		
+		
 		this.setVersion(""+metadata.getDatasetVersion());
 		this.setVisibility(metadata.getInfo().getVisibility());
 		

@@ -33,6 +33,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.RemoveDoc;
+import org.csi.yucca.storage.datamanagementapi.model.cache.TenantCache;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.SearchEngineMetadata;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
@@ -369,8 +370,10 @@ public class StoreService {
 		}
 		
 		if (null!=tenantCode && tenantCode.trim().length()>0) {
-			pojoStreams2.getStreams().getStream().setOrganizationCode(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgcode"));
-			pojoStreams2.getStreams().getStream().setOrganizationDescription(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgdesc"));		
+			pojoStreams2.getStreams().getStream().setOrganizationCode((getTenantOrganizaionMap(tenantCode).get(tenantCode)).getOrganizationCode());
+			pojoStreams2.getStreams().getStream().setOrganizationDescription(       (getTenantOrganizaionMap(tenantCode).get(tenantCode)).getOrganizationDescription()    );
+			pojoStreams2.getStreams().getStream().setTenantName(    (getTenantOrganizaionMap(tenantCode).get(tenantCode)).getTenantName()      );
+			pojoStreams2.getStreams().getStream().setTenantDescription(    (getTenantOrganizaionMap(tenantCode).get(tenantCode)).getTenantDescription()      );
 		}
 
 		return gson.toJson(pojoStreams2);
@@ -440,8 +443,12 @@ public class StoreService {
 		}
 
 		
-		metadata.getConfigData().setOrganizationCode(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgcode"));
-		metadata.getConfigData().setOrganizationDescription(getTenantOrganizaionMap(tenantCode).get(tenantCode+"____orgdesc"));
+		
+		metadata.getConfigData().setOrganizationCode((getTenantOrganizaionMap(tenantCode).get(tenantCode)).getOrganizationCode());
+		metadata.getConfigData().setOrganizationDescription(       (getTenantOrganizaionMap(tenantCode).get(tenantCode)).getOrganizationDescription()    );
+		metadata.getConfigData().setTenantName(    (getTenantOrganizaionMap(tenantCode).get(tenantCode)).getTenantName()      );
+		metadata.getConfigData().setTenantDescription(    (getTenantOrganizaionMap(tenantCode).get(tenantCode)).getTenantDescription()      );
+		
 		
 		
 
@@ -713,11 +720,11 @@ public class StoreService {
 	}
 
 	private static Map<String, ResourceBundle> messagesMap = new HashMap<String, ResourceBundle>();
-	private static Map<String, String> tenantOrganizaionMap = new HashMap<String, String>();
+	private static Map<String, TenantCache> tenantOrganizaionMap = new HashMap<String, TenantCache>();
 
-	private static Map<String, String> getTenantOrganizaionMap(String tenantCode) {
+	private static Map<String, TenantCache> getTenantOrganizaionMap(String tenantCode) {
 
-		if (tenantOrganizaionMap.get(tenantCode+"____orgcode") == null) {
+		if (tenantOrganizaionMap.get(tenantCode) == null) {
 			try {
 				tenantOrganizaionMap.putAll(loadTenants());
 			} catch (Exception ex) {
@@ -790,10 +797,10 @@ public class StoreService {
 		return json;
 	}
 
-	private static HashMap<String, String> loadTenants() {
+	private static HashMap<String, TenantCache> loadTenants() {
 		InputStream is = null;
 		JSONObject json = null;
-		HashMap<String, String> ret= new HashMap<String, String>();;
+		HashMap<String, TenantCache> ret= new HashMap<String, TenantCache>();
 		try {
 			String tagsDomainsURL = Config.getInstance().getApiAdminServiceUrl();
 			is = new URL(tagsDomainsURL + "/tenants/").openStream();
@@ -808,13 +815,24 @@ public class StoreService {
 			
 			
 			JSONArray elements = json.getJSONObject("tenants").getJSONArray("tenant");
+			TenantCache tc= null;
 			for (int i = 0; i < elements.length(); i++) {
 				String codice = elements.getJSONObject(i).getString("organizationCode");
 				String codiceTenant = elements.getJSONObject(i).getString("tenantCode");
 				String desc = elements.getJSONObject(i).getString("organizationDescription");
+				String tenantdesc = elements.getJSONObject(i).getString("tenantDescription");
+				String tenantName=elements.getJSONObject(i).getString("tenantName");
 
-				ret.put(codiceTenant+"____orgdesc", desc);
-				ret.put(codiceTenant+"____orgcode", desc);
+				tc= new TenantCache();
+				tc.setOrganizationCode(codice);
+				tc.setOrganizationDescription(desc);
+				tc.setTenantCode(codiceTenant);
+				tc.setTenantDescription(tenantdesc);
+				tc.setTenantName(tenantName);
+				
+				
+				
+				ret.put(codiceTenant, tc);
 			}
 			
 			

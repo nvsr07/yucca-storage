@@ -3,6 +3,7 @@ package org.csi.yucca.storage.datamanagementapi.model.metadata;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 
 public class ConfigData extends AbstractEntity {
 
@@ -10,6 +11,27 @@ public class ConfigData extends AbstractEntity {
 	private String tenantCode;
 	private String organizationCode;
 	private String organizationDescription;
+	
+	
+	private String tenantName;
+	private String tenantDescription;
+    public String getTenantName() {
+		return tenantName;
+	}
+
+	public void setTenantName(String tenantName) {
+		this.tenantName = tenantName;
+	}
+
+	public String getTenantDescription() {
+		return tenantDescription;
+	}
+
+	public void setTenantDescription(String tenantDescription) {
+		this.tenantDescription = tenantDescription;
+	}
+	
+	
 	public String getOrganizationCode() {
 		return organizationCode;
 	}
