@@ -175,6 +175,7 @@ public class MetadataFiller {
 		myMeta.setDcatRightsHolderName(stream.getDcatRightsHolderName());
 		myMeta.setDcatRightsHolderType(stream.getDcatRightsHolderType());
 		myMeta.setDcatRightsHolderId(stream.getDcatRightsHolderId());
+		myMeta.setDcatDataUpdate(stream.getDcatDataUpdate());
 		
 		myMeta.setInfo(info);
 		return myMeta;

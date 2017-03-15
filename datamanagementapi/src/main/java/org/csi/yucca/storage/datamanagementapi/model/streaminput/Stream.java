@@ -138,7 +138,19 @@ public class Stream {
     @Expose
 	private String dcatRightsHolderType;  
     @Expose
-	private String dcatRightsHolderId;  
+	private String dcatRightsHolderId;
+    
+    @Expose
+    private String dcatDataUpdate;
+
+
+	public String getDcatDataUpdate() {
+		return dcatDataUpdate;
+	}
+
+	public void setDcatDataUpdate(String dcatDataUpdate) {
+		this.dcatDataUpdate = dcatDataUpdate;
+	}
 
 
 	@Expose

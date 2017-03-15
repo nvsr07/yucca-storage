@@ -1,6 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.solr.common.SolrInputDocument;
@@ -10,6 +11,7 @@ import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 
 public class SearchEngineMetadata {
 	private String id;
@@ -43,13 +45,12 @@ public class SearchEngineMetadata {
 	private String dcatRightsHolderName;
 	private String dcatRightsHolderType;
 	private String dcatRightsHolderId;
-	private String dcatReady;
+	private boolean dcatReady;
 	private String datasetCode;
 	private String datasetDescription;
 	private String version;
 	private String dataseType;
 	private String datasetSubtype;
-	private String datasetTypeDescription;
 	private String streamCode;
 	private String twtQuery;
 	private String twtGeolocLat;
@@ -72,6 +73,70 @@ public class SearchEngineMetadata {
 	private String lon;
 	private List<String> sdpComponentsName;
 	private String phenomenon;
+
+	
+	
+	
+    private boolean isOpendata;
+    private String opendataAuthor;
+    private String opendataMetaUpdateDate;
+    private String opendataLanguage;
+    private String opendataUpdateDate;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public boolean isOpendata() {
+		return isOpendata;
+	}
+
+	public void setOpendata(boolean isOpendata) {
+		this.isOpendata = isOpendata;
+	}
+
+	public String getOpendataAuthor() {
+		return opendataAuthor;
+	}
+
+	public void setOpendataAuthor(String opendataAuthor) {
+		this.opendataAuthor = opendataAuthor;
+	}
+
+	public String getOpendataMetaUpdateDate() {
+		return opendataMetaUpdateDate;
+	}
+
+	public void setOpendataMetaUpdateDate(String opendataMetaUpdateDate) {
+		this.opendataMetaUpdateDate = opendataMetaUpdateDate;
+	}
+
+	public String getOpendataLanguage() {
+		return opendataLanguage;
+	}
+
+	public void setOpendataLanguage(String opendataLanguage) {
+		this.opendataLanguage = opendataLanguage;
+	}
+
+	public String getOpendataUpdateDate() {
+		return opendataUpdateDate;
+	}
+
+	public void setOpendataUpdateDate(String opendataUpdateDate) {
+		this.opendataUpdateDate = opendataUpdateDate;
+	}
 
 	public SearchEngineMetadata() {
 		super();
@@ -330,11 +395,12 @@ public class SearchEngineMetadata {
 		this.dcatRightsHolderId = dcatRightsHolderId;
 	}
 
-	public String getDcatReady() {
+
+	public boolean isDcatReady() {
 		return dcatReady;
 	}
 
-	public void setDcatReady(String dcatReady) {
+	public void setDcatReady(boolean dcatReady) {
 		this.dcatReady = dcatReady;
 	}
 
@@ -378,13 +444,6 @@ public class SearchEngineMetadata {
 		this.datasetSubtype = datasetSubtype;
 	}
 
-	public String getDatasetTypeDescription() {
-		return datasetTypeDescription;
-	}
-
-	public void setDatasetTypeDescription(String datasetTypeDescription) {
-		this.datasetTypeDescription = datasetTypeDescription;
-	}
 
 	public String getStreamCode() {
 		return streamCode;
@@ -603,7 +662,6 @@ public class SearchEngineMetadata {
 		ret.addField("version",version);
 		ret.addField("dataseType",dataseType);
 		ret.addField("datasetSubtype",datasetSubtype);
-		ret.addField("datasetTypeDescription",datasetTypeDescription);
 		ret.addField("streamCode",streamCode);
 		ret.addField("twtQuery",twtQuery);
 		ret.addField("twtGeolocLat",twtGeolocLat);
@@ -626,6 +684,14 @@ public class SearchEngineMetadata {
 		ret.addField("lon",lon);
 		ret.addField("sdpComponentsName",sdpComponentsName);
 		ret.addField("phenomenon",	phenomenon	);
+
+		
+		ret.addField("opendataAuthor",	opendataAuthor	);
+		ret.addField("opendataLanguage",	opendataLanguage	);
+		ret.addField("opendataMetaUpdateDate",	opendataMetaUpdateDate	);
+		ret.addField("opendataUpdateDate",	opendataUpdateDate	);
+		ret.addField("isOpendata",	isOpendata	);
+		
 		
 		return ret;
 	}
@@ -636,16 +702,13 @@ public class SearchEngineMetadata {
 		this.setupEngine(meta);
 		
 		
-		//this.setDatasetTypeDescription(datasetTypeDescription);
 		
 		
 		//this.setDcatDataUpdate(metadata.getdcat);
 
-		//this.setEntityType(metadata.getInfo());
 		//this.setId(dcatCreatorId);
 		
 		
-		//TODO lista this.setPhenomenon(phenomenon);
 		
 		ArrayList<String> arraylistphen= new ArrayList<String>();
 		for (Element el : st.getComponenti().getElement()) {
@@ -674,7 +737,11 @@ public class SearchEngineMetadata {
 		this.setTwtUntil(st.getTwtUntil());
 		
 		
-		
+		ArrayList<String> entity = new ArrayList<String>(Arrays.asList("stream"));
+		if (st.getSaveData()==1) {
+			entity.add("dataset");
+		}
+		this.setEntityType(entity);
 		
 	}
 	
@@ -683,24 +750,28 @@ public class SearchEngineMetadata {
 		this.setDatasetCode(metadata.getDatasetCode());
 		this.setDatasetDescription(metadata.getInfo().getDescription());
 		this.setDatasetSubtype(metadata.getConfigData().getSubtype());
-		//this.setDatasetTypeDescription(datasetTypeDescription);
 		this.setDataseType(metadata.getConfigData().getType());
 		this.setDcatCreatorId(metadata.getDcatCreatorId());
 		this.setDcatCreatorName(metadata.getDcatCreatorName());
 		this.setDcatCreatorType(metadata.getDcatCreatorType());
 		
 		
-		//this.setDcatDataUpdate(metadata.getdcat);
+		this.setDcatDataUpdate(metadata.getDcatDataUpdate());
 		this.setDcatEmailOrg(metadata.getDcatEmailOrg());
 		this.setDcatNomeOrg(metadata.getDcatNomeOrg());
-		this.setDcatReady(""+metadata.getDcatReady());
+		this.setDcatReady(metadata.getDcatReady() == 1 ? true : false);
 		this.setDcatRightsHolderId(metadata.getDcatRightsHolderId());
 		this.setDcatRightsHolderName(metadata.getDcatRightsHolderName());
 		this.setDcatRightsHolderType(metadata.getDcatRightsHolderType());
 		this.setDomainCode(metadata.getInfo().getDataDomain());
 		this.setDomainLangEN(metadata.getInfo().getDomainTranslated().get("en")); //TODO
 		this.setDomainLangIT(metadata.getInfo().getDomainTranslated().get("it")); //TODO
-		//this.setEntityType(metadata.getInfo());
+		
+		
+		
+		this.setEntityType(new ArrayList<String>(Arrays.asList("dataset")));
+		
+		
 		//this.setId(dcatCreatorId);
 		
 		
@@ -708,15 +779,11 @@ public class SearchEngineMetadata {
 		this.setJsonFields( gson.toJson(metadata.getInfo().getFields()));
 
 		
-		//this.setJsonSo(jsonSo);
-		//this.setLat(metadata.getInfo().get);
 		this.setLicenceDescription(metadata.getInfo().getDisclaimer()); /// TODO disclaimer?
 		this.setLicenseCode(metadata.getInfo().getLicense()); //TODO licence
-		//this.setLon(lon);
 		this.setName(metadata.getInfo().getDatasetName());
 		this.setOrganizationCode(metadata.getConfigData().getOrganizationCode());
 		this.setOrganizationDescription(metadata.getConfigData().getOrganizationDescription());
-		//TODO lista this.setPhenomenon(phenomenon);
 		
 		
 		ArrayList<String> listaNomiCampi= null;
@@ -767,7 +834,13 @@ public class SearchEngineMetadata {
 		
 		
 		
-		
+		this.setOpendata(metadata.getOpendata().isOpendata());
+		if (metadata.getOpendata().isOpendata()) {
+			this.setOpendataAuthor(metadata.getOpendata().getAuthor());
+			this.setOpendataLanguage(metadata.getOpendata().getLanguage());
+			this.setOpendataMetaUpdateDate(""+metadata.getOpendata().getMetadaUpdateDate());
+			this.setOpendataUpdateDate(""+metadata.getOpendata().getDataUpdateDate());
+		}
 		
 		
 		

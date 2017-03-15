@@ -16,6 +16,7 @@ import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 
 public class Metadata extends AbstractEntity {
 
@@ -49,6 +50,16 @@ public class Metadata extends AbstractEntity {
 	private String dcatRightsHolderId;
 	private String dcatNomeOrg;
 	private String dcatEmailOrg;
+	private String dcatDataUpdate;
+
+
+	public String getDcatDataUpdate() {
+		return dcatDataUpdate;
+	}
+
+	public void setDcatDataUpdate(String dcatDataUpdate) {
+		this.dcatDataUpdate = dcatDataUpdate;
+	}
 
 	public String getDcatCreatorName() {
 		return dcatCreatorName;
