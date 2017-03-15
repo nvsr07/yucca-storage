@@ -833,13 +833,13 @@ public class SearchEngineMetadata {
 		
 		
 		
-		this.setOpendata(metadata.getOpendata().isOpendata());
-		if (metadata.getOpendata().isOpendata()) {
-			this.setOpendataAuthor(metadata.getOpendata().getAuthor());
-			this.setOpendataLanguage(metadata.getOpendata().getLanguage());
-			this.setOpendataMetaUpdateDate(""+metadata.getOpendata().getMetadaUpdateDate());
-			this.setOpendataUpdateDate(""+metadata.getOpendata().getDataUpdateDate());
-		}
+//		this.setOpendata(metadata.getOpendata().isOpendata());
+//		if (metadata.getOpendata().isOpendata()) {
+//			this.setOpendataAuthor(metadata.getOpendata().getAuthor());
+//			this.setOpendataLanguage(metadata.getOpendata().getLanguage());
+//			this.setOpendataMetaUpdateDate(""+metadata.getOpendata().getMetadaUpdateDate());
+//			this.setOpendataUpdateDate(""+metadata.getOpendata().getDataUpdateDate());
+//		}
 		
 		
 		
