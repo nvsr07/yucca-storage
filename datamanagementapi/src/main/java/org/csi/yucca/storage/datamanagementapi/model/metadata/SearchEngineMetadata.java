@@ -704,7 +704,6 @@ public class SearchEngineMetadata {
 		
 		
 		
-		//this.setDcatDataUpdate(metadata.getdcat);
 
 		//this.setId(dcatCreatorId);
 		
@@ -764,8 +763,8 @@ public class SearchEngineMetadata {
 		this.setDcatRightsHolderName(metadata.getDcatRightsHolderName());
 		this.setDcatRightsHolderType(metadata.getDcatRightsHolderType());
 		this.setDomainCode(metadata.getInfo().getDataDomain());
-		this.setDomainLangEN(metadata.getInfo().getDomainTranslated().get("en")); //TODO
-		this.setDomainLangIT(metadata.getInfo().getDomainTranslated().get("it")); //TODO
+		this.setDomainLangEN(metadata.getInfo().getDomainTranslated().get("en")); 
+		this.setDomainLangIT(metadata.getInfo().getDomainTranslated().get("it")); 
 		
 		
 		
@@ -820,13 +819,13 @@ public class SearchEngineMetadata {
 		
 		
 		ArrayList<String> listaCodiciTenantsSh= null;
-		for (Tenantsharing ts : metadata.getInfo().getTenantssharing().getTenantsharing()) {
-			if (null==listaCodiciTenantsSh) {
-				listaCodiciTenantsSh=new ArrayList<String>();
-			}
-			listaCodiciTenantsSh.add(ts.getTenantCode());
-		}
-		this.setTenantsCode(listaCodiciTenantsSh);
+//		for (Tenantsharing ts : metadata.getInfo().getTenantssharing().getTenantsharing()) {
+//			if (null==listaCodiciTenantsSh) {
+//				listaCodiciTenantsSh=new ArrayList<String>();
+//			}
+//			listaCodiciTenantsSh.add(ts.getTenantCode());
+//		}
+//		this.setTenantsCode(listaCodiciTenantsSh);
 		
 		
 		this.setVersion(""+metadata.getDatasetVersion());
