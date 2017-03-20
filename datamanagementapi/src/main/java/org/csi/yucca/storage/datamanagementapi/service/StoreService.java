@@ -569,7 +569,7 @@ public class StoreService {
 		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
 		solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 		SolrInputDocument doc = newdocument.getSolrDocument();
-		doc.addField("id", ""+System.currentTimeMillis());
+		//doc.addField("id", ""+System.currentTimeMillis());
 		
 		
 		
@@ -706,7 +706,7 @@ public class StoreService {
 				solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 				
 				SolrInputDocument doc = newdocument.getSolrDocument();
-				doc.addField("id", ""+System.currentTimeMillis());
+				//doc.addField("id", ""+System.currentTimeMillis());
 				
 				
 				

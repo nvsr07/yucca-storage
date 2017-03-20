@@ -713,7 +713,11 @@ public class SearchEngineMetadata {
 		
 		ret.addField("registrationDate",	registrationDate	);
 		ret.addField("importFileType",	importFileType	);
+
 		
+		
+		ret.addField("id",	id	);
+
 		return ret;
 	}
 	
