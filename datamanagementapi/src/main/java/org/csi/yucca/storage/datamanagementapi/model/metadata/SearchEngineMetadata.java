@@ -763,6 +763,8 @@ public class SearchEngineMetadata {
 		}
 		this.setEntityType(entity);
 		
+		//TODO verificare underscore
+		this.setId(tenantCode + "_" + soCode + "_" + streamCode);
 	}
 	
 	public void setupEngine(Metadata metadata) {
@@ -792,7 +794,7 @@ public class SearchEngineMetadata {
 		this.setEntityType(new ArrayList<String>(Arrays.asList("dataset")));
 		
 		
-		//this.setId(dcatCreatorId);
+		this.setId(metadata.getDatasetCode());
 		
 		
 		Gson gson = JSonHelper.getInstance();
