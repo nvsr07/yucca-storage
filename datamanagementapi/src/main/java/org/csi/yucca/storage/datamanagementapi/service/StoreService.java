@@ -691,7 +691,7 @@ public class StoreService {
 		addStream.setVar("tags", tags);
 
 		String datasetInput = extractContentForDocument(json,newStream.getCodiceTenant() != null ? newStream.getCodiceTenant() : "");
-		//addStream.setVar("content", datasetInput);
+		addStream.setVar("content", "{ \"nodata\" : \"nodata\" }");
 		
 		Gson gson = JSonHelper.getInstance();
 		POJOStreams pojoStreams2 = gson.fromJson(datasetInput, POJOStreams.class);		
