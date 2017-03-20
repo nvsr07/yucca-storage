@@ -29,6 +29,22 @@ public class SearchEngineMetadata {
 	private String subdomainLangEN;
 	private String licenseCode;
 	private String licenceDescription;
+	public String getRegistrationDate() {
+		return registrationDate;
+	}
+
+	public void setRegistrationDate(String registrationDate) {
+		this.registrationDate = registrationDate;
+	}
+
+	public String getImportFileType() {
+		return importFileType;
+	}
+
+	public void setImportFileType(String importFileType) {
+		this.importFileType = importFileType;
+	}
+
 	private String tenantCode;
 	private List<String> tenantsCode;
 	private String tenantName;
@@ -86,6 +102,8 @@ public class SearchEngineMetadata {
 	
 	
 	
+	private String registrationDate;
+	private String importFileType;
 	
 	
 	
@@ -691,7 +709,10 @@ public class SearchEngineMetadata {
 		ret.addField("opendataMetaUpdateDate",	opendataMetaUpdateDate	);
 		ret.addField("opendataUpdateDate",	opendataUpdateDate	);
 		ret.addField("isOpendata",	isOpendata	);
+
 		
+		ret.addField("registrationDate",	registrationDate	);
+		ret.addField("importFileType",	importFileType	);
 		
 		return ret;
 	}
@@ -845,7 +866,8 @@ public class SearchEngineMetadata {
 			}
 		}
 		
-		
+		this.setImportFileType(metadata.getInfo().getImportFileType());
+		this.setRegistrationDate(""+metadata.getInfo().getRegistrationDate());
 		
 	}
 }
