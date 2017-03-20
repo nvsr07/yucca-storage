@@ -567,7 +567,7 @@ public class StoreService {
 		String newJsonDoc= gson.toJson(newdocument);
 		//addStream.setVar("content", newJsonDoc);
 		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
-		solrServer.setDefaultCollection("sdp_int_metasearch2");
+		solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 		SolrInputDocument doc = newdocument.getSolrDocument();
 		doc.addField("id", ""+System.currentTimeMillis());
 		
@@ -575,7 +575,7 @@ public class StoreService {
 		
 		log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
 
-		solrServer.add("sdp_int_metasearch2",doc);
+		solrServer.add(Config.getInstance().getSolrCollection(),doc);
 		solrServer.commit();
 		
 		addStream.run();
@@ -702,7 +702,9 @@ public class StoreService {
 				String newJsonDoc= gson.toJson(newdocument);
 				//addStream.setVar("content", newJsonDoc);
 				CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
-				solrServer.setDefaultCollection("sdp_int_metasearch2");
+				//solrServer.setDefaultCollection("sdp_int_metasearch2");
+				solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+				
 				SolrInputDocument doc = newdocument.getSolrDocument();
 				doc.addField("id", ""+System.currentTimeMillis());
 				
@@ -710,7 +712,7 @@ public class StoreService {
 				
 				log.info("[StoreService::createStream] - ---------------------" + doc.toString());
 
-				solrServer.add("sdp_int_metasearch2",doc);
+				solrServer.add(Config.getInstance().getSolrCollection(),doc);
 				solrServer.commit();
 						
 		
