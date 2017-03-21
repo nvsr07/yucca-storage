@@ -693,11 +693,16 @@ public class MetadataService {
 					
 					
 					try {
-						apiName = StoreService.createApiforBulk(metadata, false, datasetMetadata);
+						
+						//SOLR
+						//apiName = StoreService.createApiforBulk(metadata, false, datasetMetadata);
+						apiName = StoreService.createApiforBulk(metadataCreated, false, datasetMetadata);
 					} catch (Exception duplicate) {
 						if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 							try {
-								apiName = StoreService.createApiforBulk(metadata, true, datasetMetadata);
+								//SOLR
+								//apiName = StoreService.createApiforBulk(metadata, true, datasetMetadata);
+								apiName = StoreService.createApiforBulk(metadataCreated, true, datasetMetadata);
 							} catch (Exception e) {
 								log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
 							}
