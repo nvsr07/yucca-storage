@@ -755,7 +755,7 @@ public class SearchEngineMetadata {
 		}
 		this.setPhenomenon(arraylistphen);
 		Gson gson = JSonHelper.getInstance();
-		this.setJsonFields( "{\"elementg\": "+gson.toJson(arrComponents)+"}");
+		this.setJsonFields( "{\"element\": "+gson.toJson(arrComponents)+"}");
 		
 		
 		this.setSoCode(st.getCodiceVirtualEntity());
