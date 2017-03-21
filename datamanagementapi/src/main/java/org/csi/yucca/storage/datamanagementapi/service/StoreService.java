@@ -150,7 +150,7 @@ public class StoreService {
 				String tenant = newStream.getCodiceTenant();
 				String sensor = newStream.getCodiceVirtualEntity();
 				String stream = newStream.getCodiceStream();
-
+if (newStream.getSaveData()==1) {
 				DB db = mongo.getDB(Config.getInstance().getDbSupport());
 				//FC - SOLR datasetCode
 				DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportStream());
@@ -173,7 +173,7 @@ DBObject findStream = new BasicDBObject();
 
 				}  				
 				newStream.setIdDataset(idDataset);
-				
+}
 				try {
 					createStream(newStream, false, json);
 				} catch (Exception duplicate) {

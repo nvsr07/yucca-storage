@@ -724,8 +724,10 @@ public class SearchEngineMetadata {
 	public void setupEngine(Stream st) {
 		
 		Metadata meta=MetadataFiller.fillMetadata(st);
+		if (st.getSaveData()==1) {
 		meta.generateNameSpace();
 		meta.generateCode();
+		}
 		this.setupEngine(meta);
 		
 		
