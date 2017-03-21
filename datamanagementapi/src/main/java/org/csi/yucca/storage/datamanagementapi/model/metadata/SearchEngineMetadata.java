@@ -678,7 +678,7 @@ public class SearchEngineMetadata {
 		ret.addField("datasetCode",datasetCode);
 		ret.addField("datasetDescription",datasetDescription);
 		ret.addField("version",version);
-		ret.addField("dataseType",dataseType);
+		ret.addField("datasetType",dataseType);
 		ret.addField("datasetSubtype",datasetSubtype);
 		ret.addField("streamCode",streamCode);
 		ret.addField("twtQuery",twtQuery);
@@ -755,7 +755,7 @@ public class SearchEngineMetadata {
 		}
 		this.setPhenomenon(arraylistphen);
 		Gson gson = JSonHelper.getInstance();
-		this.setJsonFields( gson.toJson(arrComponents));
+		this.setJsonFields( "{\"elementg\": "+gson.toJson(arrComponents)+"}");
 		
 		
 		this.setSoCode(st.getCodiceVirtualEntity());
