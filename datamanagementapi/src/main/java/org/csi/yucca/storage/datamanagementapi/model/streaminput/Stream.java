@@ -143,6 +143,16 @@ public class Stream {
     @Expose
     private String dcatDataUpdate;
 
+    
+    private Long idDataset;
+
+	public Long getIdDataset() {
+		return idDataset;
+	}
+
+	public void setIdDataset(Long idDataset) {
+		this.idDataset = idDataset;
+	}
 
 	public String getDcatDataUpdate() {
 		return dcatDataUpdate;

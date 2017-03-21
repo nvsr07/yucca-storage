@@ -9,7 +9,6 @@ import java.io.StringReader;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +41,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -53,6 +53,12 @@ import twitter4j.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 import com.mongodb.util.JSON;
 
 @Path("/store")
@@ -131,7 +137,7 @@ public class StoreService {
 	public String apiCreateStreamStore(final String datasetInput) throws UnknownHostException {
 
 		Gson gson = JSonHelper.getInstance();
-
+		MongoClient mongo = MongoSingleton.getMongoClient();
 		// match @nil elements
 		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null");
 		try {
@@ -145,6 +151,29 @@ public class StoreService {
 				String sensor = newStream.getCodiceVirtualEntity();
 				String stream = newStream.getCodiceStream();
 
+				DB db = mongo.getDB(Config.getInstance().getDbSupport());
+				//FC - SOLR datasetCode
+				DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportStream());
+DBObject findStream = new BasicDBObject();
+				DBObject sortStream = new BasicDBObject();
+				findStream.put("idStream", newStream.getIdStream());
+				sortStream.put("_id", -1);
+
+				DBCursor cursor = col.find(findStream).sort(sortStream);
+                
+                Long idDataset = null;
+				DBObject oldObjStream = null;
+				// Stream oldStream = null;
+				if (cursor.hasNext()) {
+
+					oldObjStream = cursor.next();
+
+					DBObject configData = (DBObject) oldObjStream.get("configData");
+					idDataset = ((Number) configData.get("idDataset")).longValue();
+
+				}  				
+				newStream.setIdDataset(idDataset);
+				
 				try {
 					createStream(newStream, false, json);
 				} catch (Exception duplicate) {

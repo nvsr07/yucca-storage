@@ -32,6 +32,7 @@ public class MetadataFiller {
 		// on insert
 		// myMeta.setDatasetCode(datasetCode);
 		myMeta.setDatasetVersion(stream.getDeploymentVersion());
+		myMeta.setIdDataset(stream.getIdDataset());
 		ConfigData cf = new ConfigData();
 		cf.setCurrent(1);
 		cf.setType("dataset");
