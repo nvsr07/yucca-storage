@@ -88,7 +88,7 @@ public class SearchEngineMetadata {
 	private String lat;
 	private String lon;
 	private List<String> sdpComponentsName;
-	private String phenomenon;
+	private ArrayList<String> phenomenon;
 
 	
 	
@@ -631,11 +631,11 @@ public class SearchEngineMetadata {
 		this.sdpComponentsName = sdpComponentsName;
 	}
 
-	public String getPhenomenon() {
+	public ArrayList<String> getPhenomenon() {
 		return phenomenon;
 	}
 
-	public void setPhenomenon(String phenomenon) {
+	public void setPhenomenon(ArrayList<String> phenomenon) {
 		this.phenomenon = phenomenon;
 	}
 	
@@ -737,12 +737,25 @@ public class SearchEngineMetadata {
 		//this.setId(dcatCreatorId);
 		
 		
-		
+		ArrayList<SearchEngineJsonFieldElement> arrComponents = new ArrayList<SearchEngineJsonFieldElement>();
 		ArrayList<String> arraylistphen= new ArrayList<String>();
 		for (Element el : st.getComponenti().getElement()) {
+			SearchEngineJsonFieldElement cur = new SearchEngineJsonFieldElement();
 			arraylistphen.add(el.getPhenomenon());
+			cur.setComponentAlias(el.getNome());
+			cur.setComponentName(el.getNome());
+			cur.setDataType(el.getDataType());
+			cur.setMeasureUnit(el.getMeasureUnit());
+			cur.setMeasureUnitCategory(el.getMeasureUnitCategory());
+			cur.setPhenomenon(el.getPhenomenon());
+			cur.setPhenomenonCategory(el.getPhenomenonCategory());
+			cur.setTolerance(el.getTolerance());
+			arrComponents.add(cur);
+			
 		}
-		
+		this.setPhenomenon(arraylistphen);
+		Gson gson = JSonHelper.getInstance();
+		this.setJsonFields( gson.toJson(arrComponents));
 		
 		
 		this.setSoCode(st.getCodiceVirtualEntity());
