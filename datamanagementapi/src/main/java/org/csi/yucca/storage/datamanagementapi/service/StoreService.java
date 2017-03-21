@@ -150,6 +150,8 @@ public class StoreService {
 				String tenant = newStream.getCodiceTenant();
 				String sensor = newStream.getCodiceVirtualEntity();
 				String stream = newStream.getCodiceStream();
+				
+				log.info(";;;;;CHECK SAVE DATA -->"+newStream.getSaveData() + "("+newStream.getIdStream()+")");
 if (newStream.getSaveData()==1) {
 				DB db = mongo.getDB(Config.getInstance().getDbSupport());
 				//FC - SOLR datasetCode
@@ -170,6 +172,7 @@ DBObject findStream = new BasicDBObject();
 
 					DBObject configData = (DBObject) oldObjStream.get("configData");
 					idDataset = ((Number) configData.get("idDataset")).longValue();
+					log.info(";;;;;FOUND "+idDataset);
 
 				}  				
 				newStream.setIdDataset(idDataset);
@@ -723,7 +726,11 @@ DBObject findStream = new BasicDBObject();
 		//addStream.setVar("content", "{ \"nodata\" : \"nodata\" }");
 		
 		Gson gson = JSonHelper.getInstance();
-		POJOStreams pojoStreams2 = gson.fromJson(datasetInput, POJOStreams.class);		
+		POJOStreams pojoStreams2 = gson.fromJson(datasetInput, POJOStreams.class);	
+		if (newStream.getSaveData()==1) {
+			log.info(";;;;;SETTING "+newStream.getIdDataset());
+			pojoStreams2.getStreams().getStream().setIdDataset(newStream.getIdDataset());
+		}
 
 		//SOLR
 				SearchEngineMetadata newdocument = new SearchEngineMetadata();

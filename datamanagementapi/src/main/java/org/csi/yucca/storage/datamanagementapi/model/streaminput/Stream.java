@@ -144,6 +144,7 @@ public class Stream {
     private String dcatDataUpdate;
 
     
+    @Expose
     private Long idDataset;
 
 	public Long getIdDataset() {
