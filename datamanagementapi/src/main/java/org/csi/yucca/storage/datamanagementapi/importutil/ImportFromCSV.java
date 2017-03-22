@@ -8,11 +8,14 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tag;
@@ -62,7 +65,31 @@ public class ImportFromCSV {
 		
 		String json = getMergeTemplate(metadata,"datasetCreationTemplate.ftlh");
 		
-		System.out.println(json);
+		//System.out.println(json);
+		
+		
+		Map<String,Field[]> campi=readFileds();
+		Map<String, String> tags=readTagMap();
+		
+		
+		List<Metadata> metaToins= readDataset(tags,campi);
+		int riga=1;
+		for (Metadata md : metaToins) {
+			if (md.getInfo().getFields()!=null && md.getInfo().getFields().length>0) {
+				json = getMergeTemplate(md,"datasetCreationTemplate.ftlh");
+				System.out.println("+++++++++++++++++++");
+				System.out.println("ready to ins  ("+riga+")--> " + md.getInfo().getDatasetName());
+				//System.out.println(json);
+				//System.out.println("+++++++++++++++++++");
+			} else {
+				//System.out.println("+++++++++++++++++++");
+				//System.out.println("SKIPPED ("+riga+")--> " + md.getInfo().getDatasetName());
+				//System.out.println("+++++++++++++++++++");
+				
+			}
+			riga++;
+		}
+		
 		
 	}
 
@@ -103,7 +130,7 @@ public class ImportFromCSV {
 		}
 		// skip first line
 		for (String[] rigaTag : myEntries) {
-			tagMap.put(rigaTag[0], rigaTag[2]);
+			tagMap.put(rigaTag[0].trim(), rigaTag[2]);
 		}
 		System.out.println("Example of tags:");
 		int i = 0;
@@ -114,5 +141,137 @@ public class ImportFromCSV {
 				break;
 		}
 		return tagMap;
+	}
+	
+	
+	private static Map<String,Field[]> readFileds() throws FileNotFoundException, IOException {
+		Map<String,Field[]> ret = new HashMap<String, Field[]>();
+
+		CSVReader reader = new CSVReader(new FileReader("toimport/Strutture_Dataset_da_migrare_01.csv"), ';', '\"', 1);
+		List<String[]> myEntries = reader.readAll();
+		if (myEntries == null || myEntries.size() <= 1) {
+			System.out.println("No fields");
+		}
+		
+		int nRiga=1;
+		for (String[] rigaCampi : myEntries) {
+			String idDato=rigaCampi[0];
+			int nCampi=Integer.parseInt(rigaCampi[1]);
+			ArrayList<Field> listaCampi=new ArrayList<Field>();
+			//TODO - sembra che n campi sia sbagliato
+			for (int i =0; i<(nCampi-1);i++) {
+				String campoTot=rigaCampi[i+3];
+				String [] elementiCampo=campoTot.split(":");
+
+				//System.out.println("campo,elemeti ("+nRiga+","+i+") --> " + campoTot +","+elementiCampo.length);
+				
+				
+				
+				if (elementiCampo.length<2 || ("Date".equalsIgnoreCase(elementiCampo[1]) && elementiCampo.length<3)) {
+					System.out.println("errore parsin campi  ("+nRiga+","+i+")--> " + campoTot);
+				}
+				
+				
+				Field curf=new Field();
+				curf.setFieldName(elementiCampo[0]);
+				curf.setFieldAlias(elementiCampo[0]);
+				curf.setOrder(i+1);
+				curf.setSourceColumn(i);
+				curf.setDataType(elementiCampo[1]);
+				
+				
+				if("Date".equalsIgnoreCase(curf.getDataType())) {
+					curf.setDateTimeFormat(elementiCampo[2]);
+				}
+				
+				listaCampi.add(curf);
+			}
+			Field[] arrCampi=listaCampi.toArray(new Field[0]);
+			nRiga++;
+			ret.put(idDato.trim(), arrCampi);
+		}
+		
+		return ret;
+	}
+	
+	
+	private static List<Metadata> readDataset(Map<String, String> tagsDecode, Map<String,Field[]> campiDecode)  throws FileNotFoundException, IOException {
+		List<Metadata> ret = new ArrayList<Metadata>();
+		
+		CSVReader reader = new CSVReader(new FileReader("toimport/Mapping datasets da dati piemonte a SDP_V05_2_last.csv"), ';', '\"', 1);
+		List<String[]> myEntries = reader.readAll();
+		if (myEntries == null || myEntries.size() <= 1) {
+			System.out.println("No dataset");
+		}
+		
+		int nRiga=1;
+		for (String[] rigaDs : myEntries) {
+			
+			
+			if (rigaDs.length<17) {
+				System.out.println("errore parsing dataset ("+nRiga+") --> " );
+			}
+			String id=rigaDs[0].trim();
+			
+			Metadata md= new Metadata();
+			Info info=new Info();
+			info.setDatasetName(rigaDs[1]);
+			info.setDescription(rigaDs[3]);
+			info.setDataDomain(rigaDs[4]);
+			info.setCodSubDomain(rigaDs[5]);
+			
+			ArrayList<Tag> tagsList=new ArrayList<Tag>();
+			String[] tags=rigaDs[6].split(",");
+			for (int i=0;tags!=null && i<tags.length;i++) {
+				Tag curTag=new Tag();
+				String tagCode=tagsDecode.get(tags[i].trim());
+				if (null!= tagCode) {
+					curTag.setTagCode(tagCode);
+					tagsList.add(curTag);
+					
+				} else {
+					//System.out.println("TAG mancante  ("+nRiga+","+i+") .... " +rigaDs[6]);
+				}
+			}
+			if (tagsList.size()>0) {
+				info.setTags(tagsList.toArray(new Tag[0]));
+				
+			}
+			
+			info.setVisibility(rigaDs[7]);
+			info.setLicense(rigaDs[8]);
+			
+			
+			Field [] campi=campiDecode.get(id);
+			//if (null==campi || campi.length<=0) System.out.println("NESSUN CAMPO  ("+nRiga+") .... " +id);
+			
+			info.setFields(campi);
+			
+			
+			
+			info.setRequestorName("requestor Name default");
+			info.setRequestorSurname("requestor SurName default");
+			info.setRequestornEmail("aaaa@vcvv.ty");
+			
+			md.setDcatCreatorName(rigaDs[9]);
+			md.setDcatCreatorType(rigaDs[10]);
+			md.setDcatCreatorId(rigaDs[11]);
+			md.setDcatRightsHolderName(rigaDs[12]);
+			md.setDcatRightsHolderType(rigaDs[13]);
+			md.setDcatRightsHolderId(rigaDs[14]);
+			md.setDcatNomeOrg(rigaDs[15]);
+			md.setDcatEmailOrg(rigaDs[16]);
+			
+			md.setInfo(info);
+			
+			ret.add(md);
+			
+			
+			nRiga++;
+		}
+		
+		
+		
+		return ret;
 	}
 }
