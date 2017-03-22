@@ -24,6 +24,12 @@ public class RestBase {
 		secretObject = new JSONObject(str);
 	
 	}
+	
+	public static void main(String[] args) {
+		Float f = new Float("21.87");
+		
+		System.out.println(f.doubleValue());
+	}
 
 	protected Iterator<Object[]> getFromJson(String file) {
 		ArrayList<Object[]> data = new ArrayList<Object[]>();
