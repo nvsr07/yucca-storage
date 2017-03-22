@@ -451,8 +451,8 @@ DBObject findStream = new BasicDBObject();
 				for (org.csi.yucca.storage.datamanagementapi.model.metadata.Tag tag : metadata.getInfo().getTags()) {
 					translatedTags.add(messages.getString(tag.getTagCode()));
 				}
-				if (metadata.getInfo().getDataDomain() != null)
-					translatedTags.add(messages.getString(metadata.getInfo().getDataDomain()));
+//				if (metadata.getInfo().getDataDomain() != null)
+//					translatedTags.add(messages.getString(metadata.getInfo().getDataDomain()));
 
 				tagsTranslated.put(lang, translatedTags);
 				metadata.getInfo().setTagsTranslated(tagsTranslated);
