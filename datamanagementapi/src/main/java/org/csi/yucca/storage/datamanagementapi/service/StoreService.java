@@ -31,7 +31,6 @@ import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
-import org.csi.yucca.storage.datamanagementapi.apimanager.store.RemoveDoc;
 import org.csi.yucca.storage.datamanagementapi.model.cache.TenantCache;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.SearchEngineMetadata;
@@ -329,9 +328,9 @@ DBObject findStream = new BasicDBObject();
 		objStream.setVar("tags", Util.safeSubstring(tags, API_FIELD_MAX_LENGTH));
 
 		// DT Add document
-		String datasetInput = extractContentForDocument(json,newStream.getCodiceTenant() != null ? newStream.getCodiceTenant() : "");
+		//String datasetInput = extractContentForDocument(json,newStream.getCodiceTenant() != null ? newStream.getCodiceTenant() : "");
 		
-		//SOLR
+		//SOLR --> NOT USED, DOC FOR STREAM ARE CREATED IN createStream 
 		//objStream.setVar("content", datasetInput);
 
 		objStream.run();
@@ -620,7 +619,7 @@ DBObject findStream = new BasicDBObject();
 		return apiFinalName;
 	}
 
-	public static boolean createStream(Stream newStream, boolean update, String json) throws Exception {
+	private static boolean createStream(Stream newStream, boolean update, String json) throws Exception {
 
 		String tenant = newStream.getCodiceTenant();
 		String sensor = newStream.getCodiceVirtualEntity();
@@ -983,20 +982,21 @@ DBObject findStream = new BasicDBObject();
 		publish.run();
 
 		
-		//TODO - solr
-		RemoveDoc removeDoc = new RemoveDoc();
-		removeDoc.setVar("apimanConsoleAddress", Config.getInstance().getConsoleAddress());
-		removeDoc.setVar("username", Config.getInstance().getStoreUsername());
-		removeDoc.setVar("password", Config.getInstance().getStorePassword());
-		removeDoc.setVar("httpok", Config.getInstance().getHttpOk());
-		removeDoc.setVar("ok", Config.getInstance().getResponseOk());
-
-		removeDoc.setVar("publishStatus", "BLOCKED");
-		removeDoc.setVar("apiVersion", apiVersion);
-		removeDoc.setVar("apiName", apiName);
-		removeDoc.setVar("provider", provider);
-		removeDoc.setVar("P", "");
-		removeDoc.run();
+		
+		// OLD when used document in api manager
+//		RemoveDoc removeDoc = new RemoveDoc();
+//		removeDoc.setVar("apimanConsoleAddress", Config.getInstance().getConsoleAddress());
+//		removeDoc.setVar("username", Config.getInstance().getStoreUsername());
+//		removeDoc.setVar("password", Config.getInstance().getStorePassword());
+//		removeDoc.setVar("httpok", Config.getInstance().getHttpOk());
+//		removeDoc.setVar("ok", Config.getInstance().getResponseOk());
+//
+//		removeDoc.setVar("publishStatus", "BLOCKED");
+//		removeDoc.setVar("apiVersion", apiVersion);
+//		removeDoc.setVar("apiName", apiName);
+//		removeDoc.setVar("provider", provider);
+//		removeDoc.setVar("P", "");
+//		removeDoc.run();
 
 		return true;
 	}

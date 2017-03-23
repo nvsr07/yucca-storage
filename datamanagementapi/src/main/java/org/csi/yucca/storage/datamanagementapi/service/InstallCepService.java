@@ -27,16 +27,21 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.delegate.HttpDelegate;
 import org.csi.yucca.storage.datamanagementapi.mail.SendHTMLEmail;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.SearchEngineMetadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.model.types.FileStatus;
 import org.csi.yucca.storage.datamanagementapi.model.types.POJOHdfs;
+import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
@@ -505,14 +510,27 @@ public class InstallCepService {
 
 				DBCursor datasets = col.find(searchQuery);
 				while (datasets.hasNext()) {
-					String apiName = (String) datasets.next().get("datasetCode");
+					DBObject datasetCurrent =  datasets.next();
+					String apiName = (String) datasetCurrent.get("datasetCode");
+					String idDatasetCurrent =  (String) datasetCurrent.get("idDataset");
+					Exception errorOnRemove=null;
 					if (apiName != null) {
 						apiName += "_odata";
 						try {
 							StoreService.removeStore("1.0", apiName, "admin");
 						} catch (Exception ex) {
 							log.info("Impossible to remove " + apiName + ex.getMessage());
+							errorOnRemove = ex;
 						}
+						//SOLR
+						CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
+						solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+						UpdateResponse resp = solrServer.deleteById(""+idDatasetCurrent);
+						solrServer.commit();
+						log.info("[InstallCepService::deleteDatasetLogically] deleted status" + resp.getStatus());
+							
+						if (errorOnRemove!=null)
+							throw errorOnRemove;
 					}
 
 					datasetOuput = JSON.parse(OK_RESULT).toString();
@@ -527,6 +545,9 @@ public class InstallCepService {
 
 	}
 
+	/*
+	 * This method is called for uninstall stream. 
+	 */
 	@POST
 	@Path("/deleteDatasetLogically")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -557,7 +578,7 @@ public class InstallCepService {
 				Long idDataset = null;
 				DBObject oldStream = null;
 				if (cursor.hasNext()) {
-
+					// stream is present in mongoDB
 					oldStream = cursor.next();
 
 					DBObject configData = (DBObject) oldStream.get("configData");
@@ -605,15 +626,26 @@ public class InstallCepService {
 				String sensor = newStream.getCodiceVirtualEntity();
 				String stream = newStream.getCodiceStream();
 				String apiName = tenant + "." + sensor + "_" + stream + "_stream";
+				Exception errorOnRemove = null;
 				try {
 					StoreService.removeStore("1.0", apiName, "admin");
 				} catch (Exception ex) {
 					log.info("Impossible to remove " + apiName + ex.getMessage());
+					errorOnRemove = ex;
 				}
+				//SOLR
+				CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
+				solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+				UpdateResponse resp = solrServer.deleteById(""+newStream.getCodiceTenant()+"_"+newStream.getCodiceVirtualEntity()+"_"+newStream.getCodiceStream());
+				solrServer.commit();
+				log.info("[InstallCepService::deleteDatasetLogically] deleted status" + resp.getStatus());
+					
+				if (errorOnRemove!=null)
+					throw errorOnRemove;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println(e);
+			log.error("[deleteDatasetLogically] Error!",e);
 			return JSON.parse(KO_RESULT).toString();
 		}
 
