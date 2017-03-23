@@ -1,8 +1,12 @@
 package org.csi.yucca.storage.datamanagementapi.model.metadata;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Element;
@@ -891,7 +895,19 @@ public class SearchEngineMetadata {
 		}
 		
 		this.setImportFileType(metadata.getInfo().getImportFileType());
-		this.setRegistrationDate(""+metadata.getInfo().getRegistrationDate());
+		this.setRegistrationDate(formatDate(metadata.getInfo().getRegistrationDate()));
 		
 	}
+	
+	private String formatDate(Date date) {
+		String formattedDate = null;
+		if (date != null) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			df.setTimeZone(TimeZone.getTimeZone("UTC"));
+			formattedDate = df.format(date);
+		}
+		return formattedDate;
+	}
+	
+	
 }
