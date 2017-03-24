@@ -93,11 +93,20 @@ public class SearchEngineMetadata {
 	private String lon;
 	private List<String> sdpComponentsName;
 	private ArrayList<String> phenomenon;
+	private String externalReference;
 
 	
 	
 	
-    private boolean isOpendata;
+    public String getExternalReference() {
+		return externalReference;
+	}
+
+	public void setExternalReference(String externalReference) {
+		this.externalReference = externalReference;
+	}
+
+	private boolean isOpendata;
     private String opendataAuthor;
     private String opendataMetaUpdateDate;
     private String opendataLanguage;
@@ -718,6 +727,7 @@ public class SearchEngineMetadata {
 		ret.addField("registrationDate",	registrationDate	);
 		ret.addField("importFileType",	importFileType	);
 		ret.addField("isCurrent", "1"	);
+		ret.addField("externalReference", externalReference	);
 
 		
 		
@@ -889,17 +899,29 @@ public class SearchEngineMetadata {
 			if (metadata.getOpendata().isOpendata()) {
 				this.setOpendataAuthor(metadata.getOpendata().getAuthor());
 				this.setOpendataLanguage(metadata.getOpendata().getLanguage());
-				this.setOpendataMetaUpdateDate(""+metadata.getOpendata().getMetadaUpdateDate());
-				this.setOpendataUpdateDate(""+metadata.getOpendata().getDataUpdateDate());
+				this.setOpendataMetaUpdateDate(formatDate(metadata.getOpendata().getMetadaUpdateDate()));
+				this.setOpendataUpdateDate(formatDate(metadata.getOpendata().getDataUpdateDate()));
 			}
 		}
 		
 		this.setImportFileType(metadata.getInfo().getImportFileType());
 		this.setRegistrationDate(formatDate(metadata.getInfo().getRegistrationDate()));
-		
+		this.setExternalReference(metadata.getInfo().getExternalReference());
 	}
 	
 	private String formatDate(Date date) {
+		String formattedDate = null;
+		if (date != null) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			df.setTimeZone(TimeZone.getTimeZone("UTC"));
+			formattedDate = df.format(date);
+		}
+		return formattedDate;
+	}
+	
+	private String formatDate(Long millis) {
+		if (millis==null || millis == 0 ) return null;
+		Date date = new Date (millis);
 		String formattedDate = null;
 		if (date != null) {
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
