@@ -921,14 +921,16 @@ public class SearchEngineMetadata {
 	
 	private String formatDate(Long millis) {
 		if (millis==null || millis == 0 ) return null;
-		Date date = new Date (millis);
-		String formattedDate = null;
-		if (date != null) {
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-			df.setTimeZone(TimeZone.getTimeZone("UTC"));
-			formattedDate = df.format(date);
-		}
-		return formattedDate;
+		else return ""+millis;
+		
+//		Date date = new Date (millis);
+//		String formattedDate = null;
+//		if (date != null) {
+//			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+//			df.setTimeZone(TimeZone.getTimeZone("UTC"));
+//			formattedDate = df.format(date);
+//		}
+//		return formattedDate;
 	}
 	
 	
