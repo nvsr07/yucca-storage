@@ -30,47 +30,47 @@ public class ImportFromCSV {
 
 	public static void main(String[] args) throws IOException, TemplateException {
 
-		// Read list of TAG
-		Map<String, String> tagMap = null;
-		try {
-			tagMap = readTagMap();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-
-		// template free
-		Metadata metadata = new Metadata();
-		Info info =new Info();
-		info.setDatasetName("provba");
-		info.setDescription("desc");
-		info.setLicense("ss");
-		info.setRequestorName("c");
-		info.setRequestorSurname("c");
-		info.setRequestornEmail("c");
-		info.setDataDomain("dd");
-		info.setCodSubDomain("dd");
-		Tag tag1 = new Tag();
-		tag1.setTagCode("TAG1");
-		Tag tag2 = new Tag();
-		tag2.setTagCode("TAG2");
-		Tag tag3 = new Tag();
-		tag3.setTagCode("TAG3");
-		
-		
-		info.setTags(new Tag[]{tag1,tag2,tag3});
-		
-		metadata.setInfo(info);
-		
-		
-		String json = getMergeTemplate(metadata,"datasetCreationTemplate.ftlh");
+//		// Read list of TAG
+//		Map<String, String> tagMap = null;
+//		try {
+//			tagMap = readTagMap();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return;
+//		}
+//
+//		// template free
+//		Metadata metadata = new Metadata();
+//		Info info =new Info();
+//		info.setDatasetName("provba");
+//		info.setDescription("desc");
+//		info.setLicense("ss");
+//		info.setRequestorName("c");
+//		info.setRequestorSurname("c");
+//		info.setRequestornEmail("c");
+//		info.setDataDomain("dd");
+//		info.setCodSubDomain("dd");
+//		Tag tag1 = new Tag();
+//		tag1.setTagCode("TAG1");
+//		Tag tag2 = new Tag();
+//		tag2.setTagCode("TAG2");
+//		Tag tag3 = new Tag();
+//		tag3.setTagCode("TAG3");
+//		
+//		
+//		info.setTags(new Tag[]{tag1,tag2,tag3});
+//		
+//		metadata.setInfo(info);
+//		
+//		
+//		String json = getMergeTemplate(metadata,"datasetCreationTemplate.ftlh");
 		
 		//System.out.println(json);
 		
 		
 		Map<String,Field[]> campi=readFileds();
 		Map<String, String> tags=readTagMap();
-		
+		String json = "";
 		
 		List<Metadata> metaToins= readDataset(tags,campi);
 		int riga=1;
@@ -82,9 +82,9 @@ public class ImportFromCSV {
 				//System.out.println(json);
 				//System.out.println("+++++++++++++++++++");
 			} else {
-				//System.out.println("+++++++++++++++++++");
-				//System.out.println("SKIPPED ("+riga+")--> " + md.getInfo().getDatasetName());
-				//System.out.println("+++++++++++++++++++");
+				System.out.println("+++++++++++++++++++");
+				System.out.println("SKIPPED ("+riga+")--> " + md.getInfo().getDatasetName());
+				System.out.println("+++++++++++++++++++");
 				
 			}
 			riga++;
@@ -249,9 +249,9 @@ public class ImportFromCSV {
 			
 			
 			
-			info.setRequestorName("requestor Name default");
-			info.setRequestorSurname("requestor SurName default");
-			info.setRequestornEmail("aaaa@vcvv.ty");
+			info.setRequestorName("Claudia");
+			info.setRequestorSurname("Secco");
+			info.setRequestornEmail("claudia.secco@csi.it");
 			
 			md.setDcatCreatorName(rigaDs[9]);
 			md.setDcatCreatorType(rigaDs[10]);
