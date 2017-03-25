@@ -585,7 +585,7 @@ DBObject findStream = new BasicDBObject();
 
 		addStream.setVar("tags", Util.safeSubstring(tags, API_FIELD_MAX_LENGTH));
 
-		// DT Add document
+		// DT Add document ? Why restart from jsonFile? we lost init
 		String contentJson = extractMetadataContentForDocument(jsonFile,metadata.getConfigData().getTenantCode() != null ? metadata.getConfigData().getTenantCode() : "");
 		
 		
