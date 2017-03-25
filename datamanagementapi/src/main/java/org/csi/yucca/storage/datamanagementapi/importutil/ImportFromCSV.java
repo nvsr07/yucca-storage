@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -13,18 +11,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tag;
 
+import au.com.bytecode.opencsv.CSVReader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
-import au.com.bytecode.opencsv.CSVReader;
 
 public class ImportFromCSV {
 
@@ -75,12 +80,38 @@ public class ImportFromCSV {
 		List<Metadata> metaToins= readDataset(tags,campi);
 		int riga=1;
 		for (Metadata md : metaToins) {
-			if (md.getInfo().getFields()!=null && md.getInfo().getFields().length>0) {
+			if (md.getInfo().getFields()!=null && md.getInfo().getFields().length>0 && riga==1) {
 				json = getMergeTemplate(md,"datasetCreationTemplate.ftlh");
 				System.out.println("+++++++++++++++++++");
 				System.out.println("ready to ins  ("+riga+")--> " + md.getInfo().getDatasetName());
-				//System.out.println(json);
+				System.out.println(json);
 				//System.out.println("+++++++++++++++++++");
+				
+				
+				CloseableHttpClient httpclient = HttpClients.createDefault();
+				HttpPost postMethod = new HttpPost("http://int-sdnet-intapi.sdp.csi.it:90/datamanagementapi/api/dataset/tst_regpie/");
+				
+//				postMethod.setHeader("Content-type", "application/json");
+//				StringEntity requestEntity = new StringEntity(json);
+//				  postMethod.setEntity(requestEntity);
+				
+				
+				
+				ByteArrayBody body = new ByteArrayBody(json.getBytes(),ContentType.APPLICATION_JSON,"body");
+				MultipartEntity entity = new MultipartEntity();
+				FormBodyPart fbp=new FormBodyPart("dataset", body);
+				entity.addPart( fbp);
+				//entity.addPart("encoding", "UTF-8");
+				postMethod.setEntity(entity);
+//				ArrayList<BasicNameValuePair> pairs = new ArrayList<BasicNameValuePair>();
+//				pairs.add(new BasicNameValuePair("requestData", json));
+//				  postMethod.setEntity(new UrlEncodedFormEntity(pairs));
+				
+				  
+				  			  
+				  CloseableHttpResponse response = httpclient.execute(postMethod);	
+				  httpclient.close();
+				
 			} else {
 				System.out.println("+++++++++++++++++++");
 				System.out.println("SKIPPED ("+riga+")--> " + md.getInfo().getDatasetName());
@@ -264,6 +295,9 @@ public class ImportFromCSV {
 			
 			md.setInfo(info);
 			
+			ConfigData cd= new ConfigData();
+			cd.setTenantCode("tst_regpie");
+			md.setConfigData(cd);
 			ret.add(md);
 			
 			
