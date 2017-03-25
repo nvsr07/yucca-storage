@@ -592,6 +592,7 @@ DBObject findStream = new BasicDBObject();
 		//SOLR
 		//addStream.setVar("content", contentJson);
 		Metadata metadatan = Metadata.fromJson(contentJson);
+		metadatan.setDatasetCode(metadata.getDatasetCode());
 		SearchEngineMetadata newdocument = new SearchEngineMetadata();
 		newdocument.setupEngine(metadatan);
 		Gson gson = JSonHelper.getInstance();
