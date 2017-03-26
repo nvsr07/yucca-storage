@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Tag;
+import org.jsoup.Jsoup;
 
 import au.com.bytecode.opencsv.CSVReader;
 import freemarker.template.Configuration;
@@ -80,7 +82,7 @@ public class ImportFromCSV {
 		List<Metadata> metaToins= readDataset(tags,campi);
 		int riga=1;
 		for (Metadata md : metaToins) {
-			if (md.getInfo().getFields()!=null && md.getInfo().getFields().length>0 && riga==1) {
+			if (md.getInfo().getFields()!=null && md.getInfo().getFields().length>0) {
 				json = getMergeTemplate(md,"datasetCreationTemplate.ftlh");
 				System.out.println("+++++++++++++++++++");
 				System.out.println("ready to ins  ("+riga+")--> " + md.getInfo().getDatasetName());
@@ -247,18 +249,20 @@ public class ImportFromCSV {
 			Metadata md= new Metadata();
 			Info info=new Info();
 			info.setDatasetName(rigaDs[1]);
-			info.setDescription(rigaDs[3]);
+			info.setDescription(Jsoup.parse(rigaDs[3]).text());
 			info.setDataDomain(rigaDs[4]);
 			info.setCodSubDomain(rigaDs[5]);
 			
-			ArrayList<Tag> tagsList=new ArrayList<Tag>();
+			HashSet<Tag> tagsList=new HashSet<Tag>();
+			HashSet<String> tagsSet=new HashSet<String>();
 			String[] tags=rigaDs[6].split(",");
 			for (int i=0;tags!=null && i<tags.length;i++) {
 				Tag curTag=new Tag();
 				String tagCode=tagsDecode.get(tags[i].trim());
-				if (null!= tagCode) {
+				if (null!= tagCode && !tagsSet.contains(tagCode)) {
 					curTag.setTagCode(tagCode);
 					tagsList.add(curTag);
+					tagsSet.add(tagCode);
 					
 				} else {
 					//System.out.println("TAG mancante  ("+nRiga+","+i+") .... " +rigaDs[6]);
