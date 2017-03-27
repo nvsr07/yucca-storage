@@ -410,9 +410,9 @@ DBObject findStream = new BasicDBObject();
 		return gson.toJson(pojoStreams2);
 	}
 
-	private static String extractMetadataContentForDocument(String jsonMetadata,String tenantCode) {
+	private static String extractMetadataContentForDocument(Metadata metadata ,String tenantCode) {
 		Gson gson = JSonHelper.getInstance();
-		Metadata metadata = Metadata.fromJson(jsonMetadata);
+		//Metadata metadata = Metadata.fromJson(jsonMetadata);
 
 		if (metadata.getInfo().getTags() != null) {
 			Map<String, List<String>> tagsTranslated = new HashMap<String, List<String>>();
@@ -586,7 +586,8 @@ DBObject findStream = new BasicDBObject();
 		addStream.setVar("tags", Util.safeSubstring(tags, API_FIELD_MAX_LENGTH));
 
 		// DT Add document ? Why restart from jsonFile? we lost init
-		String contentJson = extractMetadataContentForDocument(jsonFile,metadata.getConfigData().getTenantCode() != null ? metadata.getConfigData().getTenantCode() : "");
+		//String contentJson = extractMetadataContentForDocument(jsonFile,metadata.getConfigData().getTenantCode() != null ? metadata.getConfigData().getTenantCode() : "");
+		String contentJson = extractMetadataContentForDocument(metadata,metadata.getConfigData().getTenantCode() != null ? metadata.getConfigData().getTenantCode() : "");
 		
 		
 		//SOLR
