@@ -65,7 +65,7 @@ if callResult == 0:
             for field in m['_id']['fields']:
 
                 name = field['fieldName'].strip()
-                dataType = field['dataType']
+                dataType = field['dataType'].strip()
                 
                 if subtype == 'binaryDataset' and (name == 'urlDownloadBinary' or name == 'idBinary'):
                     continue
