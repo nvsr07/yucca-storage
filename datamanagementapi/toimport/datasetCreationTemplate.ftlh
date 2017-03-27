@@ -38,6 +38,9 @@
     "dcatRightsHolderName" : "Regione Piemonte",
     "dcatRightsHolderType" : "Pubblica amministrazione",
     "dcatRightsHolderId" : "r_piemon",
+    "dcatCreatorName" : "Regione Piemonte",
+    "dcatCreatorType" : "Pubblica amministrazione",
+    "dcatCreatorId" : "r_piemon",
     "dcatNomeOrg" : "CSI-Piemonte",
     "dcatEmailOrg" : "riuso@dati.piemonte.it"
 }
