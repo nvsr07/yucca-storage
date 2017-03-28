@@ -86,6 +86,15 @@ public class SearchEngineMetadata {
 	private String twtLastSearchId;
 	private String soCode;
 	private String soName;
+	private String soType;
+	public String getSoType() {
+		return soType;
+	}
+
+	public void setSoType(String soType) {
+		this.soType = soType;
+	}
+
 	private String soDescription;
 	private String jsonFields;
 	private String jsonSo;
@@ -708,6 +717,7 @@ public class SearchEngineMetadata {
 		ret.addField("twtLastSearchId",twtLastSearchId);
 		ret.addField("soCode",soCode);
 		ret.addField("soName",soName);
+		ret.addField("soType",soType);
 		ret.addField("soDescription",soDescription);
 		ret.addField("jsonFields",jsonFields);
 		ret.addField("jsonSo",jsonSo);
@@ -776,6 +786,7 @@ public class SearchEngineMetadata {
 		this.setSoCode(st.getCodiceVirtualEntity());
 		this.setSoDescription(st.getVirtualEntityDescription());
 		this.setSoName(st.getVirtualEntityName());
+		this.setSoType(st.getTipoVirtualEntity());
 		this.setStreamCode(st.getCodiceStream());
 		
 
