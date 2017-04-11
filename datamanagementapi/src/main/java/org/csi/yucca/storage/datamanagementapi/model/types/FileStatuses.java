@@ -20,4 +20,5 @@ public class FileStatuses {
     public String toString(){
         return "ClassPojo [FileStatus = "+FileStatus+"]";
     }
+    
 }
