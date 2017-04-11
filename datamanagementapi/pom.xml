@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.csi.yucca.storage.datamanagementapi</groupId>
 	<artifactId>datamanagementapi</artifactId>
-	<version>1.6.0-001</version>
+	<version>1.6.0-002</version>
 	<packaging>war</packaging>
 	<name>datamanagementapi</name>
 
