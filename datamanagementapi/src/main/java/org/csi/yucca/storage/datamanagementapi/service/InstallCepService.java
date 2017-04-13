@@ -512,7 +512,7 @@ public class InstallCepService {
 				while (datasets.hasNext()) {
 					DBObject datasetCurrent =  datasets.next();
 					String apiName = (String) datasetCurrent.get("datasetCode");
-					String idDatasetCurrent =  (String) datasetCurrent.get("idDataset");
+					String idDatasetCurrent =  ""+ datasetCurrent.get("idDataset");
 					Exception errorOnRemove=null;
 					if (apiName != null) {
 						apiName += "_odata";
