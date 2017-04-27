@@ -512,6 +512,7 @@ public class InstallCepService {
 				while (datasets.hasNext()) {
 					DBObject datasetCurrent =  datasets.next();
 					String apiName = (String) datasetCurrent.get("datasetCode");
+					String datasetcode=apiName;
 					String idDatasetCurrent =  ""+ datasetCurrent.get("idDataset");
 					Exception errorOnRemove=null;
 					if (apiName != null) {
@@ -525,7 +526,9 @@ public class InstallCepService {
 						//SOLR
 						CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
 						solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
-						UpdateResponse resp = solrServer.deleteById(""+idDatasetCurrent);
+						UpdateResponse resp = solrServer.deleteById(""+datasetcode);
+						//UpdateResponse resp = solrServer.deleteById(""+idDatasetCurrent);
+						
 						solrServer.commit();
 						log.info("[InstallCepService::deleteDatasetLogically] deleted status" + resp.getStatus());
 							
