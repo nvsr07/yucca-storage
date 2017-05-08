@@ -16,7 +16,6 @@ import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
 
 public class Metadata extends AbstractEntity {
 

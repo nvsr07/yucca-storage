@@ -1,6 +1,9 @@
 
 package org.csi.yucca.storage.datamanagementapi.model.tenantout;
 
+import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
+
+import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 
 public class TenantOut {
@@ -68,6 +71,12 @@ public class TenantOut {
     @Expose
     private String userFirstName;
     
+    
+    public static TenantOut fromJson(String json) {
+		Gson gson = JSonHelper.getInstance();
+		return gson.fromJson(json, TenantOut.class);
+	}
+
     public String getOrganizationCode() {
 		return organizationCode;
 	}

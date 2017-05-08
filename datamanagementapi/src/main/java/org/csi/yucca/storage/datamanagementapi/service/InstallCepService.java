@@ -29,16 +29,15 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.delegate.HttpDelegate;
 import org.csi.yucca.storage.datamanagementapi.mail.SendHTMLEmail;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
-import org.csi.yucca.storage.datamanagementapi.model.metadata.SearchEngineMetadata;
 import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.POJOStreams;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
+import org.csi.yucca.storage.datamanagementapi.model.tenantout.TenantOut;
 import org.csi.yucca.storage.datamanagementapi.model.types.FileStatus;
 import org.csi.yucca.storage.datamanagementapi.model.types.POJOHdfs;
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
@@ -255,8 +254,21 @@ public class InstallCepService {
 			}
 
 			URL_DataDomain = metadataLoaded.getInfo().getDataDomain();
+			log.info("[InstallCepService::deleteHDFSData]     tenant " + tenant);			
 
-			apiBaseUrl = Config.getInstance().getApiKnoxSDNETUrl() + new String(tenant).toUpperCase() + "/rawdata/" + URL_DataDomain + "/" + typeDirectory + "/" + subTypeDirectory;
+			DBObject query = new BasicDBObject();
+			query.put("tenantCode", tenant);
+			DBCollection colTenant = db.getCollection(Config.getInstance().getCollectionSupportTenant());
+
+			DBObject data = colTenant.findOne(query);
+			log.info("[InstallCepService::deleteHDFSData]     data " + data);			
+
+			TenantOut tenantLoaded = TenantOut.fromJson(JSON.serialize(data));
+			String tenantOrganization = tenantLoaded.getOrganizationCode();
+			
+			log.info("[InstallCepService::deleteHDFSData]     tenantOrganization " + tenantOrganization);			
+
+			apiBaseUrl = Config.getInstance().getApiKnoxSDNETUrl() + tenantOrganization.toUpperCase() + "/rawdata/" + URL_DataDomain + "/" + typeDirectory + "/" + subTypeDirectory;
 			HttpClient client = HttpClientBuilder.create().build();
 			HttpGet httpget = new HttpGet(apiBaseUrl + "?op=LISTSTATUS");
 			// Settata la http GET, setto le credenziali di KNOX!
