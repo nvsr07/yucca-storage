@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.csi.yucca.storage.datamanagementapi</groupId>
 	<artifactId>datamanagementapi</artifactId>
-	<version>1.6.0-001</version>
+	<version>1.6.0-003</version>
 	<packaging>war</packaging>
 	<name>datamanagementapi</name>
 
@@ -279,6 +279,66 @@
 				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/int/</webXmlPath>
 			</properties>
 		</profile>
+		
+		<profile>
+			<id>pochdp</id>
+			<build>
+				<plugins>
+				 <plugin>
+			        <groupId>org.apache.maven.plugins</groupId>
+			        <artifactId>maven-scm-plugin</artifactId>
+			        <version>1.9.5</version>
+			        <configuration>
+			          <connectionType>connection</connectionType>
+			        </configuration>
+			        <executions>
+			        	<execution>
+			        		<id>1</id>
+			        		<phase>validate</phase>
+				            <goals>
+				              <goal>checkout</goal>
+				            </goals>
+				          </execution>
+				    </executions>
+			      </plugin>
+				  <plugin>
+                    <groupId>com.lazerycode.jmeter</groupId>
+                    <artifactId>jmeter-maven-plugin</artifactId>
+                    <version>2.0.3</version>
+                    <executions>
+                        <execution>
+                            <id>jmeter-tests</id>
+                            <goals>
+                                <goal>jmeter</goal>
+                            </goals>
+                            <configuration>
+                             <customPropertiesFiles>
+                                    <file>${project.build.directory}/checkout/datamangement/test/jmeter/services.properties</file>
+                             </customPropertiesFiles>
+                             </configuration>
+                        </execution>
+                    </executions>
+                  </plugin>			      			
+				</plugins>
+				<resources>
+					<resource>
+						<directory>${project.build.directory}/checkout/datamangement/resources/pochdp</directory>
+					</resource>
+					<resource>
+						<directory>conf</directory>
+						<targetPath>.</targetPath>
+					</resource>
+				</resources>
+				<testResources>
+					<testResource>
+						<directory>${project.build.directory}/checkout/datamangement/test/pochdp</directory>
+					</testResource>
+				</testResources>
+			</build>
+			<properties>
+				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/pochdp/</webXmlPath>
+			</properties>
+		</profile>		
 		<profile>
 			<id>prod</id>
 			<build>
