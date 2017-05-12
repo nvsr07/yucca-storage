@@ -1,23 +1,31 @@
 package org.csi.yucca.storage.datamanagementapi.importutil;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
@@ -37,42 +45,10 @@ public class ImportFromCSV {
 
 	public static void main(String[] args) throws IOException, TemplateException {
 
-//		// Read list of TAG
-//		Map<String, String> tagMap = null;
-//		try {
-//			tagMap = readTagMap();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return;
-//		}
-//
-//		// template free
-//		Metadata metadata = new Metadata();
-//		Info info =new Info();
-//		info.setDatasetName("provba");
-//		info.setDescription("desc");
-//		info.setLicense("ss");
-//		info.setRequestorName("c");
-//		info.setRequestorSurname("c");
-//		info.setRequestornEmail("c");
-//		info.setDataDomain("dd");
-//		info.setCodSubDomain("dd");
-//		Tag tag1 = new Tag();
-//		tag1.setTagCode("TAG1");
-//		Tag tag2 = new Tag();
-//		tag2.setTagCode("TAG2");
-//		Tag tag3 = new Tag();
-//		tag3.setTagCode("TAG3");
-//		
-//		
-//		info.setTags(new Tag[]{tag1,tag2,tag3});
-//		
-//		metadata.setInfo(info);
-//		
-//		
-//		String json = getMergeTemplate(metadata,"datasetCreationTemplate.ftlh");
-		
-		//System.out.println(json);
+		if (args==null || args.length==0){
+			System.out.println("Use java -jar dataman-import.jar <url>");
+			System.exit(1);
+		}
 		
 		
 		Map<String,Field[]> campi=readFileds();
@@ -91,18 +67,28 @@ public class ImportFromCSV {
 				
 				
 				CloseableHttpClient httpclient = HttpClients.createDefault();
-				HttpPost postMethod = new HttpPost("http://int-sdnet-intapi.sdp.csi.it:90/datamanagementapi/api/dataset/tst_regpie/");
+				HttpPost postMethod = new HttpPost(args[0]);
 				
-//				postMethod.setHeader("Content-type", "application/json");
+				//postMethod.setHeader("Content-type", "multipart/form-data;charset=UTF-8");
 //				StringEntity requestEntity = new StringEntity(json);
 //				  postMethod.setEntity(requestEntity);
 				
 				
 				
-				ByteArrayBody body = new ByteArrayBody(json.getBytes(),ContentType.APPLICATION_JSON,"body");
-				MultipartEntity entity = new MultipartEntity();
-				FormBodyPart fbp=new FormBodyPart("dataset", body);
-				entity.addPart( fbp);
+//				ContentBody  body = new ByteArrayBody(json.getBytes(),ContentType.APPLICATION_JSON,"body");
+				//ContentBody  body = new ByteArrayBody(new String(json.getBytes("UTF-8"), "iso-8859-1").getBytes(),ContentType.APPLICATION_JSON,"body");
+				//ContentBody  body = new ByteArrayBody(new String(json.getBytes("Cp1252"), "iso-8859-1").getBytes(),ContentType.APPLICATION_JSON,"body");
+
+				ContentBody  body =  new StringBody(new String(json.getBytes(), "iso-8859-1"), ContentType.APPLICATION_JSON);
+				
+				MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+				builder.setCharset(Charset.forName("UTF-8"));
+				builder.addPart("dataset", body);
+				HttpEntity entity = builder.build();
+				
+	//qui			MultipartEntity entity = new MultipartEntity();
+	//qui			FormBodyPart fbp=new FormBodyPart("dataset", body);
+	//qui			entity.addPart( fbp);
 				//entity.addPart("encoding", "UTF-8");
 				postMethod.setEntity(entity);
 //				ArrayList<BasicNameValuePair> pairs = new ArrayList<BasicNameValuePair>();
@@ -231,7 +217,11 @@ public class ImportFromCSV {
 	private static List<Metadata> readDataset(Map<String, String> tagsDecode, Map<String,Field[]> campiDecode)  throws FileNotFoundException, IOException {
 		List<Metadata> ret = new ArrayList<Metadata>();
 		
-		CSVReader reader = new CSVReader(new FileReader("toimport/Mapping datasets da dati piemonte a SDP_V05_2_last.csv"), ';', '\"', 1);
+		//CSVReader reader = new CSVReader(new FileReader("toimport/Mapping datasets da dati piemonte a SDP_V05_2_last.csv"), ';', '\"', 1);
+		
+		CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream("toimport/Mapping datasets da dati piemonte a SDP_V05_2_last.csv"), "UTF-8"), ';', '\"', 1);
+		//CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream("toimport/Mapping datasets da dati piemonte a SDP_V05_2_last.csv"), "Cp1252"), ';', '\"', 1);
+		
 		List<String[]> myEntries = reader.readAll();
 		if (myEntries == null || myEntries.size() <= 1) {
 			System.out.println("No dataset");
