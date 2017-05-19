@@ -50,7 +50,29 @@ public class TenantFiller {
 		tout.setArchiveMeasuresCollectionName("archivemeasures");
 		
 		
+		//SOLR
+		tout.setDataSolrCollectionName(tenant.getDataSolrCollectionName());
+		tout.setMeasuresSolrCollectionName(tenant.getMeasuresSolrCollectionName());
+		tout.setSocialSolrCollectionName(tenant.getSocialSolrCollectionName());
+		tout.setMediaSolrCollectionName(tenant.getMediaSolrCollectionName());
+
+		//PHOENIX
+		tout.setMediaPhoenixTableName(tenant.getMediaPhoenixTableName());
+		tout.setMediaPhoenixSchemaName(tenant.getMediaPhoenixSchemaName());
 		
+		tout.setSocialPhoenixTableName(tenant.getSocialPhoenixTableName());
+		tout.setSocialPhoenixSchemaName(tenant.getSocialPhoenixSchemaName());
+		
+		tout.setDataPhoenixTableName(tenant.getDataPhoenixTableName());
+		tout.setDataPhoenixSchemaName(tenant.getDataPhoenixSchemaName());
+		
+		tout.setMeasuresPhoenixTableName(tenant.getMeasuresPhoenixTableName());
+		tout.setMeasuresPhoenixSchemaName(tenant.getMeasuresPhoenixSchemaName());
+		
+		
+		
+		tout.setMaxOdataResultPerPage(tenant.getMaxOdataResultPerPage());
+ 		
 		return tout;
 	}
 	

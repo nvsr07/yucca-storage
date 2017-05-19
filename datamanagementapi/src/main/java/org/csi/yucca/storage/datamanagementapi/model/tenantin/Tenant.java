@@ -44,7 +44,154 @@ public class Tenant {
     @Expose
     private String userFirstName;
 
-	/**
+
+    
+    
+    @Expose
+    private String dataSolrCollectionName;
+    @Expose
+    private String measuresSolrCollectionName;
+    @Expose
+    private String socialSolrCollectionName;
+    @Expose
+    private String mediaSolrCollectionName;
+ 
+
+	@Expose
+    private String mediaPhoenixSchemaName;
+    @Expose
+    private String mediaPhoenixTableName;
+    @Expose
+    private String dataPhoenixSchemaName;
+    @Expose
+    private String dataPhoenixTableName;
+    @Expose
+    private String socialPhoenixSchemaName;
+    @Expose
+    private String socialPhoenixTableName;
+    @Expose
+    private String measuresPhoenixSchemaName;
+    @Expose
+    private String measuresPhoenixTableName;
+	@Expose
+    private Integer maxOdataResultPerPage;
+    
+    
+    
+    
+    
+	   public String getDataSolrCollectionName() {
+			return dataSolrCollectionName;
+		}
+
+		public void setDataSolrCollectionName(String dataSolrCollectionName) {
+			this.dataSolrCollectionName = dataSolrCollectionName;
+		}
+
+		public String getMeasuresSolrCollectionName() {
+			return measuresSolrCollectionName;
+		}
+
+		public void setMeasuresSolrCollectionName(String measuresSolrCollectionName) {
+			this.measuresSolrCollectionName = measuresSolrCollectionName;
+		}
+
+		public String getSocialSolrCollectionName() {
+			return socialSolrCollectionName;
+		}
+
+		public void setSocialSolrCollectionName(String socialSolrCollectionName) {
+			this.socialSolrCollectionName = socialSolrCollectionName;
+		}
+
+		public String getMediaSolrCollectionName() {
+			return mediaSolrCollectionName;
+		}
+
+		public void setMediaSolrCollectionName(String mediaSolrCollectionName) {
+			this.mediaSolrCollectionName = mediaSolrCollectionName;
+		}
+
+		public String getMediaPhoenixSchemaName() {
+			return mediaPhoenixSchemaName;
+		}
+
+		public void setMediaPhoenixSchemaName(String mediaPhoenixSchemaName) {
+			this.mediaPhoenixSchemaName = mediaPhoenixSchemaName;
+		}
+
+		public String getMediaPhoenixTableName() {
+			return mediaPhoenixTableName;
+		}
+
+		public void setMediaPhoenixTableName(String mediaPhoenixTableName) {
+			this.mediaPhoenixTableName = mediaPhoenixTableName;
+		}
+
+		public String getDataPhoenixSchemaName() {
+			return dataPhoenixSchemaName;
+		}
+
+		public void setDataPhoenixSchemaName(String dataPhoenixSchemaName) {
+			this.dataPhoenixSchemaName = dataPhoenixSchemaName;
+		}
+
+		public String getDataPhoenixTableName() {
+			return dataPhoenixTableName;
+		}
+
+		public void setDataPhoenixTableName(String dataPhoenixTableName) {
+			this.dataPhoenixTableName = dataPhoenixTableName;
+		}
+
+		public String getSocialPhoenixSchemaName() {
+			return socialPhoenixSchemaName;
+		}
+
+		public void setSocialPhoenixSchemaName(String socialPhoenixSchemaName) {
+			this.socialPhoenixSchemaName = socialPhoenixSchemaName;
+		}
+
+		public String getSocialPhoenixTableName() {
+			return socialPhoenixTableName;
+		}
+
+		public void setSocialPhoenixTableName(String socialPhoenixTableName) {
+			this.socialPhoenixTableName = socialPhoenixTableName;
+		}
+
+		public String getMeasuresPhoenixSchemaName() {
+			return measuresPhoenixSchemaName;
+		}
+
+		public void setMeasuresPhoenixSchemaName(String measuresPhoenixSchemaName) {
+			this.measuresPhoenixSchemaName = measuresPhoenixSchemaName;
+		}
+
+		public String getMeasuresPhoenixTableName() {
+			return measuresPhoenixTableName;
+		}
+
+		public void setMeasuresPhoenixTableName(String measuresPhoenixTableName) {
+			this.measuresPhoenixTableName = measuresPhoenixTableName;
+		}
+
+		public Integer getMaxOdataResultPerPage() {
+			return maxOdataResultPerPage;
+		}
+
+		public void setMaxOdataResultPerPage(Integer maxOdataResultPerPage) {
+			this.maxOdataResultPerPage = maxOdataResultPerPage;
+		}    
+    
+    
+    
+    
+    
+    
+    
+    
+    /**
      * 
      * @return
      *     The organizationCode
