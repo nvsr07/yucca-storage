@@ -55,6 +55,12 @@ public class Config {
 	public static final String SDP_SOLR_URL = "SDP_SOLR_URL";
 	public static final String SDP_SOLR_COLLECTION = "SDP_SOLR_COLLECTION";
 	
+	public static final String SOLR_PASSWORD = "SOLR_PASSWORD";
+	public static final String SOLR_USERNAME = "SOLR_USERNAME";
+	public static final String SOLR_TYPE_ACCESS = "SOLR_TYPE_ACCESS";
+	
+	
+	
 	
 
 	public static final String DATA_INSERT_BASE_URL = "DATA_INSERT_BASE_URL";
@@ -109,15 +115,24 @@ public class Config {
 		params.put(SDP_SOLR_URL, rb.getString(SDP_SOLR_URL));
 		params.put(SDP_SOLR_COLLECTION, rb.getString(SDP_SOLR_COLLECTION));
 		
+		params.put(SOLR_USERNAME, rb.getString(SOLR_USERNAME));
+		params.put(SOLR_TYPE_ACCESS, rb.getString(SOLR_TYPE_ACCESS));
 
+
+		
+		
 		ResourceBundle rbSecret = ResourceBundle.getBundle("SDPDataApiSecret");
 		params.put(MONGO_PASSWORD, rbSecret.getString(MONGO_PASSWORD));
 		params.put(STORE_USERNAME, rbSecret.getString(STORE_USERNAME));
 		params.put(STORE_PASSWORD, rbSecret.getString(STORE_PASSWORD));
 		params.put(KNOX_USER, rbSecret.getString(KNOX_USER));
 		params.put(KNOX_PWD, rbSecret.getString(KNOX_PWD));
+		params.put(SOLR_PASSWORD, rbSecret.getString(SOLR_PASSWORD));
 	}
 
+	
+	
+	
 	public static Config getInstance() {
 		if (instance == null) {
 			instance = new Config();
@@ -125,6 +140,30 @@ public class Config {
 		return instance;
 	}
 
+	
+	
+	
+	
+	public String getSolrTypeAccess() {
+		return (params.get("SOLR_TYPE_ACCESS") != null ? params.get("SOLR_TYPE_ACCESS") : "");
+	}
+	
+	public String getSolrUsername(){
+		return (params.get("SOLR_USERNAME") != null ? params.get("SOLR_USERNAME") : "");
+		
+	}
+	
+	public String getSolrPassword() {
+		return (params.get("SOLR_PASSWORD") != null ? params.get("SOLR_PASSWORD") : "");
+		
+	}
+	
+	
+	
+	
+	
+	
+	
 	public String getSolrUrl() {
 		return params.get(SDP_SOLR_URL);
 	}	

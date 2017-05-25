@@ -27,7 +27,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.SolrClient;
+
 import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
@@ -40,6 +41,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tag;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
@@ -598,13 +600,21 @@ DBObject findStream = new BasicDBObject();
 		newdocument.setupEngine(metadatan);
 		Gson gson = JSonHelper.getInstance();
 		String newJsonDoc= gson.toJson(newdocument);
-		//addStream.setVar("content", newJsonDoc);
-		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
-		solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+
+		
+		
+//		CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
+//		solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 		SolrInputDocument doc = newdocument.getSolrDocument();
-		//doc.addField("id", ""+System.currentTimeMillis());
 		
-		
+		SolrClient solrServer = null;
+		if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess()))
+		{
+			solrServer = KnoxSolrSingleton.getServer();
+		}
+		else {
+			solrServer = CloudSolrSingleton.getServer();
+		}
 		
 		log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
 
@@ -738,9 +748,19 @@ DBObject findStream = new BasicDBObject();
 				newdocument.setupEngine(pojoStreams2.getStreams().getStream());
 				String newJsonDoc= gson.toJson(newdocument);
 				//addStream.setVar("content", newJsonDoc);
-				CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
+				//CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
 				//solrServer.setDefaultCollection("sdp_int_metasearch2");
-				solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+				//solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+				
+				SolrClient solrServer = null;
+				if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess()))
+				{
+					solrServer = KnoxSolrSingleton.getServer();
+				}
+				else {
+					solrServer = CloudSolrSingleton.getServer();
+				}
+				
 				
 				SolrInputDocument doc = newdocument.getSolrDocument();
 				//doc.addField("id", ""+System.currentTimeMillis());

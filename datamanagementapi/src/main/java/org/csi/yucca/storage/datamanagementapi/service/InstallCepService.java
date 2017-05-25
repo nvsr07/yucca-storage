@@ -27,7 +27,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.delegate.HttpDelegate;
@@ -42,6 +42,7 @@ import org.csi.yucca.storage.datamanagementapi.model.types.FileStatus;
 import org.csi.yucca.storage.datamanagementapi.model.types.POJOHdfs;
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
@@ -61,6 +62,9 @@ import com.mongodb.util.JSON;
 @Path("/metadata")
 public class InstallCepService {
 
+	
+	SolrClient server = null;
+	
 	private static final Integer MAX_RETRY = 5;
 	MongoClient mongo;
 	private static final String OK_RESULT = "{OK:1}";
@@ -536,9 +540,19 @@ public class InstallCepService {
 							errorOnRemove = ex;
 						}
 						//SOLR
-						CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
-						solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
-						UpdateResponse resp = solrServer.deleteById(""+datasetcode);
+						SolrClient solrServer = null;
+						if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess()))
+						{
+							solrServer = KnoxSolrSingleton.getServer();
+						}
+						else {
+							solrServer = CloudSolrSingleton.getServer();
+						}
+						//solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+						//UpdateResponse resp = solrServer.deleteById(""+datasetcode);
+						UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(),""+datasetcode);
+						
+						
 						//UpdateResponse resp = solrServer.deleteById(""+idDatasetCurrent);
 						
 						solrServer.commit();
@@ -649,9 +663,20 @@ public class InstallCepService {
 					errorOnRemove = ex;
 				}
 				//SOLR
-				CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
-				solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
-				UpdateResponse resp = solrServer.deleteById(""+newStream.getCodiceTenant()+"_"+newStream.getCodiceVirtualEntity()+"_"+newStream.getCodiceStream());
+				//CloudSolrClient solrServer =  CloudSolrSingleton.getServer();
+				//SOLR
+				SolrClient solrServer = null;
+				if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess()))
+				{
+					solrServer = KnoxSolrSingleton.getServer();
+				}
+				else {
+					solrServer = CloudSolrSingleton.getServer();
+				}
+				
+//				solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+//				UpdateResponse resp = solrServer.deleteById(""+newStream.getCodiceTenant()+"_"+newStream.getCodiceVirtualEntity()+"_"+newStream.getCodiceStream());
+				UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(),""+newStream.getCodiceTenant()+"_"+newStream.getCodiceVirtualEntity()+"_"+newStream.getCodiceStream());
 				solrServer.commit();
 				log.info("[InstallCepService::deleteDatasetLogically] deleted status" + resp.getStatus());
 					
