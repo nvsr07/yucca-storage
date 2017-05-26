@@ -28,7 +28,8 @@ import javax.ws.rs.core.MediaType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
-
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
@@ -607,19 +608,23 @@ DBObject findStream = new BasicDBObject();
 //		solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 		SolrInputDocument doc = newdocument.getSolrDocument();
 		
-		SolrClient solrServer = null;
+		 
 		if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess()))
 		{
+			SolrClient solrServer= null;
 			solrServer = KnoxSolrSingleton.getServer();
+			log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
+			solrServer.add(Config.getInstance().getSolrCollection(),doc);
+			solrServer.commit();
 		}
 		else {
-			solrServer = CloudSolrSingleton.getServer();
+			CloudSolrClient solrServer = CloudSolrSingleton.getServer();
+			solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+			log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
+			solrServer.add(Config.getInstance().getSolrCollection(),doc);
+			solrServer.commit();
 		}
 		
-		log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
-
-		solrServer.add(Config.getInstance().getSolrCollection(),doc);
-		solrServer.commit();
 		
 		addStream.run();
 
@@ -752,27 +757,29 @@ DBObject findStream = new BasicDBObject();
 				//solrServer.setDefaultCollection("sdp_int_metasearch2");
 				//solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 				
-				SolrClient solrServer = null;
-				if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess()))
-				{
-					solrServer = KnoxSolrSingleton.getServer();
-				}
-				else {
-					solrServer = CloudSolrSingleton.getServer();
-				}
+
+				
 				
 				
 				SolrInputDocument doc = newdocument.getSolrDocument();
-				//doc.addField("id", ""+System.currentTimeMillis());
 				
 				
+				if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess()))
+				{
+					SolrClient solrServer= null;
+					solrServer = KnoxSolrSingleton.getServer();
+					log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
+					solrServer.add(Config.getInstance().getSolrCollection(),doc);
+					solrServer.commit();
+				}
+				else {
+					CloudSolrClient solrServer = CloudSolrSingleton.getServer();
+					solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+					log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
+					solrServer.add(Config.getInstance().getSolrCollection(),doc);
+					solrServer.commit();
+				}
 				
-				log.info("[StoreService::createStream] - ---------------------" + doc.toString());
-
-				solrServer.add(Config.getInstance().getSolrCollection(),doc);
-				solrServer.commit();
-						
-		
 		
 		addStream.run();
 		return true;
