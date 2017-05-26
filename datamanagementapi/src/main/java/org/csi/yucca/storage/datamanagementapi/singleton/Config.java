@@ -59,6 +59,7 @@ public class Config {
 	public static final String SOLR_USERNAME = "SOLR_USERNAME";
 	public static final String SOLR_TYPE_ACCESS = "SOLR_TYPE_ACCESS";
 	
+	public static final String SOLR_SECURITY_DOMAIN_NAME = "SOLR_SECURITY_DOMAIN_NAME";
 	
 	
 	
@@ -117,6 +118,7 @@ public class Config {
 		
 		params.put(SOLR_USERNAME, rb.getString(SOLR_USERNAME));
 		params.put(SOLR_TYPE_ACCESS, rb.getString(SOLR_TYPE_ACCESS));
+		params.put(SOLR_SECURITY_DOMAIN_NAME, rb.getString(SOLR_SECURITY_DOMAIN_NAME));
 
 
 		
@@ -144,6 +146,9 @@ public class Config {
 	
 	
 	
+	public String getSolrSecurityDomainName() {
+		return (params.get(SOLR_SECURITY_DOMAIN_NAME) != null ? params.get(SOLR_SECURITY_DOMAIN_NAME) : "");
+	}
 	public String getSolrTypeAccess() {
 		return (params.get("SOLR_TYPE_ACCESS") != null ? params.get("SOLR_TYPE_ACCESS") : "");
 	}
