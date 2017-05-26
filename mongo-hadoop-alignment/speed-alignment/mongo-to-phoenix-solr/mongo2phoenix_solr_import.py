@@ -31,10 +31,13 @@ Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
 Pig.registerJar("../lib/yucca-phoenix-pig.jar")
 Pig.registerJar("/usr/hdp/current/pig-client/piggybank.jar")
 
-props = util.Properties()
-#add try catch for this
-propertiesfis = javaio.FileInputStream(paramFile)
-props.load(propertiesfis)
+try:
+    props = util.Properties()
+    propertiesfis =javaio.FileInputStream("mongo_parameters_prod.txt")
+    props.load(propertiesfis)
+except:
+    print "Errore leggendo mongo_parameters_prod.txt: ", sys.exc_info()[0]
+    sys.exit(1)
 
 mongo1 = props.getProperty('mongoHost') + ":" + props.getProperty('mongoPort') + "/DB_SUPPORT"
 mongo2 = " -u " + props.getProperty('mongoUsr')

@@ -3,15 +3,6 @@ from math import floor
 import datetime
 import time
 
-def timeToSolrTime(param):
-    return "ToString(" + param + ", 'yyyy-MM-dd HH:mm:ss.SSSZ')"
-
-def isTimeType(dataType):
-    if dataType in ['data', 'date', 'datetimeOffset', 'dateTime', 'time']:
-        return True
-    else:
-        return False
-
 def dateToObjectId(dateString):
     dt = datetime.datetime.strptime(dateString, '%Y/%m/%d')
     deltat = dt - datetime.datetime(1970,1,1)
@@ -71,6 +62,23 @@ dataType2Phoenix = {
     'binary' : 'varchar'
 }
 
+dataType2Avro = {
+    'boolean' : 'boolean',
+    'string' : 'string',
+    'int' : 'int',
+    'long' : 'long',
+    'double' : 'double',
+    'data' : 'timestamp-millis',
+    'date' : 'timestamp-millis',
+    'datetimeOffset' : 'timestamp-millis',
+    'dateTime' : 'timestamp-millis',
+    'time' : 'timestamp-millis',
+    'float' : 'float',
+    'longitude' : 'double',
+    'latitude' : 'double',
+    'binary' : 'string'
+}
+
 mongoFields = {
     'bulkDataset' : "(chararray)$0#'_id', (int)$0#'idDataset', (int)$0#'datasetVersion'",
     'streamDataset' : "(chararray)$0#'_id', (int)$0#'idDataset', (int)$0#'datasetVersion', (datetime)$0#'time', (chararray)$0#'sensor', (chararray)$0#'streamCode'",
@@ -78,11 +86,11 @@ mongoFields = {
     'binaryDataset' : "(chararray)$0#'_id', (int)$0#'idDataset', (int)$0#'datasetVersion'"
 }
 
-pigSchema = {
-    'bulkDataset' : 'id:chararray, idDataset_l:int, datasetVersion_l:int',
-    'streamDataset' : 'id:chararray, idDataset_l:int, datasetVersion_l:int, time_dt:datetime, sensor_s:chararray, streamCode_s:chararray',
-    'socialDataset' : 'id:chararray, idDataset_l:int, datasetVersion_l:int, time_dt:datetime, sensor_s:chararray, streamCode_s:chararray',
-    'binaryDataset' : 'id:chararray, idDataset_l:int, datasetVersion_l:int'
+pigSchemaExport = {
+    'bulkDataset' : '',
+    'streamDataset' : 'time:chararray, ',
+    'socialDataset' : 'time:chararray, ',
+    'binaryDataset' : ''
 }
 
 phoenixColumns = {
@@ -92,28 +100,14 @@ phoenixColumns = {
     'binaryDataset' : 'ID,IDDATASET_L,DATASETVERSION_L'
 }
 
-solrFields = {
-    'bulkDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2",
-    'streamDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt'," + timeToSolrTime("$3") + ", 'sensor_s', $4, 'streamCode_s', $5",
-    'socialDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2, 'time_dt'," + timeToSolrTime("$3") + ", 'sensor_s', $4, 'streamCode_s', $5",
-    'binaryDataset' : "$0 as id, 'idDataset_l', $1, 'datasetVersion_l', $2"
+phoenixExportColumns = {
+    'bulkDataset' : '',
+    'streamDataset' : 'TO_CHAR(TIME_DT), ',
+    'socialDataset' : 'TO_CHAR(TIME_DT), ',
+    'binaryDataset' : ''
 }
 
-solrFieldsNum = { 
-    'bulkDataset' : 3,
-    'streamDataset' : 6,
-    'socialDataset' : 6,
-    'binaryDataset' : 3
-}
-
-sanitizedFields = {
-    'bulkDataset' : "id, idDataset_l, datasetVersion_l", 
-    'streamDataset' : "id, idDataset_l, datasetVersion_l, time_dt, sensor_s, streamCode_s",
-    'socialDataset' : "id, idDataset_l, datasetVersion_l, time_dt, sensor_s, streamCode_s",
-    'binaryDataset' : "id, idDataset_l, datasetVersion_l"
-}
-
-collectionName = collectionDb = phoenixSchemaName = phoenixTableName = solrCollectionName =  {
+collectionName = collectionDb = phoenixSchemaName = phoenixTableName =  {
     'bulkDataset' : '',
     'streamDataset' : '',
     'socialDataset' : '',

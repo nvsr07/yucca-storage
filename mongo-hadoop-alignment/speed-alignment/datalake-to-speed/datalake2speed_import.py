@@ -2,9 +2,9 @@
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath('__file__') ) ) )
-import globalVars 
+import globalVars
 from org.apache.pig.scripting import Pig
-
+from subprocess import call
 
 tenantCode = sys.argv[1]
 mode = sys.argv[2]
@@ -14,7 +14,21 @@ mode = sys.argv[2]
 
 globalVars.init(tenantCode)
 
+# read properties file
+import java.util as util
+import java.io as javaio
 
+props = util.Properties()
+#add try catch for this
+propertiesfis =javaio.FileInputStream("mongo_parameters_prod.txt")
+props.load( propertiesfis)
+
+
+mongo1 = props.getProperty('mongoHost')+":"+props.getProperty('mongoPort')+"/DB_SUPPORT"
+mongo2 = " -u "+props.getProperty('mongoUsr')
+mongo3 = " -p "+props.getProperty('mongoPwd')+''' --authenticationDatabase admin  --quiet --eval "'''
+
+# var param1=438; var param2=1; var param3='datalake'" delete_dataset.js
 
 Pig.registerJar("../lib/mongo-java-driver-3.4.0.jar")
 Pig.registerJar("../lib/mongo-hadoop-core-1.5.2.jar")
@@ -22,18 +36,20 @@ Pig.registerJar("../lib/mongo-hadoop-pig-1.5.2.jar")
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
 #Pig.registerJar("../lib/yucca-phoenix-pig.jar")
 
+
+
 if mode in ["APPEND", "append"]:
-        # read from metadata source (mongoDB) lastIdDatalake2Speed for tenant
-        readLastIdJob = Pig.compileFromFile("""read_mongo_lastIdDatalake2Speed.pig""")
-        results = readLastIdJob.bind({'tenantCode':tenantCode }).runSingle()
-        if results.isSuccessful():
-                print "Pig job succeeded"
-                iter = results.result("lastId").iterator()
-                if iter.hasNext():
-                        lastId = iter.next()
-                        print "lastId: " + str(lastId)
-        else:
-                raise "Pig job failed"
+    # read from metadata source (mongoDB) lastIdDatalake2Speed for tenant
+    readLastIdJob = Pig.compileFromFile("""read_mongo_lastIdDatalake2Speed.pig""")
+    results = readLastIdJob.bind({'tenantCode':tenantCode }).runSingle()
+    if results.isSuccessful():
+        print "Pig job succeeded"
+        iter = results.result("lastId").iterator()
+        if iter.hasNext():
+            lastId = iter.next()
+            print "lastId: " + str(lastId)
+    else:
+        raise "Pig job failed"
 
 # read from metadata source (mongoDB) all datasets with
 # availableSpeed = true
@@ -58,23 +74,31 @@ if results.isSuccessful():
         fields = info['fields']
         fieldsIt = fields.iterator()
         aliasString = ''
+        mongoFields = ''
         i = 0
         while fieldsIt.hasNext():
-                field = fieldsIt.next()
-                name = field['fieldName']
-                value = field['dataType']
-                aliasString = aliasString + '$' + str(i) +' as '+ name
-                i = i + 1
-                if fieldsIt.hasNext():
-                        aliasString = aliasString + ","
-        print aliasString
-        copyHive2Mongo = Pig.compileFromFile("""copy_hive2mongo.pig""")
-        results = copyHive2Mongo.bind({'aliasString':aliasString,'idDataset':idDataset, 'datasetVersion':datasetVersion, 'hiveSchema':hiveSchema, 'hiveTable':hiveTable, 'tenantCode':tenantCode, 'collection':globalVars.collectionName[subtype] }).runSingle()
+            field = fieldsIt.next()
+            name = field['fieldName']
+            value = field['dataType']
+            aliasString = aliasString +'$'+ str(i) +' as '+ name
+            mongoFields = mongoFields + name + ":chararray "
+            i = i + 1
+            if fieldsIt.hasNext():
+                aliasString = aliasString + ','
+                mongoFields = mongoFields + ', '
+        aliasString = aliasString + ''', com.mongodb.hadoop.pig.udf.ToObjectId(bda_id) as bda_id, $'''+str(i+1)+'  as origin'
+        mongoFields = mongoFields + ', bda_id:chararray, origin:chararray, idDataset:long, datasetVersion:long'
+# erase data from mongoDB (origin==datalake)
+        if mode in ["REPLACE", "replace"]:
+            call("mongo " + mongo1 +" "+ mongo2 + " " +mongo3 + " var param1="+str(idDataset)+"; var param2="+str(datasetVersion)+'''; var param3='datalake'"'''+ " " + ''' ../delete_mongo_dataset.js''',shell = True)
+
+        copyHive2MongoJob = Pig.compileFromFile("""copy_hive2mongo.pig""")
+        #print aliasString
+        results = copyHive2MongoJob.bind({'mongoFields':mongoFields,'aliasString':aliasString, 'idDataset':idDataset, 'datasetVersion':datasetVersion, 'hiveSchema':hiveSchema, 'hiveTable':hiveTable, 'tenantCode':tenantCode, 'collection':globalVars.collectionName[subtype] }).runSingle()
         if results.isSuccessful():
-                print "Datalake ---> Speed Done!"
+            print "Datalake ---> Speed Done!"
         else:
-                raise "Pig job failed"
+            raise "Pig job failed"
 
 else:
     raise "Pig job failed"
-        

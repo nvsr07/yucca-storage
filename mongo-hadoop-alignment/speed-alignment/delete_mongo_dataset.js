@@ -33,5 +33,5 @@ while (listColl.hasNext()) {
 print("Tenant:"+myTenant);
 
 dbTenant = db.getSiblingDB("DB_"+myTenant);
-dbTenant.getCollection(nomeColl).remove({idDataset:env.DATASET,datasetVersion:env.VERSION,origin:env.ORIGIN});
-print('dbTenant.getCollection("'+nomeColl+'").remove({idDataset:'+env.DATASET+',datasetVersion:'+env.VERSION+',origin:"'+env.ORIGIN+'"});');
+dbTenant.getCollection(nomeColl).remove({idDataset:env.DATASET,datasetVersion:env.VERSION,origin:env.ORIGIN},{writeConcern:{w: 'majority',j:true}});
+print('DB_'+myTenant+'.getCollection("'+nomeColl+'").remove({idDataset:'+env.DATASET+',datasetVersion:'+env.VERSION+',origin:"'+env.ORIGIN+'"});');
