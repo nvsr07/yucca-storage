@@ -1,22 +1,36 @@
 package org.csi.yucca.storage.datamanagementapi.singleton;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.apache.solr.client.solrj.ResponseParser;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.util.Base64;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.Utils;
 public class KnoxSolrSingleton {
 	private SolrClient server;
 
@@ -82,18 +96,22 @@ public class KnoxSolrSingleton {
 		public NamedList<Object> request(final SolrRequest request, final ResponseParser processor, String collection)
 				throws SolrServerException, IOException {
 			
-			System.out.println("**********************   " +request.getPath() + "              " +collection);
 			
 			
 			HttpRequestBase method = createMethod(request, collection);
+			System.out.println("**********************   " +request.getPath() + "              " +collection);
+			System.out.println("**********************   " +method.getURI());
+			
 			String userPass = Config.getInstance().getSolrUsername()+":"+Config.getInstance().getSolrPassword();
 			String encoded = Base64.byteArrayToBase64(userPass.getBytes(UTF_8));
 			// below line will make sure that it sends authorization token every time in all your requests
 			method.setHeader(new BasicHeader("Authorization", "Basic " + encoded));
 			return executeMethod(method, processor);
 		}
-
 	}
+	
+	
+	
 
 
 
