@@ -613,7 +613,13 @@ DBObject findStream = new BasicDBObject();
 		{
 			SolrClient solrServer= null;
 			solrServer = KnoxSolrSingleton.getServer();
-			log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
+			log.info("[StoreService::createApiForBulk] - --KNOX------" + doc.toString());
+			log.info("[StoreService::createApiForBulk] - --user------" + Config.getInstance().getSolrUsername());
+			log.info("[StoreService::createApiForBulk] - --pwd------" + Config.getInstance().getSolrPassword());
+			log.info("[StoreService::createApiForBulk] - --collection------" + Config.getInstance().getSolrCollection());
+			
+ 
+			
 			solrServer.add(Config.getInstance().getSolrCollection(),doc);
 			solrServer.commit();
 		}
