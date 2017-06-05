@@ -45,6 +45,7 @@ import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton.TEHttpSolrClient;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -620,7 +621,7 @@ DBObject findStream = new BasicDBObject();
 			log.info("[StoreService::createApiForBulk] - --collection------" + Config.getInstance().getSolrCollection());
 			
  
-			
+			((TEHttpSolrClient)solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
 			solrServer.add(Config.getInstance().getSolrCollection(),doc);
 			//solrServer.add(doc);
 			solrServer.commit();

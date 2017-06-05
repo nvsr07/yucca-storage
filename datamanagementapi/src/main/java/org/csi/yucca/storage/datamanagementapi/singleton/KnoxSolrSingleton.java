@@ -75,7 +75,15 @@ public class KnoxSolrSingleton {
 	}
 
 
-	private class TEHttpSolrClient extends HttpSolrClient {
+	public class TEHttpSolrClient extends HttpSolrClient {
+
+		
+		private String defaultCollection=null;
+		
+		
+		public void setDefaultCollection(String defaultCollection) {
+			this.defaultCollection = defaultCollection;
+		}
 
 		private  final String UTF_8 = StandardCharsets.UTF_8.name();
 
@@ -90,6 +98,8 @@ public class KnoxSolrSingleton {
 				responseParser = this.parser;
 			}
 			System.out.println("-------------------   " +request.getPath() + "              " +collection);
+			
+			if (collection==null && this.defaultCollection!=null) collection=this.defaultCollection;
 			return request(request, responseParser, collection);
 		}
 
