@@ -73,8 +73,9 @@ public class KnoxSolrSingleton {
 		public NamedList<Object> request(final SolrRequest request, String collection) throws SolrServerException, IOException {
 			ResponseParser responseParser = request.getResponseParser();
 			if (responseParser == null) {
-				responseParser = parser;
+				responseParser = this.parser;
 			}
+			System.out.println("-------------------   " +request.getPath() + "              " +collection);
 			return request(request, responseParser, collection);
 		}
 
