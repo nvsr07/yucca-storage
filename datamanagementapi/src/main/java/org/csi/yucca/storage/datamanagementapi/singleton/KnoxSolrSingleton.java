@@ -106,7 +106,15 @@ public class KnoxSolrSingleton {
 			String encoded = Base64.byteArrayToBase64(userPass.getBytes(UTF_8));
 			// below line will make sure that it sends authorization token every time in all your requests
 			method.setHeader(new BasicHeader("Authorization", "Basic " + encoded));
-			return executeMethod(method, processor);
+			
+			
+			try {
+				return executeMethod(method, processor);
+			} catch (Exception e ) {
+				e.printStackTrace();
+				throw new SolrServerException(e.getMessage());
+			} 
+			
 		}
 	}
 	
