@@ -80,6 +80,10 @@ public class KnoxSolrSingleton {
 
 		public NamedList<Object> request(final SolrRequest request, final ResponseParser processor, String collection)
 				throws SolrServerException, IOException {
+			
+			System.out.println("**********************   " +request.getPath() + "              " +collection);
+			
+			
 			HttpRequestBase method = createMethod(request, collection);
 			String userPass = Config.getInstance().getSolrUsername()+":"+Config.getInstance().getSolrPassword();
 			String encoded = Base64.byteArrayToBase64(userPass.getBytes(UTF_8));
