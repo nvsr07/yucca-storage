@@ -51,6 +51,51 @@ public class Metadata extends AbstractEntity {
 	private String dcatEmailOrg;
 	private String dcatDataUpdate;
 
+	private boolean availableSpeed;
+	private boolean isTransformed;
+	private boolean availableHive;
+	private String dbHiveSchema;
+	private String dbHiveTable;
+
+	public boolean getAvailableSpeed() {
+		return availableSpeed;
+	}
+
+	public void setAvailableSpeed(boolean availableSpeed) {
+		this.availableSpeed = availableSpeed;
+	}
+
+	public boolean getIsTransformed() {
+		return isTransformed;
+	}
+
+	public void setIsTransformed(boolean isTransformed) {
+		this.isTransformed = isTransformed;
+	}
+
+	public boolean getAvailableHive() {
+		return availableHive;
+	}
+
+	public void setAvailableHive(boolean availableHive) {
+		this.availableHive = availableHive;
+	}
+
+	public String getDbHiveSchema() {
+		return dbHiveSchema;
+	}
+
+	public void setDbHiveSchema(String dbHiveSchema) {
+		this.dbHiveSchema = dbHiveSchema;
+	}
+
+	public String getDbHiveTable() {
+		return dbHiveTable;
+	}
+
+	public void setDbHiveTable(String dbHiveTable) {
+		this.dbHiveTable = dbHiveTable;
+	}
 
 	public String getDcatDataUpdate() {
 		return dcatDataUpdate;

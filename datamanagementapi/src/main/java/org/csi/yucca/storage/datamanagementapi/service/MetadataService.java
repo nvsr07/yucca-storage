@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
 import org.csi.yucca.storage.datamanagementapi.exception.MaxDatasetNumException;
+import org.csi.yucca.storage.datamanagementapi.importdatabase.DatabaseReader;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
@@ -84,6 +86,19 @@ public class MetadataService {
 	public static final String IMPORT_BULKDATASET_CSV_SEP_REQ_KEY = "csvSeparator";
 	public static final String IMPORT_BULKDATASET_CSV_SKIP_FIRS_ROW_REQ_KEY = "skipFirstRow";
 	public static final String IMPORT_BULKDATASET_FILE_REQ_KEY = "file";
+
+	// public static final String IMPORT_DATABASE_IMPORT_CONFIG =
+	// "importConfig";
+	public static final String IMPORT_DATABASE_FILE_SQL_KEY = "file";
+	public static final String IMPORT_DATABASE_IMPORT_CONFIG_SOURCE_TYPE_KEY = "sourceType";
+	public static final String IMPORT_DATABASE_IMPORT_CONFIG_DATABASE_TYPE_KEY = "dbType";
+	public static final String IMPORT_DATABASE_IMPORT_CONFIG_JDBC_HOSTNAME_KEY = "jdbc_hostname";
+	public static final String IMPORT_DATABASE_IMPORT_CONFIG_JDBC_DBNAME_KEY = "jdbc_dbname";
+	public static final String IMPORT_DATABASE_IMPORT_CONFIG_JDBC_USERNAME_KEY = "jdbc_username";
+	public static final String IMPORT_DATABASE_IMPORT_CONFIG_JDBC_PASSWORD_KEY = "jdbc_password";
+
+	public static final String IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC = "database";
+	public static final String IMPORT_DATABASE_CONFIG_IMPORT_TYPE_SCRIPT = "script";
 
 	@Context
 	ServletContext context;
@@ -688,20 +703,22 @@ public class MetadataService {
 					 * Create api in the store
 					 */
 					String apiName = "";
-					
+
 					log.info("[MetadataService::createMetadata] - CALL API PUB SOLR");
-					
-					
+
 					try {
-						
-						//SOLR
-						//apiName = StoreService.createApiforBulk(metadata, false, datasetMetadata);
+
+						// SOLR
+						// apiName = StoreService.createApiforBulk(metadata,
+						// false, datasetMetadata);
 						apiName = StoreService.createApiforBulk(metadataCreated, false, datasetMetadata);
 					} catch (Exception duplicate) {
 						if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
 							try {
-								//SOLR
-								//apiName = StoreService.createApiforBulk(metadata, true, datasetMetadata);
+								// SOLR
+								// apiName =
+								// StoreService.createApiforBulk(metadata, true,
+								// datasetMetadata);
 								apiName = StoreService.createApiforBulk(metadataCreated, true, datasetMetadata);
 							} catch (Exception e) {
 								log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
@@ -905,6 +922,12 @@ public class MetadataService {
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
+			
+			newMetadata.setAvailableHive(existingMetadata.getAvailableHive());
+			newMetadata.setAvailableSpeed(existingMetadata.getAvailableSpeed());
+			newMetadata.setIsTransformed(existingMetadata.getIsTransformed());
+			newMetadata.setDbHiveSchema(existingMetadata.getDbHiveSchema());
+			newMetadata.setDbHiveTable(existingMetadata.getDbHiveTable());
 
 			if (newMetadata.getInfo().getVisibility() != existingMetadata.getInfo().getVisibility()) {
 				if (newMetadata.getInfo().getVisibility().equals("public")) {
@@ -1082,4 +1105,97 @@ public class MetadataService {
 		return rows.toString();
 	}
 
+	@GET
+	@Path("/importDatabase")
+	@Produces("application/json; charset=UTF-8")
+	public Response importDatabaseGet(@QueryParam("dbType") String dbType, @QueryParam("sourceType") String sourceType, @QueryParam("jdbc_hostname") String jdbcHostname,
+			@QueryParam("jdbc_dbname") String jdbcDbname, @QueryParam("jdbc_username") String jdbcUsername, @QueryParam("jdbc_password") String jdbcPassword) throws NumberFormatException, UnknownHostException {
+
+		log.debug("[MetadataService::importDatabase] - START");
+		String dbSchema = null;
+		try {
+			dbSchema = importDatabaseJdbc(dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
+		// return dbSchema;
+	}
+
+	// Import Database
+	@POST
+	@Path("/importDatabase")
+	// @Produces(MediaType.APPLICATION_JSON)
+	@Produces("application/json; charset=UTF-8")
+	// allowCredentials = true, exposeHeaders = { "X-custom-3", "X-custom-4" },
+	// allowMethods = {"POST"})
+	public Response importDatabase(@Context HttpServletRequest request) throws NumberFormatException, UnknownHostException {
+
+		log.debug("[MetadataService::importDatabase] - START");
+
+		String dbSchema = null;
+		String dbType = null;
+		String sourceType = null;
+		String jdbcHostname = null;
+		String jdbcDbname = null;
+		String jdbcUsername = null;
+		String jdbcPassword = null;
+
+		FileItemStream scriptItemStream = null;
+		try {
+			ServletFileUpload upload = new ServletFileUpload();
+			FileItemIterator iterator = upload.getItemIterator(request);
+			while (iterator.hasNext()) {
+				FileItemStream item = iterator.next();
+				if (IMPORT_DATABASE_IMPORT_CONFIG_DATABASE_TYPE_KEY.equals(item.getFieldName()))
+					dbType = read(item.openStream());
+				else if (IMPORT_DATABASE_IMPORT_CONFIG_SOURCE_TYPE_KEY.equals(item.getFieldName()))
+					sourceType = read(item.openStream());
+				else if (IMPORT_DATABASE_IMPORT_CONFIG_JDBC_HOSTNAME_KEY.equals(item.getFieldName()))
+					jdbcHostname = read(item.openStream());
+				else if (IMPORT_DATABASE_IMPORT_CONFIG_JDBC_DBNAME_KEY.equals(item.getFieldName()))
+					jdbcDbname = read(item.openStream());
+				else if (IMPORT_DATABASE_IMPORT_CONFIG_JDBC_USERNAME_KEY.equals(item.getFieldName()))
+					jdbcUsername = read(item.openStream());
+				else if (IMPORT_DATABASE_IMPORT_CONFIG_JDBC_PASSWORD_KEY.equals(item.getFieldName()))
+					jdbcPassword = read(item.openStream());
+
+				else if (IMPORT_DATABASE_FILE_SQL_KEY.equals(item.getFieldName())) {
+					// sqlScript = readFileRows(item.openStream(), encoding);
+					scriptItemStream = item;
+					// fileName = item.getName();
+				}
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		try {
+			if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType))
+				dbSchema = importDatabaseJdbc(dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
+			else if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType) && scriptItemStream != null)
+				dbSchema = importDatabaseScript(dbType, scriptItemStream);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
+		// return dbSchema;
+	}
+
+	private String importDatabaseScript(String dbType, FileItemStream scriptItemStream) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private String importDatabaseJdbc(String dbType, String hostname, String dbname, String username, String password) throws ClassNotFoundException, SQLException {
+		DatabaseReader databaseReader = new DatabaseReader(dbType, hostname, dbname, username, password);
+		return databaseReader.loadSchema();
+	}
 }

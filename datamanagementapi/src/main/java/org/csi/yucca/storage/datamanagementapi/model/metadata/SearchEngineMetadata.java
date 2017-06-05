@@ -15,7 +15,6 @@ import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
 
 public class SearchEngineMetadata {
 	private String id;
