@@ -33,7 +33,7 @@ Pig.registerJar("/usr/hdp/current/pig-client/piggybank.jar")
 
 try:
     props = util.Properties()
-    propertiesfis =javaio.FileInputStream("mongo_parameters_prod.txt")
+    propertiesfis =javaio.FileInputStream(paramFile)
     props.load(propertiesfis)
 except:
     print "Errore leggendo mongo_parameters_prod.txt: ", sys.exc_info()[0]
