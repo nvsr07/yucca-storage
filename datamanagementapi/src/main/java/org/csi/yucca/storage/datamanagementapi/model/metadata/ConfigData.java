@@ -3,7 +3,6 @@ package org.csi.yucca.storage.datamanagementapi.model.metadata;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
 
 public class ConfigData extends AbstractEntity {
 

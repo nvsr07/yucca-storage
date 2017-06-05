@@ -352,7 +352,7 @@ public class InstallCepService {
 		mongo = MongoSingleton.getMongoClient();
 
 		Gson gson = JSonHelper.getInstance();
-		log.info("Json Mapping");
+		log.info(" [InstallCepService::createDataset] - Json Mapping "+datasetInput);
 		// match @nil elements
 		String json = datasetInput.replaceAll("\\{\\n*\\t*.*@nil.*:.*\\n*\\t*\\}", "null");
 		try {
@@ -394,13 +394,29 @@ public class InstallCepService {
 					col.update(findDatasets, updateConfig, false, true);
 				}
 
-				col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 				Metadata myMeta = MetadataFiller.fillMetadata(newStream);
+				col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
 
+				MongoDBMetadataDAO mongoDBMetadataSupportDAO = new MongoDBMetadataDAO(mongo, Config.getInstance().getDbSupport(), Config.getInstance().getCollectionSupportDataset());
+				log.info("[InstallCepService::createDataset] - idDataset "+idDataset);
+				if (idDataset != null) {
+					Metadata currentMetadata = mongoDBMetadataSupportDAO.readCurrentMetadataByIdDataset(idDataset, null);
+					if (currentMetadata != null) {
+
+						myMeta.setAvailableHive(currentMetadata.getAvailableHive());
+						myMeta.setAvailableSpeed(currentMetadata.getAvailableSpeed());
+						myMeta.setIsTransformed(currentMetadata.getIsTransformed());
+						myMeta.setDbHiveSchema(currentMetadata.getDbHiveSchema());
+						myMeta.setDbHiveTable(currentMetadata.getDbHiveTable());
+					} else {
+						log.info("[InstallCepService::createDataset] - currentMetadata is NULL");
+					}
+				}
+				
 				// myMeta get persisted on db and returns the object with the id
 				// updated
 				log.info("Saving Metadata for Stream");
-				new MongoDBMetadataDAO(mongo, Config.getInstance().getDbSupport(), Config.getInstance().getCollectionSupportDataset()).createMetadata(myMeta, idDataset);
+				mongoDBMetadataSupportDAO.createMetadata(myMeta, idDataset);
 
 				// Insert Api only for new streams not for updates
 				if (oldObjStream == null) {
