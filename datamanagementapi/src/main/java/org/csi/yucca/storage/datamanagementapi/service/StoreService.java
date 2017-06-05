@@ -621,7 +621,8 @@ DBObject findStream = new BasicDBObject();
 			
  
 			
-			solrServer.add(Config.getInstance().getSolrCollection(),doc);
+			//solrServer.add(Config.getInstance().getSolrCollection(),doc);
+			solrServer.add(doc);
 			solrServer.commit();
 		}
 		else {
