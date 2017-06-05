@@ -43,7 +43,7 @@ import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
 import org.csi.yucca.storage.datamanagementapi.exception.MaxDatasetNumException;
-import org.csi.yucca.storage.datamanagementapi.importdatabase.DatabaseReader;
+//import org.csi.yucca.storage.datamanagementapi.importdatabase.DatabaseReader;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
@@ -1104,7 +1104,8 @@ public class MetadataService {
 		}
 		return rows.toString();
 	}
-
+	
+	/*
 	@GET
 	@Path("/importDatabase")
 	@Produces("application/json; charset=UTF-8")
@@ -1126,6 +1127,7 @@ public class MetadataService {
 		return Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
 		// return dbSchema;
 	}
+
 
 	// Import Database
 	@POST
@@ -1197,5 +1199,5 @@ public class MetadataService {
 	private String importDatabaseJdbc(String dbType, String hostname, String dbname, String username, String password) throws ClassNotFoundException, SQLException {
 		DatabaseReader databaseReader = new DatabaseReader(dbType, hostname, dbname, username, password);
 		return databaseReader.loadSchema();
-	}
+	}*/
 }
