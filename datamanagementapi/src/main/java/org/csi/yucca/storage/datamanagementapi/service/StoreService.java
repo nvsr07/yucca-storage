@@ -29,8 +29,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
@@ -44,8 +42,8 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton.TEHttpSolrClient;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
-
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -621,7 +619,7 @@ DBObject findStream = new BasicDBObject();
 			log.info("[StoreService::createApiForBulk] - --collection------" + Config.getInstance().getSolrCollection());
 			
  
-			//((TEHttpSolrClient)solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
+			((TEHttpSolrClient)solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
 			solrServer.add(Config.getInstance().getSolrCollection(),doc);
 			//solrServer.add(doc);
 			solrServer.commit();
