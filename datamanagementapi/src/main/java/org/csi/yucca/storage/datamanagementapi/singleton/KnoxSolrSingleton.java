@@ -54,8 +54,8 @@ public class KnoxSolrSingleton {
 
 
 		try {
-			server = new HttpSolrClient(Config.getInstance().getSolrUrl(),clientBuilder.build());
-			//server = new TEHttpSolrClient(Config.getInstance().getSolrUrl());
+			//server = new HttpSolrClient(Config.getInstance().getSolrUrl(),clientBuilder.build());
+			server = new TEHttpSolrClient(Config.getInstance().getSolrUrl());
 			
 		} catch (Exception e) {
 			//TODO log
@@ -77,58 +77,58 @@ public class KnoxSolrSingleton {
 	}
 
 
-//	public class TEHttpSolrClient extends HttpSolrClient {
-//
-//		
-//		private String defaultCollection=null;
-//		
-//		
-//		public void setDefaultCollection(String defaultCollection) {
-//			this.defaultCollection = defaultCollection;
-//		}
-//
-//		private  final String UTF_8 = StandardCharsets.UTF_8.name();
-//
-//		public TEHttpSolrClient(String baseURL) {
-//			super(baseURL);
-//		}
-//
-//		@Override
-//		public NamedList<Object> request(final SolrRequest request, String collection) throws SolrServerException, IOException {
-//			ResponseParser responseParser = request.getResponseParser();
-//			if (responseParser == null) {
-//				responseParser = this.parser;
-//			}
-//			System.out.println("-------------------   " +request.getPath() + "              " +collection);
-//			
-//			if (collection==null && this.defaultCollection!=null) collection=this.defaultCollection;
-//			return request(request, responseParser, collection);
-//		}
-//
-//		public NamedList<Object> request(final SolrRequest request, final ResponseParser processor, String collection)
-//				throws SolrServerException, IOException {
-//			
-//			
-//			
-//			HttpRequestBase method = createMethod(request, collection);
-//			System.out.println("**********************   " +request.getPath() + "              " +collection);
-//			System.out.println("**********************   " +method.getURI());
-//			
-//			String userPass = Config.getInstance().getSolrUsername()+":"+Config.getInstance().getSolrPassword();
-//			String encoded = Base64.byteArrayToBase64(userPass.getBytes(UTF_8));
-//			// below line will make sure that it sends authorization token every time in all your requests
-//			method.setHeader(new BasicHeader("Authorization", "Basic " + encoded));
-//			
-//			
-//			try {
-//				return executeMethod(method, processor);
-//			} catch (Exception e ) {
-//				e.printStackTrace();
-//				throw new SolrServerException(e.getMessage());
-//			} 
-//			
-//		}
-//	}
+	public class TEHttpSolrClient extends HttpSolrClient {
+
+		
+		private String defaultCollection=null;
+		
+		
+		public void setDefaultCollection(String defaultCollection) {
+			this.defaultCollection = defaultCollection;
+		}
+
+		private  final String UTF_8 = StandardCharsets.UTF_8.name();
+
+		public TEHttpSolrClient(String baseURL) {
+			super(baseURL);
+		}
+
+		@Override
+		public NamedList<Object> request(final SolrRequest request, String collection) throws SolrServerException, IOException {
+			ResponseParser responseParser = request.getResponseParser();
+			if (responseParser == null) {
+				responseParser = this.parser;
+			}
+			System.out.println("-------------------   " +request.getPath() + "              " +collection);
+			
+			if (collection==null && this.defaultCollection!=null) collection=this.defaultCollection;
+			return request(request, responseParser, collection);
+		}
+
+		public NamedList<Object> request(final SolrRequest request, final ResponseParser processor, String collection)
+				throws SolrServerException, IOException {
+			
+			
+			
+			HttpRequestBase method = createMethod(request, collection);
+			System.out.println("**********************   " +request.getPath() + "              " +collection);
+			System.out.println("**********************   " +method.getURI());
+			
+			String userPass = Config.getInstance().getSolrUsername()+":"+Config.getInstance().getSolrPassword();
+			String encoded = Base64.byteArrayToBase64(userPass.getBytes(UTF_8));
+			// below line will make sure that it sends authorization token every time in all your requests
+			method.setHeader(new BasicHeader("Authorization", "Basic " + encoded));
+			
+			
+			try {
+				return executeMethod(method, processor);
+			} catch (Exception e ) {
+				e.printStackTrace();
+				throw new SolrServerException(e.getMessage());
+			} 
+			
+		}
+	}
 	
 	
 	
