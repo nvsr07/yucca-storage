@@ -1,8 +1,9 @@
 package org.csi.yucca.storage.datamanagementapi.singleton;
 
 
-import org.csi.yucca.storage.datamanagementapi.singleton.Krb5HttpClientConfigurer;
 
+
+import org.csi.yucca.storage.datamanagementapi.singleton.Krb5HttpClientConfigurer;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpClientUtil;
 
@@ -13,6 +14,13 @@ public class CloudSolrSingleton {
 		try {
 			//HttpClientUtil.setConfigurer( new  Krb5HttpClientConfigurer("KERBEROS-POCHDP"));
 //			HttpClientUtil.setConfigurer( new  Krb5HttpClientConfigurer(Config.getInstance().getSolrSecurityDomainName()));
+
+			
+			if (Config.getInstance().getSolrSecurityDomainName() != null && Config.getInstance().getSolrSecurityDomainName().trim().length()>0 && 
+					!(Config.getInstance().getSolrSecurityDomainName().equals("NO_SECURITY"))) {
+				HttpClientUtil.setConfigurer( new  Krb5HttpClientConfigurer(Config.getInstance().getSolrSecurityDomainName()));
+			}
+			
 			
 		server = new CloudSolrClient(Config.getInstance().getSolrUrl());
 		} catch (Exception e) {
