@@ -54,9 +54,8 @@ public class KnoxSolrSingleton {
 
 
 		try {
-			server = new HttpSolrClient(Config.getInstance().getSolrUrl(),
-					clientBuilder.build());
-			//server = new TEHttpSolrClient(Config.getInstance().getSolrUrl());
+			//server = new HttpSolrClient(Config.getInstance().getSolrUrl(),clientBuilder.build());
+			server = new TEHttpSolrClient(Config.getInstance().getSolrUrl());
 			
 		} catch (Exception e) {
 			//TODO log
