@@ -1,5 +1,6 @@
 SET mapred.output.compress false;
 SET output.compression.enabled false;
+SET phoenix.query.dateFormat 'yyyy-MM-dd HH:mm:ss z'
 
 data = LOAD 'hbase://query/SELECT $phoenixColumns FROM $phoenixSchema.$phoenixTable($phoenixDynamicCol) WHERE ID > \'$minObjectId\' and ID < \'$maxObjectId\' and IDDATASET_L = $idDataset_l and DATASETVERSION_L = $datasetVersion_l'                           
 USING org.apache.phoenix.pig.PhoenixHBaseLoader('$zookeeperQuorum') as ($pigSchema);
