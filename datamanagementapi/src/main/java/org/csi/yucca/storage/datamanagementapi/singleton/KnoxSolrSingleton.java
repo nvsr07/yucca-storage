@@ -99,7 +99,6 @@ public class KnoxSolrSingleton {
 			if (responseParser == null) {
 				responseParser = this.parser;
 			}
-			System.out.println("-------------------   " +request.getPath() + "              " +collection);
 			
 			if (collection==null && this.defaultCollection!=null) collection=this.defaultCollection;
 			return request(request, responseParser, collection);
@@ -111,8 +110,6 @@ public class KnoxSolrSingleton {
 			
 			
 			HttpRequestBase method = createMethod(request, collection);
-			System.out.println("**********************   " +request.getPath() + "              " +collection);
-			System.out.println("**********************   " +method.getURI());
 			
 			String userPass = Config.getInstance().getSolrUsername()+":"+Config.getInstance().getSolrPassword();
 			String encoded = Base64.byteArrayToBase64(userPass.getBytes(UTF_8));
