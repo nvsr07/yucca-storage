@@ -403,4 +403,40 @@ public class Metadata extends AbstractEntity {
 		return hasDuplicate;
 	}
 
+	public boolean hasField(Field fieldTocheck) {
+		if (this.getInfo() != null && this.getInfo().getFields() != null)
+			for (Field field : this.getInfo().getFields()) {
+				if (field.getFieldName().equals(field.getFieldName()))
+					return true;
+			}
+		return false;
+	}
+
+	public boolean hasFieldWithSameSourceColumnName(Field fieldTocheck) {
+		if (fieldTocheck != null && fieldTocheck.getSourceColumnName() != null && this.getInfo() != null && this.getInfo().getFields() != null)
+			for (Field field : this.getInfo().getFields()) {
+				if (field.getSourceColumnName() != null && field.getSourceColumnName().equals(fieldTocheck.getSourceColumnName()))
+					return true;
+			}
+		return false;
+	}
+	
+	public Field getFieldFromSourceColumnName(String sourceColumnName) {
+		if (sourceColumnName != null && this.getInfo() != null && this.getInfo().getFields() != null)
+			for (Field field : this.getInfo().getFields()) {
+				if (field.getSourceColumnName() != null && field.getSourceColumnName().equals(sourceColumnName))
+					return field;
+			}
+		return null;
+	}
+
+	public Field getFieldFromFieldName(String fieldName) {
+		if (fieldName != null && this.getInfo() != null && this.getInfo().getFields() != null)
+			for (Field field : this.getInfo().getFields()) {
+				if (field.getFieldName() != null && field.getFieldName().equals(fieldName))
+					return field;
+			}
+		return null;
+	}
+
 }

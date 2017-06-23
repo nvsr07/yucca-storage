@@ -1,5 +1,7 @@
 package org.csi.yucca.storage.datamanagementapi.dao;
 
+import java.util.regex.Pattern;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -34,5 +36,9 @@ public class MongoDBUtils {
 			id = ((Number) doc.get(key)).longValue() + 1;
 		return id;
 
+	}
+	
+	public static Pattern queryCaseInsensiviveValue(String value){
+		return Pattern.compile("^("+value+")", Pattern.CASE_INSENSITIVE); 
 	}
 }

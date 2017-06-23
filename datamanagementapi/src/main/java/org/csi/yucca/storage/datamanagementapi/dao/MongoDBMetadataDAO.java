@@ -101,6 +101,34 @@ public class MongoDBMetadataDAO {
 		return data;
 	}
 
+	public List<Metadata> readAllMetadataByJdbc(String dbType, String dbUrl, String dbName, boolean onlyCurrent) {
+		List<Metadata> data = new ArrayList<Metadata>();
+		BasicDBObject searchQuery = new BasicDBObject();
+		// db.getCollection('metadata').find({$and:[{"configData.jdbc.dbName":
+		// /^teST92A$/i},{"configData.jdbc.dbType":
+		// "ORACLE"},{"configData.jdbc.dbType": "ORACLE"}]})
+
+		BasicDBList and = new BasicDBList();
+		and.add(new BasicDBObject("configData.jdbc.dbName", MongoDBUtils.queryCaseInsensiviveValue(dbName)));
+		and.add(new BasicDBObject("configData.jdbc.dbType", MongoDBUtils.queryCaseInsensiviveValue(dbType)));
+		and.add(new BasicDBObject("configData.jdbc.dbUrl", MongoDBUtils.queryCaseInsensiviveValue(dbUrl)));
+		if (onlyCurrent)
+			and.add(new BasicDBObject("configData.current", 1));
+
+		searchQuery.put("$and", and);
+
+		DBCursor cursor = collection.find(searchQuery);
+		while (cursor.hasNext()) {
+			DBObject doc = cursor.next();
+			ObjectId id = (ObjectId) doc.get("_id");
+			Metadata metadata = Metadata.fromJson(JSON.serialize(doc));
+			System.out.println(metadata.getDatasetCode());
+			metadata.setId(id.toString());
+			data.add(metadata);
+		}
+		return data;
+	}
+
 	public int countAllMetadata(String tenant, boolean onlyCurrent) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		if (tenant != null)
@@ -128,18 +156,18 @@ public class MongoDBMetadataDAO {
 	}
 
 	public Metadata readCurrentMetadataByCode(String metadataCode, String visibleFromParam) {
-		
+
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("datasetCode", metadataCode);
 		searchQuery.put("configData.current", 1);
-		
+
 		if (visibleFromParam != null) {
-			
+
 			BasicDBList or = new BasicDBList();
 			or.add(new BasicDBObject("info.visibility", "public"));
-			
+
 			String[] visSplit = StringUtils.split(visibleFromParam, "|");
-			if ((visSplit != null) && (visSplit.length > 0)){
+			if ((visSplit != null) && (visSplit.length > 0)) {
 
 				or.add(new BasicDBObject("info.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
 			}
@@ -161,14 +189,14 @@ public class MongoDBMetadataDAO {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("idDataset", IdDataset);
 		searchQuery.put("configData.current", 1);
-		
+
 		if (visibleFromParam != null) {
-			
+
 			BasicDBList or = new BasicDBList();
 			or.add(new BasicDBObject("info.visibility", "public"));
-			
+
 			String[] visSplit = StringUtils.split(visibleFromParam, "|");
-			if ((visSplit != null) && (visSplit.length > 0)){
+			if ((visSplit != null) && (visSplit.length > 0)) {
 
 				or.add(new BasicDBObject("info.tenantssharing.tenantsharing.tenantCode", new BasicDBObject("$in", visSplit)));
 			}
@@ -237,5 +265,4 @@ public class MongoDBMetadataDAO {
 		return metadataLoaded;
 	}
 
-	
 }

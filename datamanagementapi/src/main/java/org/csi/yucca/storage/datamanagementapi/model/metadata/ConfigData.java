@@ -10,11 +10,21 @@ public class ConfigData extends AbstractEntity {
 	private String tenantCode;
 	private String organizationCode;
 	private String organizationDescription;
-	
-	
 	private String tenantName;
 	private String tenantDescription;
-    public String getTenantName() {
+	private String collection;
+	private String database;
+	private String type;
+	private String subtype;
+	private String entityNameSpace;
+	private String datasetStatus;
+	private Integer current;
+	private Archive archive;
+	private Integer deleted;
+	private Jdbc jdbc;
+	
+
+	public String getTenantName() {
 		return tenantName;
 	}
 
@@ -29,8 +39,7 @@ public class ConfigData extends AbstractEntity {
 	public void setTenantDescription(String tenantDescription) {
 		this.tenantDescription = tenantDescription;
 	}
-	
-	
+
 	public String getOrganizationCode() {
 		return organizationCode;
 	}
@@ -46,16 +55,6 @@ public class ConfigData extends AbstractEntity {
 	public void setOrganizationDescription(String organizationDescription) {
 		this.organizationDescription = organizationDescription;
 	}
-
-	private String collection;
-	private String database;
-	private String type;
-	private String subtype;
-	private String entityNameSpace;
-	private String datasetStatus;
-	private Integer current;
-	private Archive archive;
-	private Integer deleted;
 
 	public ConfigData() {
 	}
@@ -151,6 +150,14 @@ public class ConfigData extends AbstractEntity {
 
 	public void setDeleted(Integer deleted) {
 		this.deleted = deleted;
+	}
+
+	public Jdbc getJdbc() {
+		return jdbc;
+	}
+
+	public void setJdbc(Jdbc jdbc) {
+		this.jdbc = jdbc;
 	}
 
 }

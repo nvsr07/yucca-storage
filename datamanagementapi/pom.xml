@@ -11,11 +11,11 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	
+
 	<scm>
-    	<connection>scm:svn:svn://sdnet-build.sdp.csi.it/SdpPropFiles/trunk</connection>
-  	</scm>
-  	
+		<connection>scm:svn:svn://sdnet-build.sdp.csi.it/SdpPropFiles/trunk</connection>
+	</scm>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -23,6 +23,15 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
+					<webResources>
+						<resource>
+							<directory>${project.basedir}/lib/ojdbc6</directory>
+							<targetPath>WEB-INF/lib</targetPath>
+							<includes>
+								<include>**/*.jar</include>
+							</includes>
+						</resource>
+					</webResources>
 					<webXml>${webXmlPath}/web.xml</webXml>
 				</configuration>
 			</plugin>
@@ -46,14 +55,14 @@
 					</suiteXmlFiles>
 				</configuration>
 			</plugin>
-		      <plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-failsafe-plugin</artifactId>
-		        <version>2.19.1</version>
-		      </plugin>			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.19.1</version>
+			</plugin>
 		</plugins>
 	</build>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -95,28 +104,36 @@
 			<artifactId>opencsv</artifactId>
 			<version>2.0</version>
 		</dependency>
-		<!--  
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.3.5</version>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/ojdbc6/ojdbc14-10.2.0.4.0.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-cache</artifactId>
-			<version>4.3.5</version>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		<!-- <version>42.1.1</version> -->
+			<version>42.1.1.jre7</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
-			<version>4.3.2</version>
+		    <groupId>org.apache.hive</groupId>
+		    <artifactId>hive-jdbc</artifactId>
+		    <version>2.1.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpmime</artifactId>
-			<version>4.3.5</version>
-		</dependency>
-		-->
+		<!-- <dependency> <groupId>org.apache.httpcomponents</groupId> <artifactId>httpclient</artifactId> 
+			<version>4.3.5</version> </dependency> <dependency> <groupId>org.apache.httpcomponents</groupId> 
+			<artifactId>httpclient-cache</artifactId> <version>4.3.5</version> </dependency> 
+			<dependency> <groupId>org.apache.httpcomponents</groupId> <artifactId>httpcore</artifactId> 
+			<version>4.3.2</version> </dependency> <dependency> <groupId>org.apache.httpcomponents</groupId> 
+			<artifactId>httpmime</artifactId> <version>4.3.5</version> </dependency> -->
 
 
 
@@ -142,7 +159,7 @@
 		</dependency>
 
 
-		
+
 		<dependency>
 
 			<groupId>commons-httpclient</groupId>
@@ -195,21 +212,21 @@
 			<version>4.12</version>
 		</dependency>
 		<dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-		    <version>5.5.4</version>
-            <type>jar</type>
-        </dependency>		
-	<dependency>
-	    <groupId>org.freemarker</groupId>
-	    <artifactId>freemarker</artifactId>
-	    <version>2.3.23</version>
-	</dependency>         
-	<dependency>
-    	<groupId>org.jsoup</groupId>
-    	<artifactId>jsoup</artifactId>
-    	<version>1.9.2</version>
-	</dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-solrj</artifactId>
+			<version>5.5.4</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.23</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.9.2</version>
+		</dependency>
 	</dependencies>
 	<profiles>
 		<profile>
@@ -253,41 +270,41 @@
 			<id>int</id>
 			<build>
 				<plugins>
-				 <plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-scm-plugin</artifactId>
-			        <version>1.9.5</version>
-			        <configuration>
-			          <connectionType>connection</connectionType>
-			        </configuration>
-			        <executions>
-			        	<execution>
-			        		<id>1</id>
-			        		<phase>validate</phase>
-				            <goals>
-				              <goal>checkout</goal>
-				            </goals>
-				          </execution>
-				    </executions>
-			      </plugin>
-				  <plugin>
-                    <groupId>com.lazerycode.jmeter</groupId>
-                    <artifactId>jmeter-maven-plugin</artifactId>
-                    <version>2.0.3</version>
-                    <executions>
-                        <execution>
-                            <id>jmeter-tests</id>
-                            <goals>
-                                <goal>jmeter</goal>
-                            </goals>
-                            <configuration>
-                             <customPropertiesFiles>
-                                    <file>${project.build.directory}/checkout/datamangement/test/jmeter/services.properties</file>
-                             </customPropertiesFiles>
-                             </configuration>
-                        </execution>
-                    </executions>
-                  </plugin>			      			
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-scm-plugin</artifactId>
+						<version>1.9.5</version>
+						<configuration>
+							<connectionType>connection</connectionType>
+						</configuration>
+						<executions>
+							<execution>
+								<id>1</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>checkout</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.lazerycode.jmeter</groupId>
+						<artifactId>jmeter-maven-plugin</artifactId>
+						<version>2.0.3</version>
+						<executions>
+							<execution>
+								<id>jmeter-tests</id>
+								<goals>
+									<goal>jmeter</goal>
+								</goals>
+								<configuration>
+									<customPropertiesFiles>
+										<file>${project.build.directory}/checkout/datamangement/test/jmeter/services.properties</file>
+									</customPropertiesFiles>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 				<resources>
 					<resource>
@@ -308,46 +325,46 @@
 				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/int/</webXmlPath>
 			</properties>
 		</profile>
-		
+
 		<profile>
 			<id>pochdp</id>
 			<build>
 				<plugins>
-				 <plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-scm-plugin</artifactId>
-			        <version>1.9.5</version>
-			        <configuration>
-			          <connectionType>connection</connectionType>
-			        </configuration>
-			        <executions>
-			        	<execution>
-			        		<id>1</id>
-			        		<phase>validate</phase>
-				            <goals>
-				              <goal>checkout</goal>
-				            </goals>
-				          </execution>
-				    </executions>
-			      </plugin>
-				  <plugin>
-                    <groupId>com.lazerycode.jmeter</groupId>
-                    <artifactId>jmeter-maven-plugin</artifactId>
-                    <version>2.0.3</version>
-                    <executions>
-                        <execution>
-                            <id>jmeter-tests</id>
-                            <goals>
-                                <goal>jmeter</goal>
-                            </goals>
-                            <configuration>
-                             <customPropertiesFiles>
-                                    <file>${project.build.directory}/checkout/datamangement/test/jmeter/services.properties</file>
-                             </customPropertiesFiles>
-                             </configuration>
-                        </execution>
-                    </executions>
-                  </plugin>			      			
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-scm-plugin</artifactId>
+						<version>1.9.5</version>
+						<configuration>
+							<connectionType>connection</connectionType>
+						</configuration>
+						<executions>
+							<execution>
+								<id>1</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>checkout</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.lazerycode.jmeter</groupId>
+						<artifactId>jmeter-maven-plugin</artifactId>
+						<version>2.0.3</version>
+						<executions>
+							<execution>
+								<id>jmeter-tests</id>
+								<goals>
+									<goal>jmeter</goal>
+								</goals>
+								<configuration>
+									<customPropertiesFiles>
+										<file>${project.build.directory}/checkout/datamangement/test/jmeter/services.properties</file>
+									</customPropertiesFiles>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 				<resources>
 					<resource>
@@ -367,28 +384,28 @@
 			<properties>
 				<webXmlPath>${project.build.directory}/checkout/datamangement/resources/pochdp/</webXmlPath>
 			</properties>
-		</profile>		
+		</profile>
 		<profile>
 			<id>prod</id>
 			<build>
 				<plugins>
- 				 <plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-scm-plugin</artifactId>
-			        <version>1.9.5</version>
-			        <configuration>
-			          <connectionType>connection</connectionType>
-			        </configuration>
-			        <executions>
-			        	<execution>
-			        		<id>1</id>
-			        		<phase>validate</phase>
-				            <goals>
-				              <goal>checkout</goal>
-				            </goals>
-				          </execution>
-				    </executions>
-			      </plugin>			
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-scm-plugin</artifactId>
+						<version>1.9.5</version>
+						<configuration>
+							<connectionType>connection</connectionType>
+						</configuration>
+						<executions>
+							<execution>
+								<id>1</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>checkout</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 				<resources>
 					<resource>

@@ -14,6 +14,9 @@ public class Field extends AbstractEntity {
 	private String measureUnit;
 	private String dateTimeFormat;
 	private Integer order;
+	private String foreignKey;
+	private String sourceColumnName;
+	private Integer sinceVersion;
 
 	public Integer getOrder() {
 		return order;
@@ -85,6 +88,30 @@ public class Field extends AbstractEntity {
 
 	public void setDateTimeFormat(String dateTimeFormat) {
 		this.dateTimeFormat = dateTimeFormat;
+	}
+
+	public String getForeignKey() {
+		return foreignKey;
+	}
+
+	public void setForeignKey(String foreignKey) {
+		this.foreignKey = foreignKey;
+	}
+
+	public String getSourceColumnName() {
+		return sourceColumnName;
+	}
+
+	public void setSourceColumnName(String sourceColumnName) {
+		this.sourceColumnName = sourceColumnName;
+	}
+
+	public Integer getSinceVersion() {
+		return sinceVersion;
+	}
+
+	public void setSinceVersion(Integer sinceVersion) {
+		this.sinceVersion = sinceVersion;
 	}
 
 }

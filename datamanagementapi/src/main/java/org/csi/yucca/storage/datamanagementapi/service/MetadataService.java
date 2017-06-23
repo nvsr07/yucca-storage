@@ -42,7 +42,9 @@ import org.apache.log4j.Logger;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
+import org.csi.yucca.storage.datamanagementapi.exception.ImportDatabaseException;
 import org.csi.yucca.storage.datamanagementapi.exception.MaxDatasetNumException;
+import org.csi.yucca.storage.datamanagementapi.importdatabase.DatabaseReader;
 //import org.csi.yucca.storage.datamanagementapi.importdatabase.DatabaseReader;
 import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
@@ -580,6 +582,7 @@ public class MetadataService {
 		if (metadata.getInfo().getFields() != null) {
 			for (Field field : metadata.getInfo().getFields()) {
 				field.setFieldName(Util.cleanStringCamelCase(field.getFieldName()));
+				field.setSinceVersion(metadata.getDatasetVersion());
 				if (field != null && field.getDataType() == null)
 					field.setDataType("string");
 			}
@@ -713,7 +716,7 @@ public class MetadataService {
 						// false, datasetMetadata);
 						apiName = StoreService.createApiforBulk(metadataCreated, false, datasetMetadata);
 					} catch (Exception duplicate) {
-						if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
+						if (duplicate.getMessage() != null && duplicate.getMessage().toLowerCase().contains("duplicate")) {
 							try {
 								// SOLR
 								// apiName =
@@ -922,7 +925,7 @@ public class MetadataService {
 			newMetadata.getInfo().setVisibility(inputMetadata.getInfo().getVisibility());
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
-			
+
 			newMetadata.setAvailableHive(existingMetadata.getAvailableHive());
 			newMetadata.setAvailableSpeed(existingMetadata.getAvailableSpeed());
 			newMetadata.setIsTransformed(existingMetadata.getIsTransformed());
@@ -985,10 +988,31 @@ public class MetadataService {
 			}
 			newMetadata.getInfo().getTenantssharing().setTenantsharing(arrayTenant);
 
-			int counter = 0;
-			for (Field existingField : newMetadata.getInfo().getFields()) {
-				existingField.setFieldAlias(inputMetadata.getInfo().getFields()[counter].getFieldAlias());
-				counter++;
+			// int counter = 0;
+			// for (Field existingField : newMetadata.getInfo().getFields()) {
+			// existingField.setFieldAlias(inputMetadata.getInfo().getFields()[counter].getFieldAlias());
+			// counter++;
+			// }
+
+			if (inputMetadata.getInfo().getFields() != null) {
+				Field[] fields = new Field[inputMetadata.getInfo().getFields().length];
+				int counter = 0;
+				for (Field field : inputMetadata.getInfo().getFields()) {
+					Field existingField = newMetadata.getFieldFromFieldName(field.getFieldName());
+					if (existingField != null) {
+						if (existingField.getSinceVersion() == null)
+							field.setSinceVersion(newMetadata.getDatasetVersion() + 1);
+						else
+							field.setSinceVersion(existingField.getSinceVersion());
+
+					} else {
+						field.setSinceVersion(newMetadata.getDatasetVersion() + 1);
+					}
+					fields[counter] = field;
+					counter++;
+				}
+
+				newMetadata.getInfo().setFields(fields);
 			}
 			existingMetadata.getConfigData().setCurrent(0);
 			metadataDAO.updateMetadata(existingMetadata);
@@ -1104,30 +1128,30 @@ public class MetadataService {
 		}
 		return rows.toString();
 	}
-	
-	/*
+
 	@GET
 	@Path("/importDatabase")
 	@Produces("application/json; charset=UTF-8")
 	public Response importDatabaseGet(@QueryParam("dbType") String dbType, @QueryParam("sourceType") String sourceType, @QueryParam("jdbc_hostname") String jdbcHostname,
-			@QueryParam("jdbc_dbname") String jdbcDbname, @QueryParam("jdbc_username") String jdbcUsername, @QueryParam("jdbc_password") String jdbcPassword) throws NumberFormatException, UnknownHostException {
+			@QueryParam("jdbc_dbname") String jdbcDbname, @QueryParam("jdbc_username") String jdbcUsername, @QueryParam("jdbc_password") String jdbcPassword)
+			throws NumberFormatException, UnknownHostException {
 
 		log.debug("[MetadataService::importDatabase] - START");
-		String dbSchema = null;
+		Response response;
 		try {
-			dbSchema = importDatabaseJdbc(dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
+			String dbSchema = importDatabaseJdbc(dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
+			response = Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
+		} catch (ImportDatabaseException e) {
+			response = Response.status(Response.Status.BAD_REQUEST).entity(e.toJson()).build();
 			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception ex) {
+			ImportDatabaseException e = new ImportDatabaseException(ex.getMessage(), null);
+			response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.toJson()).build();
 		}
 
-		return Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
+		return response;
 		// return dbSchema;
 	}
-
 
 	// Import Database
 	@POST
@@ -1148,8 +1172,9 @@ public class MetadataService {
 		String jdbcUsername = null;
 		String jdbcPassword = null;
 
-		FileItemStream scriptItemStream = null;
+		Response response;
 		try {
+			FileItemStream scriptItemStream = null;
 			ServletFileUpload upload = new ServletFileUpload();
 			FileItemIterator iterator = upload.getItemIterator(request);
 			while (iterator.hasNext()) {
@@ -1175,20 +1200,23 @@ public class MetadataService {
 
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		try {
+			// String dbSchema = importDatabaseJdbc(dbType, jdbcHostname,
+			// jdbcDbname, jdbcUsername, jdbcPassword);
 			if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType))
 				dbSchema = importDatabaseJdbc(dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
 			else if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType) && scriptItemStream != null)
 				dbSchema = importDatabaseScript(dbType, scriptItemStream);
-		} catch (Exception e) {
-			// TODO: handle exception
+
+			response = Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
+		} catch (ImportDatabaseException e) {
+			response = Response.status(Response.Status.BAD_REQUEST).entity(e.toJson()).build();
+			e.printStackTrace();
+		} catch (Exception ex) {
+			ImportDatabaseException e = new ImportDatabaseException(ex.getMessage(), null);
+			response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.toJson()).build();
 		}
-		return Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
-		// return dbSchema;
+
+		return response;
 	}
 
 	private String importDatabaseScript(String dbType, FileItemStream scriptItemStream) {
@@ -1196,8 +1224,9 @@ public class MetadataService {
 		return null;
 	}
 
-	private String importDatabaseJdbc(String dbType, String hostname, String dbname, String username, String password) throws ClassNotFoundException, SQLException {
+	private String importDatabaseJdbc(String dbType, String hostname, String dbname, String username, String password) throws ClassNotFoundException, SQLException,
+			ImportDatabaseException {
 		DatabaseReader databaseReader = new DatabaseReader(dbType, hostname, dbname, username, password);
 		return databaseReader.loadSchema();
-	}*/
+	}
 }
