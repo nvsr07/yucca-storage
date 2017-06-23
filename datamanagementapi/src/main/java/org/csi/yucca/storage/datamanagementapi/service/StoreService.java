@@ -29,7 +29,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.AddStream;
 import org.csi.yucca.storage.datamanagementapi.apimanager.store.PublishApi;
@@ -43,6 +42,7 @@ import org.csi.yucca.storage.datamanagementapi.model.streaminput.Tenantsharing;
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton.TEHttpSolrClient;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.Constants;
 import org.csi.yucca.storage.datamanagementapi.util.Util;
@@ -613,8 +613,15 @@ DBObject findStream = new BasicDBObject();
 		{
 			SolrClient solrServer= null;
 			solrServer = KnoxSolrSingleton.getServer();
-			log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
+			log.info("[StoreService::createApiForBulk] - --KNOX------" + doc.toString());
+			log.info("[StoreService::createApiForBulk] - --user------" + Config.getInstance().getSolrUsername());
+			log.info("[StoreService::createApiForBulk] - --pwd------" + Config.getInstance().getSolrPassword());
+			log.info("[StoreService::createApiForBulk] - --collection------" + Config.getInstance().getSolrCollection());
+			
+ 
+			((TEHttpSolrClient)solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
 			solrServer.add(Config.getInstance().getSolrCollection(),doc);
+			//solrServer.add(doc);
 			solrServer.commit();
 		}
 		else {
@@ -768,6 +775,7 @@ DBObject findStream = new BasicDBObject();
 				{
 					SolrClient solrServer= null;
 					solrServer = KnoxSolrSingleton.getServer();
+					((TEHttpSolrClient)solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
 					log.info("[StoreService::createApiForBulk] - ---------------------" + doc.toString());
 					solrServer.add(Config.getInstance().getSolrCollection(),doc);
 					solrServer.commit();

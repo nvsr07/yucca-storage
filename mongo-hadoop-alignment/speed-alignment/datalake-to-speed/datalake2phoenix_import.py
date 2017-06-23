@@ -87,13 +87,15 @@ if callResult == 0:
             dynamicPhoenixColumns = ''
             aliasString = ('bda_id\ as\ bda_id:chararray,\ ' + idDataset + '\ as\ idDataset:int,\ ' +
                            datasetVersion + '\ as\ datasetVersion:int,\ ')
-                        
+            
+            i = 0            
             for field in fields:
                 dataType = field['dataType']     
                 name = field['fieldName'].lower()
-                aliasString += "(" + globalVars.dataType2Pig[dataType] + ")" + name + ",\ "   
+                aliasString += "(" + globalVars.dataType2Pig[dataType] + ")$" + str(i) + ",\ "   
                 dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
-            
+                i += 1
+                
             dynamicPhoenixColumns += ',varchar#origin_s'
             aliasString += 'bda_origin\ as\ origin:chararray'
            

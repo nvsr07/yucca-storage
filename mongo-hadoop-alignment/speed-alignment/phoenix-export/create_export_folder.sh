@@ -5,6 +5,8 @@ organization=$3
 RAWDATA_FOLDER=$4
 dataDomain=$5
 dest_fn=$6
+visibility=$7
+tmp_folder=$8
 
 # if destination folder not exist --> create it
 hdfs dfs -test -d $dest_folder
@@ -20,14 +22,22 @@ fi
 
 hdfs dfs -test -e $dest_fn
 if [ $? = "0" ]; then
-	#echo "Destination file $dest_fn already exist"
-	#echo "move file into WASTE folder"
-	#mv $file $WASTE
+	echo "Destination file $dest_fn already exist"
+	hdfs dfs -rm $tmp_folder/part-r-00000
 	exit 1 
 else
-	#hdfs dfs -moveFromLocal $file $dest_fn
-	#hdfs dfs -chmod $dirper $dest_folder
-	#hdfs dfs -chmod $fileper $dest_fn
-	#echo "Uploaded file:   $dest_fn"
+	
+	if [ $visibility = "private" ]; then
+      dirper=750
+      fileper=640
+    elif [ $visibility = "public" ]; then
+      dirper=750
+      fileper=640
+    fi
+	
+	hdfs dfs -mv $tmp_folder/part-r-00000 $dest_folder/$dest_fn
+	hdfs dfs -chmod $dirper $dest_folder
+	hdfs dfs -chmod $fileper $dest_folder/$dest_fn
+
 	exit 0
 fi

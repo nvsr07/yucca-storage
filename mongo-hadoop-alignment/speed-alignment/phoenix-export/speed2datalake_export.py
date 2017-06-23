@@ -10,31 +10,43 @@ from com.xhaus.jyson import JysonCodec as json
 from subprocess import call
 import java.util as util
 import java.io as javaio
+import csv
 
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
 Pig.registerJar("/usr/hdp/current/pig-client/piggybank.jar")
 
+#Jar to use AVRO
+#Pig.registerJar("/usr/hdp/current/pig-client/lib/avro-1.7.5.jar")
+#Pig.registerJar("/usr/hdp/current/pig-client/lib/json-simple-1.1.jar")
+#Pig.registerJar("/usr/hdp/current/pig-client/lib/jackson-core-asl-1.9.13.jar")
+#Pig.registerJar("/usr/hdp/current/pig-client/lib/jackson-mapper-asl-1.9.13.jar")
+
 if len(sys.argv) != 2:
     print "Usage: " + sys.argv[0] + " parameters-file"
-    sys.exit()
+    sys.exit(1)
+    
+paramFile = sys.argv[1]
 
-props = util.Properties()
-#add try catch for this
-propertiesfis = javaio.FileInputStream(sys.argv[1])
-props.load(propertiesfis)
+try:
+    props = util.Properties()
+    propertiesfis = javaio.FileInputStream(paramFile)
+    props.load(propertiesfis)
+except:
+    print "Errore leggendo mongo_parameters_prod.txt: ", sys.exc_info()[0]
+    sys.exit(1)
 
 pid = os.getpid()
 outDir = props.getProperty('tmpFolder')
 headFolder = props.getProperty('headFolder')
-wasteFolder = props.getProperty('wasteFolder')
 rawdataFolder = props.getProperty('rawdataFolder')
+zookeeperQuorum = props.getProperty('zookeeperQuorum')
 
 if not os.path.exists(outDir):
     os.makedirs(outDir)
 
 mongoConnectString = props.getProperty('mongoHost') + ":" + props.getProperty('mongoPort') + "/DB_SUPPORT"
 mongoConnectString += " -u " + props.getProperty('mongoUsr')
-mongoConnectString += " -p " + props.getProperty('mongoPwd') + ''' --authenticationDatabase admin  --quiet '''
+mongoConnectString += " -p " + props.getProperty('mongoPwd') + " --authenticationDatabase admin  --quiet "
 
 callResult = call("mongo " + mongoConnectString + " ../list_tenants.js > " + outDir + "/lista_tenant_org." + str(pid) + ".json", shell = True)
 if callResult != 0:
@@ -48,19 +60,23 @@ for tenant in allTenants:
     tenantCode = tenant["tenantCode"]
     tenantOrg = tenant["organizationCode"]
     
-    print "Execute export for tenant " + tenantCode + " - organization " + tenantOrg
+    print "Executing export for tenant " + tenantCode + " - organization " + tenantOrg
     
     # locka tenant
     callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " lock_tenant.js ", shell = True)
     if callResult != 0:
-        print "FATAL ERROR during " + tenantCode + " tenant locking"
-        sys.exit(1)
+        print "ERROR during " + tenantCode + " tenant locking, skipping tenant"
+        continue
     
     # legge vecchio e nuovo objectid
     callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " read_objectid.js > " + outDir + "/object_ids." + str(pid) + ".json", shell = True)
     if callResult != 0:
-        print "FATAL ERROR while reading objectIds for tenant " + tenantCode
-        sys.exit(1)
+        print "ERROR while reading objectIds for tenant " + tenantCode + ", skipping tenant"
+        #unlock tenant
+        callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " unlock_tenant.js ", shell = True)
+        if callResult != 0:
+            print "WARNING : tenant " + tenantCode + " unlocking FAILED"
+        continue
     
     with open(outDir + "/object_ids." + str(pid) + ".json") as objectids_file:
         objectids = json.loads(objectids_file.read())
@@ -71,105 +87,174 @@ for tenant in allTenants:
 
     callResult = call("mongo " + mongoConnectString + " " + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' "  ../list_tenant_defaults.js > '''+ outDir + '''/tenant.''' + str(pid) + '''.json''', shell = True)
     if callResult != 0:
-        print "FATAL ERROR while reading data for tenant " + tenantCode
-        sys.exit(1)
-    
+        print "ERROR while reading data for tenant " + tenantCode + ", skipping tenant"
+        #unlock tenant 
+        callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " unlock_tenant.js ", shell = True)
+        if callResult != 0:
+            print "WARNING : tenant " + tenantCode + " unlocking FAILED"
+        continue
+            
     with open(outDir + '/tenant.'  + str(pid) + '.json') as tenantdata_file:
         tenantData = json.loads(tenantdata_file.read())
     
     if('dataPhoenixSchemaName' not in tenantData.keys() and 'measuresPhoenixSchemaName' not in tenantData.keys() and 
        'mediaPhoenixSchemaName' not in tenantData.keys() and 'socialPhoenixSchemaName' not in tenantData.keys()):
-        print "Skipping tenant " + tenantCode + " because is still on MongDB "
+        print "Tenant " + tenantCode + " does not exist on Phoenix yet, skipping tenant"
+        #unlock tenant 
+        callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " unlock_tenant.js ", shell = True)
+        if callResult != 0:
+            print "WARNING : tenant " + tenantCode + " unlocking FAILED"
         continue
     
     globalVars.init(tenantCode, tenantData)
+    destFileList = []
+            
+    callResult = call("./check_not_empty_datasets.sh notEmptyDatasets." + str(pid) + ".csv " + globalVars.phoenixSchemaName['bulkDataset'] + " " + precTS + " " + outDir + " " + zookeeperQuorum, shell = True)
+    if callResult != 0:
+        print "ERROR while checking non-empty datasets for tenant " + tenantCode + ", skipping tenant"
+        #unlock tenant 
+        callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " unlock_tenant.js ", shell = True)
+        if callResult != 0:
+            print "WARNING : tenant " + tenantCode + " unlocking FAILED"
+        continue
      
-    callResult = call("mongo " + mongoConnectString + " " + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' "  list_dataset_conv.js > ''' + outDir + '''/lista_dataset.''' + str(pid) + ".json", shell = True)
-    if callResult == 0:
+    notEmptyDatasets = ""
+    with open(outDir + "/notEmptyDatasets." + str(pid) + ".csv") as csvfile:
+        reader = csv.DictReader(csvfile, fieldnames=['idDataset', 'datasetVersion'])
+        for row in reader:
+            notEmptyDatasets += '{\\"idDataset\\": ' + row['idDataset'] +', \\"datasetVersion\\": ' + row['datasetVersion'] +'},'
         
-        with open(outDir + "/lista_dataset." + str(pid) + ".json") as metadata_file:
-            metadata = json.loads(metadata_file.read())
-
-        exportJob = Pig.compileFromFile("""export_single_dataset.pig""")
-        destFileList = []
-
-        for m in metadata:
-
-            subtype = m['configData']['subtype']
-            dynamicPhoenixColumns = phoenixColumns = ''
-            
-            for field in m['info']['fields']:
-
-                name = field['fieldName'].strip()
-                dataType = field['dataType']
-
-                phoenixColumns += ',' + name + globalVars.dataTypeSuffixes[dataType] 
-                dynamicPhoenixColumns += name + globalVars.dataTypeSuffixes[dataType] + '\ ' + globalVars.dataType2Phoenix[dataType] + ','
-            
-            if subtype == 'binaryDataset': 
-                phoenixColumns += ',idBinary_s,pathHdfsBinary_s,tenantBinary_s'
-                dynamicPhoenixColumns += ',VARCHAR#idBinary_s,VARCHAR#pathHdfsBinary_s,VARCHAR#tenantBinary_s'                
-            
-            flagpriv = m['info']['visibility']
-            if flagpriv == "private":
-                dirper = 750
-                fileper = 640
-            elif flagpriv == "public":
-                dirper = 750
-                fileper = 640
-                
-            if subtype == "measures" or subtype == "social":
-                destFolder = headFolder + "/" + tenantOrg + "/" + rawdataFolder + "/" + m['info']['dataDomain'] + "/so_" + m['virtualEntitySlug'] + "/" + m['streamCode']
-            else:
-                destFolder = headFolder + "/" + tenantOrg + "/" + rawdataFolder + "/" + m['info']['dataDomain'] + "/db_" + m['codSubDomain'] + "/" + str(m['datasetCode'])
+        notEmptyDatasets = "[" + notEmptyDatasets[:-1] + "]"
     
-            destFn = destFolder + "/" + newTS + "-" + str(m['datasetCode']) + "-" + str(m['datasetVersion'])
-            destFileList.append(destFn)
-            
-            print "Creating folders on HDFS..."    
-            callResult = call("./create_export_folder.sh " + destFolder + " " + headFolder + " " + tenantOrg + " " + rawdataFolder + " " + m['info']['dataDomain'] + " '" + destFn + "'", shell=True)
+    if notEmptyDatasets != "[]" :        
+    
+        tmpExportFolder = headFolder + "/" + tenantOrg + "/tmpCSVExport" + str(pid)
+        callResult = call("hdfs dfs -mkdir -p " + tmpExportFolder, shell = True)
+        if callResult != 0:
+            print "ERROR while creating temp folder on HDFS for tenant " + tenantCode + ", skipping tenant"
+            #unlock tenant 
+            callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " unlock_tenant.js ", shell = True)
             if callResult != 0:
-                destFn = wasteFolder + "/" + newTS + "-" + str(m['datasetCode']) + "-" + str(m['datasetVersion'])
-                                                           
-            exportConfig = {
-                'minObjectId' : precTS,
-                'maxObjectId' : newTS,
-                'idDataset_l' : m['idDataset'],
-                'datasetVersion_l' : m['datasetVersion'],
-                'phoenixSchema' : globalVars.phoenixSchemaName[subtype].upper(),
-                'phoenixTable' :  globalVars.phoenixTableName[subtype].upper(),
-                'phoenixColumns' : globalVars.phoenixColumns[subtype] + phoenixColumns.upper(),
-                'phoenixDynamicCol' : dynamicPhoenixColumns[:-1].upper(),
-                'outputFile' : destFn
-            }
-
-            exportResults = exportJob.bind(exportConfig).runSingle()
-            if exportResults.isSuccessful():
-                call("hdfs dfs -chmod " + str(dirper) + " " + destFolder, shell = True)
-                call("hdfs dfs -chmod " + str(fileper) + " " + destFn, shell = True)
-                print 'Dataset exported successfully'
-            else:
-                print 'Dataset export failed'
+                print "WARNING : tenant " + tenantCode + " unlocking FAILED"
+            continue
+    
+        print("mongo " + mongoConnectString + " " + ''' --eval "''' + " var param1='" + tenantCode + "';var param2='" + notEmptyDatasets + ''''"  list_dataset_conv.js > ''' + outDir + '''/lista_dataset.''' + str(pid) + ".json")
+        
+        callResult = call("mongo " + mongoConnectString + " " + ''' --eval "''' + " var param1='" + tenantCode + "';var param2='" + notEmptyDatasets + ''''"  list_dataset_conv.js > ''' + outDir + '''/lista_dataset.''' + str(pid) + ".json", shell = True)
+        if callResult == 0:
+            
+            with open(outDir + "/lista_dataset." + str(pid) + ".json") as metadata_file:
+                metadata = json.loads(metadata_file.read())
+    
+            exportJob = Pig.compileFromFile("""export_single_dataset.pig""")
+            
+            for m in metadata:
+    
+                subtype = m['configData']['subtype']
+                dynamicPhoenixColumns = phoenixColumns = metadataFields = pigSchema = ''
+                
+                for field in m['info']['fields']:
+    
+                    name = field['fieldName'].strip()
+                    dataType = field['dataType']
+                    
+                    dynamicPhoenixColumns += name + globalVars.dataTypeSuffixes[dataType] + '\ ' + globalVars.dataType2Phoenix[dataType] + ','
+                    
+                    if globalVars.dataType2Pig[dataType] == 'datetime':
+                        phoenixColumns += 'TO_CHAR(' + name + globalVars.dataTypeSuffixes[dataType] + '),'
+                        pigSchema += name + ':chararray,'
+                    else:
+                        phoenixColumns += name + globalVars.dataTypeSuffixes[dataType] + ','
+                        pigSchema += name + ':' + globalVars.dataType2Pig[dataType] + ','  
+                    
+                    if subtype == 'streamDataset': 
+                        metadataFields += "'" + field['fieldAlias'] + "' as " + name + '_fieldAlias:chararray, ' 
+                        metadataFields += "'" + field['measureUnit'] + "' as " + name + '_measureUnit:chararray, '
+                        metadataFields += "'" + dataType + "' as " + name + '_dataType:chararray, '
+                                      
+                if subtype == 'streamDataset':
+                    metadataFields = ", '" + m['virtualEntityName'] + "' as Sensor_Name:chararray, " + metadataFields
+                    metadataFields += str(m['info']['fps']) + " as Dataset_frequency:double, '"  
+                    
+                    for tag in m['info']['tags']:
+                        metadataFields += tag['tagCode'] + " "
+                    
+                    metadataFields +=  "' as Dataset_Tags:chararray"
+                                                                                       
+                exportConfig = {
+                    'minObjectId' : precTS,
+                    'maxObjectId' : newTS,
+                    'idDataset_l' : m['idDataset'],
+                    'datasetVersion_l' : m['datasetVersion'],
+                    'phoenixSchema' : globalVars.phoenixSchemaName[subtype].upper(),
+                    'phoenixTable' :  globalVars.phoenixTableName[subtype].upper(),
+                    'phoenixColumns' : globalVars.phoenixExportColumns[subtype] + phoenixColumns[:-1].upper(),
+                    'phoenixDynamicCol' : dynamicPhoenixColumns[:-1].upper(),
+                    'allFields' : '$0 .. ' + metadataFields,
+                    'pigSchema' : globalVars.pigSchemaExport[subtype] + pigSchema[:-1],
+                    #'avroSchema' : avroSchema,
+                    'outputFile' : tmpExportFolder + "/" + str(m['idDataset']) + "_" +  str(m['datasetVersion'])
+                }
+    
+                exportResults = exportJob.bind(exportConfig).runSingle()
+                if exportResults.isSuccessful():
+                    
+                    numRecords = exportResults.getRecordWritten()
+                    if numRecords > 0:
+                    
+                        if subtype == "streamDataset" or subtype == "socialDataset":
+                            destFolder = headFolder + "/" + tenantOrg + "/" + rawdataFolder + "/" + m['info']['dataDomain'] + "/so_" + m['virtualEntitySlug'] + "/" + m['streamCode']
+                        else:
+                            destFolder = headFolder + "/" + tenantOrg + "/" + rawdataFolder + "/" + m['info']['dataDomain'] + "/db_" + m['codSubDomain'] + "/" + str(m['datasetCode'])
+                    
+                        destFilename = newTS + "_" + str(numRecords) + "-" + str(m['datasetCode']) + "-" + str(m['datasetVersion']) + ".csv"
+                                    
+                        print "Creating folders on HDFS..."    
+                        callResult = call("./create_export_folder.sh " + destFolder + " " + headFolder + " " + tenantOrg + " " + rawdataFolder + " " + m['info']['dataDomain'] + " '" + destFilename + "' " + m['info']['visibility'] + " " + tmpExportFolder + "/" + str(m['idDataset']) + "_" +  str(m['datasetVersion']), shell=True)
+                        if callResult != 0:
+                            destFileList.append(destFolder + "/" + destFilename)
+                    
+                    call("hdfs dfs -rmr " + tmpExportFolder + "/" + str(m['idDataset']) + "_" +  str(m['datasetVersion']), shell = True)                
+                    print 'Dataset ' + str(m['datasetCode']) + "-" + str(m['datasetVersion']) + ' exported successfully'
+                else:
+                    print 'Dataset ' + str(m['datasetCode']) + "-" + str(m['datasetVersion']) + ' export failed'
                
+        else:
+            print "ERROR while reading datasets list for tenant " + tenantCode + ", skipping tenant"         
+        
+            call("hdfs dfs -rmr " + tmpExportFolder, shell = True)          
+            
+            # unlock tenant
+            callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " unlock_tenant.js ", shell = True)
+            if callResult != 0:
+                print "WARNING : tenant " + tenantCode + " unlocking FAILED"
+            
+            continue 
+    
+        call("hdfs dfs -rmr " + tmpExportFolder, shell = True)       
+    
     else:
-        print "FATAL ERROR while reading datasets list for tenant " + tenantCode 
-        sys.exit(1) #si dovrebbe gestire meglio questa situazione       
-                  
+        print "No new data for tenant " + tenantCode + ", skipping tenant" 
+                     
     # aggiorno objectid
-    callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' var param2='" + newTS + "' " + ''' " '''  + " update_objectid.js", shell = True)
+    callResult = call("mongo " + mongoConnectString + ''' --eval "''' + "var param1='" + tenantCode + "';var param2='" + newTS + "'" + '''" '''  + " update_objectid.js", shell = True)
     if callResult != 0:
         print "FATAL ERROR during last_objectid update for " + tenantCode + " tenant"
         print "Removing all files"
-        call("hdfs dfs -rmr " + ' '.join(destFileListd))
-        sys.exit(1)
+        call("hdfs dfs -rmr " + ' '.join(destFileList))
            
     # unlock tenant
     callResult = call("mongo " + mongoConnectString + ''' --eval "''' + " var param1='" + tenantCode + "' " + ''' " '''  + " unlock_tenant.js ", shell = True)
     if callResult != 0:
         print "WARNING : tenant " + tenantCode + " unlocking FAILED"
-        sys.exit(1)
 
-os.remove(outDir + "/lista_dataset." + str(pid) + ".json")   
-os.remove(outDir + "/lista_tenant_org." + str(pid) + ".json")
-os.remove(outDir + "/object_ids." + str(pid) + ".json")
-os.remove(outDir + "/tenant." + str(pid) + ".json") 
+if os.path.exists(outDir + "/lista_dataset." + str(pid) + ".json"):
+    os.remove(outDir + "/lista_dataset." + str(pid) + ".json")
+if os.path.exists(outDir + "/lista_tenant_org." + str(pid) + ".json"):   
+    os.remove(outDir + "/lista_tenant_org." + str(pid) + ".json")
+if os.path.exists(outDir + "/object_ids." + str(pid) + ".json"):
+    os.remove(outDir + "/object_ids." + str(pid) + ".json")
+if os.path.exists(outDir + "/tenant." + str(pid) + ".json"):
+    os.remove(outDir + "/tenant." + str(pid) + ".json") 
+if os.path.exists(outDir + "/notEmptyDatasets." + str(pid) + ".csv"):
+    os.remove(outDir + "/notEmptyDatasets." + str(pid) + ".csv")

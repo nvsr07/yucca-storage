@@ -45,6 +45,7 @@ import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton.TEHttpSolrClient;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.StreamFiller;
@@ -565,6 +566,7 @@ public class InstallCepService {
 						{
 							SolrClient solrServer= null;
 							solrServer = KnoxSolrSingleton.getServer();
+							((TEHttpSolrClient)solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
 							UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(),""+datasetcode);
 							solrServer.commit();
 							log.info("[InstallCepService::deleteDatasetLogically] deleted status" + resp.getStatus());
@@ -700,6 +702,7 @@ public class InstallCepService {
 				{
 					SolrClient solrServer= null;
 					solrServer = KnoxSolrSingleton.getServer();
+					((TEHttpSolrClient)solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
 					UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(),""+newStream.getCodiceTenant()+"_"+newStream.getCodiceVirtualEntity()+"_"+newStream.getCodiceStream());
 					solrServer.commit();
 					log.info("[InstallCepService::deleteDatasetLogically] deleted status" + resp.getStatus());

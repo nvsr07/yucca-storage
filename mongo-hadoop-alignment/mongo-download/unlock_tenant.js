@@ -1,10 +1,10 @@
 // lanciare con
-// mongo DB_SUPPORT -u cep -p XXX --authenticationDatabase admin --quiet --eval "var param1='<TENANT>'" unlock_tenant.js
+//mongo DB_SUPPORT --host $MONGO_HOST --port $MONGO_PORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1='<TENANT>'" unlock_tenant.js
 //
 var env = {};
 env.TENANT=param1;
 dbSupporto = db.getSiblingDB("DB_SUPPORT");
-myAllin = db.allineamento.find({"tenantCode":env.TENANT});
+myAllin = dbSupporto.allineamento.find({"tenantCode":env.TENANT});
 if (myAllin.count() == 1) {
   while (myAllin.hasNext()) {
     islocked = myAllin.next().locked;

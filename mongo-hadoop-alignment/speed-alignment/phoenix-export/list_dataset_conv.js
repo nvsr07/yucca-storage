@@ -5,8 +5,9 @@
 //
 var env = {};
 env.TENANT=param1;
+env.DATASETS=param2;
 dbSupporto = db.getSiblingDB("DB_SUPPORT");
-elencoDataset = db.metadata.find({"configData.tenantCode":env.TENANT, "configData.subtype":{ $ne : "binaryDataset"}});
+elencoDataset = db.metadata.find({"configData.tenantCode":env.TENANT, "configData.subtype":{ $ne : "binaryDataset"}, $or: JSON.parse(env.DATASETS)});
 infoDatasets = [];
 while (elencoDataset.hasNext()) {
     myDataset = elencoDataset.next();
@@ -14,6 +15,7 @@ while (elencoDataset.hasNext()) {
     if (infoStream == null) {
     	myvirtualEntitySlug="null";
     	mystreamCode="null";
+    	myvirtualEntityName="null";
     } else {
     	myvirtualEntitySlug=infoStream.streams.stream.virtualEntitySlug;
   //	se lo slug e vuoto, salto il dataset
@@ -21,6 +23,7 @@ while (elencoDataset.hasNext()) {
     	// sostituisce eventuali caratteri non ammessi con '-'
     	myvirtualEntitySlug=myvirtualEntitySlug.replace(/([^a-zA-Z0-9-_]+)/gi, '-');
     	mystreamCode=infoStream.streamCode;
+    	myvirtualEntityName=infoStream.streams.stream.virtualEntityName;
     }
     if (myDataset.info.codSubDomain == null) {
     	mycodSubDomain=myDataset.info.dataDomain;
@@ -41,10 +44,13 @@ while (elencoDataset.hasNext()) {
     	"info" : {
     		"visibility" : myDataset.info.visibility,
     		"fields" : myDataset.info.fields,
-    		"dataDomain" : myDataset.info.dataDomain
+    		"dataDomain" : myDataset.info.dataDomain,
+    		"fps" : (myDataset.info.fps != undefined ? myDataset.info.fps : "null"),
+    		"tags" : myDataset.info.tags
     	},
     	"streamCode" : mystreamCode,
     	"virtualEntitySlug" : myvirtualEntitySlug, 
+    	"virtualEntityName" : myvirtualEntityName,
     	"codSubDomain" : mycodSubDomain
     };
     
