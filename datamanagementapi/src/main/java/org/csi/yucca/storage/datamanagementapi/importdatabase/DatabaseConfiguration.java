@@ -9,6 +9,11 @@ import org.csi.yucca.storage.datamanagementapi.importdatabase.conf.OracleConfigu
 import org.csi.yucca.storage.datamanagementapi.importdatabase.conf.PostgreSQLConfiguration;
 
 public abstract class DatabaseConfiguration {
+	
+	public static String DB_TYPE_MYSQL = "MYSQL";
+	public static String DB_TYPE_ORACLE = "ORACLE";
+	public static String DB_TYPE_POSTGRESQL = "POSTGRESQL";
+	public static String DB_TYPE_HIVE = "HIVE";
 
 	protected String dbDriver;
 	protected Map<String, String> typesMap = new HashMap<String, String>();
@@ -26,13 +31,13 @@ public abstract class DatabaseConfiguration {
 	protected abstract void initDbDriver();
 
 	public static DatabaseConfiguration getDatabaseConfiguation(String dbType) {
-		if ("MYSQL".equals(dbType))
+		if (DB_TYPE_MYSQL.equals(dbType))
 			return new MySQLConfiguration();
-		if ("ORACLE".equals(dbType))
+		if (DB_TYPE_ORACLE.equals(dbType))
 			return new OracleConfiguration();
-		if ("POSTGRESQL".equals(dbType))
+		if (DB_TYPE_POSTGRESQL.equals(dbType))
 			return new PostgreSQLConfiguration();
-		if ("HIVE".equals(dbType))
+		if (DB_TYPE_HIVE.equals(dbType))
 			return new HiveConfiguration();
 		return null;
 	}
