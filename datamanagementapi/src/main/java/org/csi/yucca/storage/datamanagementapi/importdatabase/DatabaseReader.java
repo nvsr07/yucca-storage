@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -83,10 +84,10 @@ public class DatabaseReader {
 		String[] types = { "TABLE", "VIEW" };
 		ResultSet tablesResultSet = meta.getTables(null, null, "%", types);
 
-
 		List<DatabaseTableDataset> tables = new LinkedList<DatabaseTableDataset>();
 
-		loadFk(meta);
+		if (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE))
+			loadFk(meta, null);
 		// Map<String, String> pkMap = loadPk(meta);
 
 		//
@@ -107,18 +108,24 @@ public class DatabaseReader {
 		// "DERIVED". (may be null)
 
 		while (tablesResultSet.next()) {
+
 			String tableName = tablesResultSet.getString("TABLE_NAME");
 			String tableSchema = tablesResultSet.getString("TABLE_SCHEM");
+			String tableCat = tablesResultSet.getString("TABLE_CAT");
 			String tableType = tablesResultSet.getString("TABLE_TYPE");
 			String tableComment = tablesResultSet.getString("REMARKS");
 
-			
+			//printResultSetColumns(tablesResultSet);
+
 			log.debug("[DatabaseReader::loadSchema] tableName " + tableName);
 
 			DatabaseTableDataset table = new DatabaseTableDataset();
 			table.setTableName(tableName);
 
-			if (!tableName.equals("TOAD_PLAN_TABLE") && !tableName.equals("PLAN_TABLE") && username.toUpperCase().equalsIgnoreCase(tableSchema)) {
+			if (!tableName.equals("TOAD_PLAN_TABLE") && !tableName.equals("PLAN_TABLE") && (tableSchema == null || username.toUpperCase().equalsIgnoreCase(tableSchema))
+					&& (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))) {
+				if (!dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE))
+					loadFk(meta, tableName);
 
 				Field[] fields = loadColumns(meta, tableName);
 				for (Field field : fields) {
@@ -162,16 +169,17 @@ public class DatabaseReader {
 						}
 					}
 					if (newFields.size() > 0) {
-//						Field[] newFieldsArray = new Field[newFields.size() + metadata.getInfo().getFields().length];
-//						int counter = 0;
-//						for (Field field : metadata.getInfo().getFields()) {
-//							newFieldsArray[counter] = field;
-//							counter++;
-//						}
-//						for (Field field : newFields) {
-//							newFieldsArray[counter] = field;
-//							counter++;
-//						}
+						// Field[] newFieldsArray = new Field[newFields.size() +
+						// metadata.getInfo().getFields().length];
+						// int counter = 0;
+						// for (Field field : metadata.getInfo().getFields()) {
+						// newFieldsArray[counter] = field;
+						// counter++;
+						// }
+						// for (Field field : newFields) {
+						// newFieldsArray[counter] = field;
+						// counter++;
+						// }
 						metadata.getInfo().setFields(fields);
 						table.setNewFields(newFields);
 					}
@@ -252,11 +260,11 @@ public class DatabaseReader {
 
 	}
 
-	private void loadFk(DatabaseMetaData metaData) throws SQLException {
+	private void loadFk(DatabaseMetaData metaData, String table) throws SQLException {
 
 		fkMap = new HashMap<String, String>();
 
-		ResultSet foreignKeys = metaData.getImportedKeys(null, null, null);
+		ResultSet foreignKeys = metaData.getImportedKeys(null, null, table);
 		while (foreignKeys.next()) {
 			String fkTableName = foreignKeys.getString("FKTABLE_NAME");
 			String fkColumnName = foreignKeys.getString("FKCOLUMN_NAME");
@@ -280,7 +288,21 @@ public class DatabaseReader {
 		}
 	}
 
+	public void printResultSetColumns(ResultSet rs) {
+		try {
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnCount = rsmd.getColumnCount();
 
+			// The column count starts from 1
+			for (int i = 1; i <= columnCount; i++) {
+				String name = rsmd.getColumnName(i);
+				System.out.println("" + name + ": " + rs.getObject(name));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
+	
 
 }
