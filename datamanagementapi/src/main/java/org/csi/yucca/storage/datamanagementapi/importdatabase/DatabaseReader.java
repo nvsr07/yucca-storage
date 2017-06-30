@@ -115,7 +115,7 @@ public class DatabaseReader {
 			String tableType = tablesResultSet.getString("TABLE_TYPE");
 			String tableComment = tablesResultSet.getString("REMARKS");
 
-			//printResultSetColumns(tablesResultSet);
+			// printResultSetColumns(tablesResultSet);
 
 			log.debug("[DatabaseReader::loadSchema] tableName " + tableName);
 
@@ -127,7 +127,7 @@ public class DatabaseReader {
 				if (!dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE))
 					loadFk(meta, tableName);
 
-				Field[] fields = loadColumns(meta, tableName);
+				Field[] fields = loadColumns(meta, tableName, tableSchema);
 				for (Field field : fields) {
 					if (fkMap.containsKey(tableName + "." + field.getFieldName())) {
 						field.setForeignKey(fkMap.get(tableName + "." + field.getFieldName()));
@@ -219,20 +219,20 @@ public class DatabaseReader {
 			}
 
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
+			log.error("[DatabaseReader::loadExistingMetadata] ERROR NumberFormatException " + e.getMessage());
 			e.printStackTrace();
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
+			log.error("[DatabaseReader::loadExistingMetadata] ERROR UnknownHostException " + e.getMessage());
 			e.printStackTrace();
 		}
 		return existingMedatata;
 
 	}
 
-	private Field[] loadColumns(DatabaseMetaData metaData, String tableName) throws SQLException {
+	private Field[] loadColumns(DatabaseMetaData metaData, String tableName, String tableSchema) throws SQLException {
 		List<Field> fields = new LinkedList<Field>();
 
-		ResultSet columnsResultSet = metaData.getColumns(null, null, tableName, null);
+		ResultSet columnsResultSet = metaData.getColumns(null, tableSchema, tableName, null);
 		while (columnsResultSet.next()) {
 			Field field = new Field();
 			String columnName = columnsResultSet.getString("COLUMN_NAME");
@@ -241,15 +241,16 @@ public class DatabaseReader {
 				field.setFieldAlias(columnsResultSet.getString("REMARKS"));
 			else
 				field.setFieldAlias(columnName.replace("_", " "));
-			field.setDataType(databaseConfiguation.getTypesMap().get(columnsResultSet.getString("TYPE_NAME")));
+
+			String columnType = columnsResultSet.getString("TYPE_NAME");
+			if (columnType != null)
+				field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
+			else {
+				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
+				field.setDataType("string");
+			}
 			field.setSourceColumnName(columnName);
-			// System.out.println("  " +
-			// columnsResultSet.getString("TABLE_SCHEM") + ", " +
-			// columnsResultSet.getString("TABLE_NAME") + ", "
-			// + columnsResultSet.getString("COLUMN_NAME") + ", " +
-			// columnsResultSet.getString("TYPE_NAME") + ", " +
-			// columnsResultSet.getInt("COLUMN_SIZE") + ", "
-			// + columnsResultSet.getInt("NULLABLE"));
+
 			fields.add(field);
 		}
 
@@ -288,7 +289,8 @@ public class DatabaseReader {
 		}
 	}
 
-	public void printResultSetColumns(ResultSet rs) {
+	public List<String> printResultSetColumns(ResultSet rs) {
+		List<String> columnsName = new LinkedList<String>();
 		try {
 			ResultSetMetaData rsmd = rs.getMetaData();
 			int columnCount = rsmd.getColumnCount();
@@ -296,11 +298,14 @@ public class DatabaseReader {
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++) {
 				String name = rsmd.getColumnName(i);
-				System.out.println("" + name + ": " + rs.getObject(name));
+				// System.out.println("" + name + ": " + rs.getObject(name));
+				columnsName.add(name);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		return columnsName;
 	}
 
 	

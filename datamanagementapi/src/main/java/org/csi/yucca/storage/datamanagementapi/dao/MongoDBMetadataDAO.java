@@ -122,7 +122,6 @@ public class MongoDBMetadataDAO {
 			DBObject doc = cursor.next();
 			ObjectId id = (ObjectId) doc.get("_id");
 			Metadata metadata = Metadata.fromJson(JSON.serialize(doc));
-			System.out.println(metadata.getDatasetCode());
 			metadata.setId(id.toString());
 			data.add(metadata);
 		}
