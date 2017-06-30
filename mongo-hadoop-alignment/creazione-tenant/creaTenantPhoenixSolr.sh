@@ -20,6 +20,8 @@ else
 fi
 # per Phoenix, converte tutto in maiuscolo - estensione bash
 tenantCode=${tenantCode^^}
+#rimozione SDP_ prefisso se presente
+tenantCode=${tenantCode#SDP_}
 #
 # verifica presenza ticket Kerberos
 kinit -kt /etc/security/keytabs/sdp.service.keytab sdp/sdnet-master4.sdp.csi.it@SDP.CSI.IT
