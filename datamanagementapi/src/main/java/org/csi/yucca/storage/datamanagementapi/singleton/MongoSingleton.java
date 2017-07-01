@@ -16,7 +16,7 @@ public class MongoSingleton {
 
 	private MongoSingleton() throws NumberFormatException, UnknownHostException {
 
-		credential = MongoCredential.createMongoCRCredential(Config.getInstance().getMongoUsername(), Config.getInstance()
+		credential = MongoCredential.createCredential(Config.getInstance().getMongoUsername(), Config.getInstance()
 				.getDbAuth(), Config.getInstance().getMongoPassword().toCharArray());
 
 		List<ServerAddress> servers =new ArrayList<ServerAddress>(); 
