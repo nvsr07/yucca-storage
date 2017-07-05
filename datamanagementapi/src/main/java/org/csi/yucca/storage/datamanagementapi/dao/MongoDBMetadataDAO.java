@@ -101,7 +101,7 @@ public class MongoDBMetadataDAO {
 		return data;
 	}
 
-	public List<Metadata> readAllMetadataByJdbc(String dbType, String dbUrl, String dbName, boolean onlyCurrent) {
+	public List<Metadata> readAllMetadataByJdbc(String tenantCode, String dbType, String dbUrl, String dbName, boolean onlyCurrent) {
 		List<Metadata> data = new ArrayList<Metadata>();
 		BasicDBObject searchQuery = new BasicDBObject();
 		// db.getCollection('metadata').find({$and:[{"configData.jdbc.dbName":
@@ -109,6 +109,7 @@ public class MongoDBMetadataDAO {
 		// "ORACLE"},{"configData.jdbc.dbType": "ORACLE"}]})
 
 		BasicDBList and = new BasicDBList();
+		and.add(new BasicDBObject("configData.tenantCode", tenantCode));
 		and.add(new BasicDBObject("configData.jdbc.dbName", MongoDBUtils.queryCaseInsensiviveValue(dbName)));
 		and.add(new BasicDBObject("configData.jdbc.dbType", MongoDBUtils.queryCaseInsensiviveValue(dbType)));
 		and.add(new BasicDBObject("configData.jdbc.dbUrl", MongoDBUtils.queryCaseInsensiviveValue(dbUrl)));

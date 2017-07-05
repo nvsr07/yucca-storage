@@ -1129,38 +1129,44 @@ public class MetadataService {
 		return rows.toString();
 	}
 
-	@GET
-	@Path("/importDatabase")
-	@Produces("application/json; charset=UTF-8")
-	public Response importDatabaseGet(@QueryParam("dbType") String dbType, @QueryParam("sourceType") String sourceType, @QueryParam("jdbc_hostname") String jdbcHostname,
-			@QueryParam("jdbc_dbname") String jdbcDbname, @QueryParam("jdbc_username") String jdbcUsername, @QueryParam("jdbc_password") String jdbcPassword)
-			throws NumberFormatException, UnknownHostException {
-
-		log.debug("[MetadataService::importDatabase] - START");
-		Response response;
-		try {
-			String dbSchema = importDatabaseJdbc(dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
-			response = Response.ok(dbSchema, MediaType.APPLICATION_JSON).build();
-		} catch (ImportDatabaseException e) {
-			response = Response.status(Response.Status.BAD_REQUEST).entity(e.toJson()).build();
-			e.printStackTrace();
-		} catch (Exception ex) {
-			ImportDatabaseException e = new ImportDatabaseException(ex.getMessage(), null);
-			response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.toJson()).build();
-		}
-
-		return response;
-		// return dbSchema;
-	}
-
+	/*
+	 * @GET
+	 * 
+	 * @Path("/importDatabase/{tenant}")
+	 * 
+	 * @Produces("application/json; charset=UTF-8") public Response
+	 * importDatabaseGet(@PathParam("tenant") String tenantCode,
+	 * @QueryParam("dbType") String dbType, @QueryParam("sourceType") String
+	 * sourceType, @QueryParam("jdbc_hostname") String jdbcHostname,
+	 * 
+	 * @QueryParam("jdbc_dbname") String jdbcDbname,
+	 * @QueryParam("jdbc_username") String jdbcUsername,
+	 * @QueryParam("jdbc_password") String jdbcPassword) throws
+	 * NumberFormatException, UnknownHostException {
+	 * 
+	 * log.debug("[MetadataService::importDatabase] - START"); Response
+	 * response; try { String dbSchema = importDatabaseJdbc(tenantCode, dbType,
+	 * jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword); response =
+	 * Response.ok(dbSchema, MediaType.APPLICATION_JSON).build(); } catch
+	 * (ImportDatabaseException e) { response =
+	 * Response.status(Response.Status.BAD_REQUEST).entity(e.toJson()).build();
+	 * e.printStackTrace(); } catch (Exception ex) { ImportDatabaseException e =
+	 * new ImportDatabaseException(ex.getMessage(), null); response =
+	 * Response.status
+	 * (Response.Status.INTERNAL_SERVER_ERROR).entity(e.toJson()).build(); }
+	 * 
+	 * return response; // return dbSchema; }
+	 */
+	
+	
 	// Import Database
 	@POST
-	@Path("/importDatabase")
+	@Path("/importDatabase/{tenant}")
 	// @Produces(MediaType.APPLICATION_JSON)
 	@Produces("application/json; charset=UTF-8")
 	// allowCredentials = true, exposeHeaders = { "X-custom-3", "X-custom-4" },
 	// allowMethods = {"POST"})
-	public Response importDatabase(@Context HttpServletRequest request) throws NumberFormatException, UnknownHostException {
+	public Response importDatabase(@Context HttpServletRequest request, @PathParam("tenant") String tenantCode) throws NumberFormatException, UnknownHostException {
 
 		log.debug("[MetadataService::importDatabase] - START");
 
@@ -1203,7 +1209,7 @@ public class MetadataService {
 			// String dbSchema = importDatabaseJdbc(dbType, jdbcHostname,
 			// jdbcDbname, jdbcUsername, jdbcPassword);
 			if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType))
-				dbSchema = importDatabaseJdbc(dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
+				dbSchema = importDatabaseJdbc(tenantCode, dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
 			else if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType) && scriptItemStream != null)
 				dbSchema = importDatabaseScript(dbType, scriptItemStream);
 
@@ -1224,9 +1230,9 @@ public class MetadataService {
 		return null;
 	}
 
-	private String importDatabaseJdbc(String dbType, String hostname, String dbname, String username, String password) throws ClassNotFoundException, SQLException,
-			ImportDatabaseException {
-		DatabaseReader databaseReader = new DatabaseReader(dbType, hostname, dbname, username, password);
+	private String importDatabaseJdbc(String tenantCode, String dbType, String hostname, String dbname, String username, String password) throws ClassNotFoundException,
+			SQLException, ImportDatabaseException {
+		DatabaseReader databaseReader = new DatabaseReader(tenantCode, dbType, hostname, dbname, username, password);
 		return databaseReader.loadSchema();
 	}
 }

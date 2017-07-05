@@ -29,6 +29,7 @@ import com.mongodb.MongoClient;
 
 public class DatabaseReader {
 
+	private String tenantCode;
 	private String dbType;
 	private String dbUrl;
 	private String dbName;
@@ -42,7 +43,7 @@ public class DatabaseReader {
 	Map<String, String> fkMap;
 	static Logger log = Logger.getLogger(DatabaseReader.class);
 
-	public DatabaseReader(String dbType, String dbUrl, String dbName, String username, String password) throws ImportDatabaseException {
+	public DatabaseReader(String tenantCode, String dbType, String dbUrl, String dbName, String username, String password) throws ImportDatabaseException {
 		super();
 		log.debug("[DatabaseReader::DatabaseReader] START - dbType:  " + dbType + ", dbUrl: " + dbUrl + ", dbName: " + dbName + ", username: " + username);
 		this.dbType = dbType;
@@ -50,6 +51,7 @@ public class DatabaseReader {
 		this.dbName = dbName;
 		this.username = username;
 		this.password = password;
+		this.tenantCode = tenantCode;
 
 		databaseConfiguation = DatabaseConfiguration.getDatabaseConfiguation(dbType);
 		if (databaseConfiguation == null)
@@ -204,26 +206,28 @@ public class DatabaseReader {
 	private Map<String, Metadata> loadExistingMetadata() {
 		log.debug("[DatabaseReader::loadExistingMetadata] START");
 		Map<String, Metadata> existingMedatata = new HashMap<String, Metadata>();
-		MongoClient mongo;
-		try {
-			mongo = MongoSingleton.getMongoClient();
-			String supportDb = Config.getInstance().getDbSupport();
-			String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
-			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+		if (tenantCode != null) {
+			MongoClient mongo;
+			try {
+				mongo = MongoSingleton.getMongoClient();
+				String supportDb = Config.getInstance().getDbSupport();
+				String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+				MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
 
-			List<Metadata> existingMedatataList = metadataDAO.readAllMetadataByJdbc(dbType, dbUrl, dbName, true);
-			if (existingMedatataList != null && existingMedatataList.size() > 0) {
-				for (Metadata metadata : existingMedatataList) {
-					existingMedatata.put(metadata.getConfigData().getJdbc().getTableName(), metadata);
+				List<Metadata> existingMedatataList = metadataDAO.readAllMetadataByJdbc(tenantCode, dbType, dbUrl, dbName, true);
+				if (existingMedatataList != null && existingMedatataList.size() > 0) {
+					for (Metadata metadata : existingMedatataList) {
+						existingMedatata.put(metadata.getConfigData().getJdbc().getTableName(), metadata);
+					}
 				}
-			}
 
-		} catch (NumberFormatException e) {
-			log.error("[DatabaseReader::loadExistingMetadata] ERROR NumberFormatException " + e.getMessage());
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			log.error("[DatabaseReader::loadExistingMetadata] ERROR UnknownHostException " + e.getMessage());
-			e.printStackTrace();
+			} catch (NumberFormatException e) {
+				log.error("[DatabaseReader::loadExistingMetadata] ERROR NumberFormatException " + e.getMessage());
+				e.printStackTrace();
+			} catch (UnknownHostException e) {
+				log.error("[DatabaseReader::loadExistingMetadata] ERROR UnknownHostException " + e.getMessage());
+				e.printStackTrace();
+			}
 		}
 		return existingMedatata;
 
@@ -307,7 +311,5 @@ public class DatabaseReader {
 
 		return columnsName;
 	}
-
-	
 
 }
