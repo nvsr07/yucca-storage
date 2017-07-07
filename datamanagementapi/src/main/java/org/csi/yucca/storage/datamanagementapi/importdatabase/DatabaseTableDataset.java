@@ -1,5 +1,6 @@
 package org.csi.yucca.storage.datamanagementapi.importdatabase;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
@@ -14,6 +15,7 @@ public class DatabaseTableDataset {
 	private String tableType;
 	private String status;
 	private Metadata dataset;
+	private List<String> warnings;
 	private List<Field> newFields;
 
 	public DatabaseTableDataset() {
@@ -60,4 +62,17 @@ public class DatabaseTableDataset {
 		this.tableType = tableType;
 	}
 
+	public List<String> getWarnings() {
+		return warnings;
+	}
+
+	public void setWarnings(List<String> warnings) {
+		this.warnings = warnings;
+	}
+	
+	public void addWarning(String warning){
+		if(warnings==null)
+			warnings = new LinkedList<String>();
+		warnings.add(warning);
+	}
 }

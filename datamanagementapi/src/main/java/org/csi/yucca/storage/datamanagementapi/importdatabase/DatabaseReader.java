@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -67,6 +68,10 @@ public class DatabaseReader {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(databaseConfiguation.getConnectionUrl(dbUrl, dbName), username, password);
+			if (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)) {
+				((oracle.jdbc.driver.OracleConnection) connection).setIncludeSynonyms(true);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ImportDatabaseException(ImportDatabaseException.CONNECTION_FAILED, e.getMessage());
@@ -83,7 +88,7 @@ public class DatabaseReader {
 		log.debug("[DatabaseReader::loadSchema]  existing metadata loaded.");
 
 		DatabaseMetaData meta = conn.getMetaData();
-		String[] types = { "TABLE", "VIEW" };
+		String[] types = {"TABLE", "VIEW", "SYNONYM"};
 		ResultSet tablesResultSet = meta.getTables(null, null, "%", types);
 
 		List<DatabaseTableDataset> tables = new LinkedList<DatabaseTableDataset>();
@@ -117,19 +122,42 @@ public class DatabaseReader {
 			String tableType = tablesResultSet.getString("TABLE_TYPE");
 			String tableComment = tablesResultSet.getString("REMARKS");
 
-			// printResultSetColumns(tablesResultSet);
-
 			log.debug("[DatabaseReader::loadSchema] tableName " + tableName);
 
 			DatabaseTableDataset table = new DatabaseTableDataset();
 			table.setTableName(tableName);
 
+			System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
 			if (!tableName.equals("TOAD_PLAN_TABLE") && !tableName.equals("PLAN_TABLE") && (tableSchema == null || username.toUpperCase().equalsIgnoreCase(tableSchema))
 					&& (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))) {
-				if (!dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE))
-					loadFk(meta, tableName);
+				// printResultSetColumns(tablesResultSet);
 
-				Field[] fields = loadColumns(meta, tableName, tableSchema);
+				Field[] fields = new Field[0];
+				if (!dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)) {
+					try {
+						loadFk(meta, tableName);
+					} catch (Exception e) {
+						fields = loadColumns(meta, tableName, tableSchema);
+						log.error("[DatabaseReader::loadSchema] error while loading fk  of table " + tableName + " - message: " + e.getMessage());
+						e.printStackTrace();
+						table.addWarning("Error loading foreign keys: " + e.getMessage());
+					}
+					try {
+					} catch (Exception e) {
+						log.error("[DatabaseReader::loadSchema] error while loading fk  of table " + tableName + " - message: " + e.getMessage());
+						e.printStackTrace();
+						table.addWarning("Error loading foreign keys: " + e.getMessage());
+					}
+				} else {
+					try {
+						fields = loadColumnsOracle(conn, tableName, tableSchema);
+					} catch (Exception e) {
+						log.error("[DatabaseReader::loadSchema] error while loading fk  of table " + tableName + " - message: " + e.getMessage());
+						e.printStackTrace();
+						table.addWarning("Error loading foreign keys: " + e.getMessage());
+					}
+				}
+
 				for (Field field : fields) {
 					if (fkMap.containsKey(tableName + "." + field.getFieldName())) {
 						field.setForeignKey(fkMap.get(tableName + "." + field.getFieldName()));
@@ -265,6 +293,42 @@ public class DatabaseReader {
 
 	}
 
+	private Field[] loadColumnsOracle(Connection conn, String tableName, String tableSchema) throws SQLException {
+		List<Field> fields = new LinkedList<Field>();
+
+		PreparedStatement statement = conn.prepareStatement("SELECT * from " + tableName + " WHERE 1 = 0");
+		System.out.println("table " + tableName);
+		ResultSetMetaData statementMetaData = statement.getMetaData();
+		for (int i = 1; i < statementMetaData.getColumnCount() + 1; i++) {
+			Field field = new Field();
+			String columnName = statementMetaData.getColumnName(i);
+			field.setFieldName(columnName);
+
+			if (statementMetaData.getColumnLabel(i) != null)
+				field.setFieldAlias(statementMetaData.getColumnLabel(i));
+			else
+				field.setFieldAlias(columnName.replace("_", " "));
+
+			String columnType = statementMetaData.getColumnTypeName(i);
+			if (columnType != null)
+				field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
+			else {
+				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
+				field.setDataType("string");
+			}
+			field.setSourceColumnName(columnName);
+
+			fields.add(field);
+
+		}
+
+		Field[] fieldsArr = new Field[fields.size()];
+		fieldsArr = fields.toArray(fieldsArr);
+
+		return fieldsArr;
+
+	}
+
 	private void loadFk(DatabaseMetaData metaData, String table) throws SQLException {
 
 		fkMap = new HashMap<String, String>();
@@ -302,7 +366,7 @@ public class DatabaseReader {
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++) {
 				String name = rsmd.getColumnName(i);
-				// System.out.println("" + name + ": " + rs.getObject(name));
+				System.out.println("" + name + ": " + rs.getObject(name));
 				columnsName.add(name);
 			}
 		} catch (Exception e) {
