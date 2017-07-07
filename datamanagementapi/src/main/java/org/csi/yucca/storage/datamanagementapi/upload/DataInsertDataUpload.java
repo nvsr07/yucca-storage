@@ -72,10 +72,6 @@ public class DataInsertDataUpload extends DataUpload {
 			for (int j = 0; datasetMetadata.getInfo().getFields() != null && j < datasetMetadata.getInfo().getFields().length; j++) {
 				int numColumn = 0;
 				boolean found = false;
-				// dataset from db doesn't have source column
-				if(datasetMetadata.getInfo().getFields()[j].getSourceColumn()==null)
-					datasetMetadata.getInfo().getFields()[j].setSourceColumn(numColumn + 1);
-				
 				while (fieldValues != null && numColumn < fieldValues.length && !found) {
 
 					String typeCode = null;

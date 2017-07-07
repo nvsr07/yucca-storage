@@ -88,7 +88,7 @@ public class DatabaseReader {
 		log.debug("[DatabaseReader::loadSchema]  existing metadata loaded.");
 
 		DatabaseMetaData meta = conn.getMetaData();
-		String[] types = {"TABLE", "VIEW", "SYNONYM"};
+		String[] types = { "TABLE", "VIEW", "SYNONYM" };
 		ResultSet tablesResultSet = meta.getTables(null, null, "%", types);
 
 		List<DatabaseTableDataset> tables = new LinkedList<DatabaseTableDataset>();
@@ -195,6 +195,8 @@ public class DatabaseReader {
 						if (existingField == null) {
 							newFields.add(fields[i]);
 						} else {
+							if(existingField.getSourceColumn()==null)
+								existingField.setSourceColumn(i+1);
 							fields[i] = existingField;
 						}
 					}
@@ -265,6 +267,7 @@ public class DatabaseReader {
 		List<Field> fields = new LinkedList<Field>();
 
 		ResultSet columnsResultSet = metaData.getColumns(null, tableSchema, tableName, null);
+		int columnCounter = 1;
 		while (columnsResultSet.next()) {
 			Field field = new Field();
 			String columnName = columnsResultSet.getString("COLUMN_NAME");
@@ -281,9 +284,11 @@ public class DatabaseReader {
 				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
 				field.setDataType("string");
 			}
+			field.setSourceColumn(columnCounter);
 			field.setSourceColumnName(columnName);
 
 			fields.add(field);
+			columnCounter++;
 		}
 
 		Field[] fieldsArr = new Field[fields.size()];
@@ -297,7 +302,6 @@ public class DatabaseReader {
 		List<Field> fields = new LinkedList<Field>();
 
 		PreparedStatement statement = conn.prepareStatement("SELECT * from " + tableName + " WHERE 1 = 0");
-		System.out.println("table " + tableName);
 		ResultSetMetaData statementMetaData = statement.getMetaData();
 		for (int i = 1; i < statementMetaData.getColumnCount() + 1; i++) {
 			Field field = new Field();
@@ -310,12 +314,14 @@ public class DatabaseReader {
 				field.setFieldAlias(columnName.replace("_", " "));
 
 			String columnType = statementMetaData.getColumnTypeName(i);
-			if (columnType != null && databaseConfiguation.getTypesMap().get(columnType)!=null)
+			if (columnType != null && databaseConfiguation.getTypesMap().get(columnType) != null)
 				field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
 			else {
 				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
 				field.setDataType("string");
 			}
+			field.setSourceColumn(i - 1);
+
 			field.setSourceColumnName(columnName);
 
 			fields.add(field);
@@ -375,5 +381,5 @@ public class DatabaseReader {
 
 		return columnsName;
 	}
-	
+
 }
