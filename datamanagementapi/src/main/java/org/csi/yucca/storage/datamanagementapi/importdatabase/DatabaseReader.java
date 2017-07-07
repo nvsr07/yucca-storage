@@ -137,12 +137,12 @@ public class DatabaseReader {
 					try {
 						loadFk(meta, tableName);
 					} catch (Exception e) {
-						fields = loadColumns(meta, tableName, tableSchema);
 						log.error("[DatabaseReader::loadSchema] error while loading fk  of table " + tableName + " - message: " + e.getMessage());
 						e.printStackTrace();
 						table.addWarning("Error loading foreign keys: " + e.getMessage());
 					}
 					try {
+						fields = loadColumns(meta, tableName, tableSchema);
 					} catch (Exception e) {
 						log.error("[DatabaseReader::loadSchema] error while loading fk  of table " + tableName + " - message: " + e.getMessage());
 						e.printStackTrace();
@@ -310,7 +310,7 @@ public class DatabaseReader {
 				field.setFieldAlias(columnName.replace("_", " "));
 
 			String columnType = statementMetaData.getColumnTypeName(i);
-			if (columnType != null)
+			if (columnType != null && databaseConfiguation.getTypesMap().get(columnType)!=null)
 				field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
 			else {
 				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
@@ -375,5 +375,5 @@ public class DatabaseReader {
 
 		return columnsName;
 	}
-
+	
 }
