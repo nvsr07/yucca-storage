@@ -76,11 +76,20 @@ public class Tenant {
 	@Expose
     private Integer maxOdataResultPerPage;
     
+    @Expose
+    private String shareInformationType;
     
     
     
-    
-	   public String getDataSolrCollectionName() {
+	   public String getShareInformationType() {
+		return shareInformationType;
+	}
+
+	public void setShareInformationType(String shareInformationType) {
+		this.shareInformationType = shareInformationType;
+	}
+
+	public String getDataSolrCollectionName() {
 			return dataSolrCollectionName;
 		}
 

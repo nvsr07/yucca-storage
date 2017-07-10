@@ -72,6 +72,7 @@ public class TenantFiller {
 		
 		
 		tout.setMaxOdataResultPerPage(tenant.getMaxOdataResultPerPage());
+		tout.setShareInformationType(tenant.getShareInformationType());
  		
 		return tout;
 	}
