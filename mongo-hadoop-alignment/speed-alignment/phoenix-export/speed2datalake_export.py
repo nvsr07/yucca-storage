@@ -158,13 +158,13 @@ for tenant in allTenants:
                     name = field['fieldName'].strip()
                     dataType = field['dataType']
                     
-                    dynamicPhoenixColumns += name + globalVars.dataTypeSuffixes[dataType] + '\ ' + globalVars.dataType2Phoenix[dataType] + ','
+                    dynamicPhoenixColumns += '\\\"' + name + globalVars.dataTypeSuffixes[dataType] + '\\\"\ ' + globalVars.dataType2Phoenix[dataType] + ','
                     
                     if globalVars.dataType2Pig[dataType] == 'datetime':
-                        phoenixColumns += 'TO_CHAR(' + name + globalVars.dataTypeSuffixes[dataType] + '),'
+                        phoenixColumns += 'TO_CHAR(\\\"' + name + globalVars.dataTypeSuffixes[dataType] + '\\\"),'
                         pigSchema += name + ':chararray,'
                     else:
-                        phoenixColumns += name + globalVars.dataTypeSuffixes[dataType] + ','
+                        phoenixColumns += '\\\"' + name + globalVars.dataTypeSuffixes[dataType] + '\\\",'
                         pigSchema += name + ':' + globalVars.dataType2Pig[dataType] + ','  
                     
                     if subtype == 'streamDataset': 

@@ -108,7 +108,9 @@ if callResult == 0:
                         idDataset, datasetVersion, 
                         'datalake', 
                         props.getProperty('zookeeperQuorum'), 
-                        props.getProperty('solrServer')
+                        props.getProperty('solrServer'),
+                        props.getProperty('solrUsr'),
+                        props.getProperty('solrPwd')   
                         ]
                 call(args, shell = False)
                 
