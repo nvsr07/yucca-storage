@@ -914,6 +914,7 @@ public class MetadataService {
 			Metadata existingMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode, null);
 			Metadata newMetadata = metadataDAO.readCurrentMetadataByCode(datasetCode, null);
 
+			newMetadata.getInfo().setDatasetName(inputMetadata.getInfo().getDatasetName());
 			newMetadata.getInfo().setExternalReference(inputMetadata.getInfo().getExternalReference());
 			newMetadata.getInfo().setCopyright(inputMetadata.getInfo().getCopyright());
 			newMetadata.getInfo().setDataDomain(inputMetadata.getInfo().getDataDomain());
