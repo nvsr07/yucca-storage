@@ -4,8 +4,10 @@
 # Esegue lo svecchiamento di tutti i dataset di ciascun tenant 
 # Riceve come parametro l ambiente di esecuzione (preprod / prod ) e carica il corrispondente file xxxx.conf
 #
-echo "`date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ----   Start procedure svecchiamento.sh - param = $1 "
+echo "`date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ----   Start procedure svecchiamentoPhoenixSolr.sh - param = $1 "
 echo ""
+
+PATH=/usr/jdk64/jdk1.7.0_45/bin:$PATH
 
 USAGE="USAGE: $0 prod|preprod"
 if [ -z $1 ]; then
@@ -22,6 +24,10 @@ fi
 
 nomeDir=$EXP_DIR
 myPid=$$
+
+# ottiene ticket kerberos
+kinit -kt /etc/security/keytabs/sdp.service.keytab -p sdp/sdnet-master3.sdp.csi.it@SDP.CSI.IT
+klist
 
 # crea lista tenant
 mongo $MONGO_HOST:$MONGO_PORT/DB_SUPPORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet elenco_tenant_nsl.js > $nomeDir/lista_tenant_org.$myPid.txt
@@ -134,4 +140,4 @@ rm $nomeDir/lista_tenant_org.$myPid.txt
 rm $nomeDir/lista_dataset.$myPid.json
 rm $nomeDir/minId.$myPid.txt
 
-echo " *** `date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ***  procedure svecchiamento.sh successfully executed *** "
+echo " *** `date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ***  procedure svecchiamentoPhoenixSolr.sh successfully executed *** "

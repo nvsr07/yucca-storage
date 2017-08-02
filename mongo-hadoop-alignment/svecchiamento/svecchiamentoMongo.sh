@@ -4,7 +4,7 @@
 # Esegue lo svecchiamento di tutti i dataset di ciascun tenant 
 # Riceve come parametro l ambiente di esecuzione (preprod / prod ) e carica il corrispondente file xxxx.conf
 #
-echo "`date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ----   Start procedure svecchiamento.sh - param = $1 "
+echo "`date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ----   Start procedure svecchiamentoMongo.sh - param = $1 "
 echo ""
 
 USAGE="USAGE: $0 prod|preprod"
@@ -134,4 +134,4 @@ rm $nomeDir/lista_tenant_org.$myPid.txt
 rm $nomeDir/lista_dataset.$myPid.json
 rm $nomeDir/minId.$myPid.txt
 
-echo " *** `date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ***  procedure svecchiamento.sh successfully executed *** "
+echo " *** `date +%H.%M.%S` ---- `date +'%a, %d %h %Y'` ***  procedure svecchiamentoMongo.sh successfully executed *** "
