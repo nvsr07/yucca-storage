@@ -7,7 +7,11 @@ elencoTenant = db.tenant.find({}, {dataPhoenixTableName:1, dataPhoenixSchemaName
 	dataSolrCollectionName:1, measuresSolrCollectionName:1, mediaSolrCollectionName:1, socialSolrCollectionName:1});
 while (elencoTenant.hasNext()) {
   t = elencoTenant.next();
-  print(t.dataPhoenixTableName + ";" + t.dataPhoenixSchemaName + ";" + t.measuresPhoenixTableName + ";" + t.measuresPhoenixSchemaName + ";" + 
-		t.mediaPhoenixTableName + ";" + t.mediaPhoenixSchemaName + ";" + t.socialPhoenixTableName + ";" + t.socialPhoenixSchemaName + ";" + 
-		t.dataSolrCollectionName + ";" + t.measuresSolrCollectionName + ";" + t.mediaSolrCollectionName + ";" + t.socialSolrCollectionName);
+  if(t.dataPhoenixSchemaName != undefined)
+	  print(t.dataPhoenixTableName.toLowerCase() + ";" + t.dataPhoenixSchemaName.toLowerCase() + ";" + 
+			  t.measuresPhoenixTableName.toLowerCase() + ";" + t.measuresPhoenixSchemaName.toLowerCase() + ";" + 
+			  t.mediaPhoenixTableName.toLowerCase() + ";" + t.mediaPhoenixSchemaName.toLowerCase() + ";" +
+			  t.socialPhoenixTableName.toLowerCase() + ";" + t.socialPhoenixSchemaName.toLowerCase() + ";" + 
+			  t.dataSolrCollectionName.toLowerCase() + ";" + t.measuresSolrCollectionName.toLowerCase() + ";" +
+			  t.mediaSolrCollectionName.toLowerCase() + ";" + t.socialSolrCollectionName.toLowerCase());
 }

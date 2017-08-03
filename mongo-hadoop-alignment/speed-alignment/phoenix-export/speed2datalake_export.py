@@ -13,7 +13,7 @@ import java.io as javaio
 import csv
 
 Pig.registerJar("/usr/hdp/current/phoenix-client/phoenix-client.jar")
-Pig.registerJar("/usr/hdp/current/pig-client/piggybank.jar")
+Pig.registerJar("../lib/piggybankExtended.jar")
 
 #Jar to use AVRO
 #Pig.registerJar("/usr/hdp/current/pig-client/lib/avro-1.7.5.jar")
@@ -151,36 +151,34 @@ for tenant in allTenants:
             for m in metadata:
     
                 subtype = m['configData']['subtype']
-                dynamicPhoenixColumns = phoenixColumns = metadataFields = pigSchema = ''
+                dynamicPhoenixColumns = phoenixColumns = metadataFields = csvHeader = metadataHeader = ''
                 
                 for field in m['info']['fields']:
     
                     name = field['fieldName'].strip()
-                    dataType = field['dataType']
+                    dataType = field['dataType'].lower()
                     
                     dynamicPhoenixColumns += '\\\"' + name + globalVars.dataTypeSuffixes[dataType] + '\\\"\ ' + globalVars.dataType2Phoenix[dataType] + ','
+                    csvHeader += name + ','
                     
                     if globalVars.dataType2Pig[dataType] == 'datetime':
                         phoenixColumns += 'TO_CHAR(\\\"' + name + globalVars.dataTypeSuffixes[dataType] + '\\\"),'
-                        pigSchema += name + ':chararray,'
                     else:
                         phoenixColumns += '\\\"' + name + globalVars.dataTypeSuffixes[dataType] + '\\\",'
-                        pigSchema += name + ':' + globalVars.dataType2Pig[dataType] + ','  
-                    
+                                        
                     if subtype == 'streamDataset': 
-                        metadataFields += "'" + field['fieldAlias'] + "' as " + name + '_fieldAlias:chararray, ' 
-                        metadataFields += "'" + field['measureUnit'] + "' as " + name + '_measureUnit:chararray, '
-                        metadataFields += "'" + dataType + "' as " + name + '_dataType:chararray, '
+                        metadataFields += "'" + field['fieldAlias'] + "','" + field['measureUnit'] + "','" + dataType + "',"
+                        metadataHeader += name + '_fieldAlias, ' + name + '_measureUnit, ' + name + '_dataType, '
                                       
                 if subtype == 'streamDataset':
-                    metadataFields = ", '" + m['virtualEntityName'] + "' as Sensor_Name:chararray, " + metadataFields
-                    metadataFields += str(m['info']['fps']) + " as Dataset_frequency:double, '"  
-                    
+                    metadataFields = ", '" + m['virtualEntityName'] + "', " + metadataFields + str(m['info']['fps']) + ", '"
+                    metadataHeader = ", Sensor_Name, " + metadataHeader + "Dataset_frequency, Dataset_Tags"
+                                        
                     for tag in m['info']['tags']:
                         metadataFields += tag['tagCode'] + " "
                     
-                    metadataFields +=  "' as Dataset_Tags:chararray"
-                                                                                       
+                    metadataFields += "'"
+                                                                                                           
                 exportConfig = {
                     'minObjectId' : precTS,
                     'maxObjectId' : newTS,
@@ -191,7 +189,7 @@ for tenant in allTenants:
                     'phoenixColumns' : globalVars.phoenixExportColumns[subtype] + phoenixColumns[:-1].upper(),
                     'phoenixDynamicCol' : dynamicPhoenixColumns[:-1].upper(),
                     'allFields' : '$0 .. ' + metadataFields,
-                    'pigSchema' : globalVars.pigSchemaExport[subtype] + pigSchema[:-1],
+                    'csvHeader' : globalVars.pigSchemaExport[subtype] + csvHeader[:-1] + metadataHeader,
                     #'avroSchema' : avroSchema,
                     'outputFile' : tmpExportFolder + "/" + str(m['idDataset']) + "_" +  str(m['datasetVersion'])
                 }

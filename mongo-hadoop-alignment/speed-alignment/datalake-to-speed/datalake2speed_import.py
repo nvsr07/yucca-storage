@@ -56,7 +56,7 @@ if mode in ["APPEND", "append"]:
 # availableHive = true (getting also dbHiveSchema and dbHiveTable)
 readDatasetListJob = Pig.compileFromFile("""../read_mongo_dataset.pig""")
 readDatasetParams = {
-    'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +'", "configData.current":1, "availableSpeed":true, "availableHive":true}'
+    'mongoInputQuery':'{"configData.tenantCode":"' + tenantCode +'", "configData.current":1, "availableSpeed":true, "availableHive":true, $or: [{"configData.deleted":0}, {"configData.deleted":{$exists:false}}]}'
 }
 results = readDatasetListJob.bind(readDatasetParams).runSingle()
 if results.isSuccessful():
@@ -74,6 +74,7 @@ if results.isSuccessful():
         fields = info['fields']
         fieldsIt = fields.iterator()
         aliasString = ''
+        pigSchema = ''
         mongoFields = ''
         i = 0
         while fieldsIt.hasNext():
@@ -81,12 +82,15 @@ if results.isSuccessful():
             name = field['fieldName']
             value = field['dataType']
             aliasString = aliasString +'$'+ str(i) +' as '+ name
+            pigSchema = pigSchema + name + ":" + globalVars.dataType2Pig[value]
             mongoFields = mongoFields + name + ":chararray "
             i = i + 1
             if fieldsIt.hasNext():
                 aliasString = aliasString + ','
+                pigSchema = pigSchema +', '
                 mongoFields = mongoFields + ', '
         aliasString = aliasString + ''', com.mongodb.hadoop.pig.udf.ToObjectId(bda_id) as bda_id, $'''+str(i+1)+'  as origin'
+        pigSchema = pigSchema + ', bda_id:chararray, bda_origin:chararray'
         mongoFields = mongoFields + ', bda_id:chararray, origin:chararray, idDataset:long, datasetVersion:long'
 # erase data from mongoDB (origin==datalake)
         if mode in ["REPLACE", "replace"]:
@@ -94,7 +98,7 @@ if results.isSuccessful():
 
         copyHive2MongoJob = Pig.compileFromFile("""copy_hive2mongo.pig""")
         #print aliasString
-        results = copyHive2MongoJob.bind({'mongoFields':mongoFields,'aliasString':aliasString, 'idDataset':idDataset, 'datasetVersion':datasetVersion, 'hiveSchema':hiveSchema, 'hiveTable':hiveTable, 'tenantCode':tenantCode, 'collection':globalVars.collectionName[subtype] }).runSingle()
+        results = copyHive2MongoJob.bind({'mongoFields':mongoFields, 'pigSchema':pigSchema, 'aliasString':aliasString, 'idDataset':idDataset, 'datasetVersion':datasetVersion, 'hiveSchema':hiveSchema, 'hiveTable':hiveTable, 'tenantCode':tenantCode, 'collection':globalVars.collectionName[subtype] }).runSingle()
         if results.isSuccessful():
             print "Datalake ---> Speed Done!"
         else:

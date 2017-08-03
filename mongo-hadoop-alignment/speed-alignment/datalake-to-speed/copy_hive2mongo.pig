@@ -1,6 +1,6 @@
 
 
-hiveTable = LOAD '$hiveSchema.$hiveTable' using org.apache.hive.hcatalog.pig.HCatLoader();
+hiveTable = LOAD '$hiveSchema.$hiveTable' using org.apache.hive.hcatalog.pig.HCatLoader() as ($pigSchema);
 
 hiveTableFiltered2 = filter hiveTable by (bda_origin is null OR bda_origin == 'datalake' ) AND bda_id is not null;
 hiveTableCorrected = foreach hiveTableFiltered2 GENERATE $aliasString ,$idDataset as idDataset, $datasetVersion as datasetVersion;

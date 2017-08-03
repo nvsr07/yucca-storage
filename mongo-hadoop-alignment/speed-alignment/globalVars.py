@@ -25,7 +25,8 @@ dataTypeSuffixes = {
     'float' : '_f',
     'longitude' : '_d',
     'latitude' : '_d',
-    'binary' : '_s'
+    'binary' : '_s',
+    'bigdecimal' : '_d'
 }
 
 dataType2Pig = {
@@ -42,7 +43,8 @@ dataType2Pig = {
     'float' : 'float',
     'longitude' : 'double',
     'latitude' : 'double',
-    'binary' : 'chararray'
+    'binary' : 'chararray',
+    'bigdecimal' : 'double'
 }
 
 dataType2Phoenix = {
@@ -59,7 +61,8 @@ dataType2Phoenix = {
     'float' : 'float',
     'longitude' : 'double',
     'latitude' : 'double',
-    'binary' : 'varchar'
+    'binary' : 'varchar',
+    'bigdecimal' : 'double'
 }
 
 dataType2Avro = {
@@ -88,8 +91,8 @@ mongoFields = {
 
 pigSchemaExport = {
     'bulkDataset' : '',
-    'streamDataset' : 'time:chararray, ',
-    'socialDataset' : 'time:chararray, ',
+    'streamDataset' : 'time, ',
+    'socialDataset' : 'time, ',
     'binaryDataset' : ''
 }
 
