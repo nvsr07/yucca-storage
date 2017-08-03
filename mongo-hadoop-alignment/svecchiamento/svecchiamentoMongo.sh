@@ -64,8 +64,8 @@ do
   #fi
   
   #svecchiamento 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$maxRecords}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$maxRecords}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords+1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords+1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
 
   for riga in `cat $nomeDir/lista_dataset.$myPid.json` ;
   do
@@ -108,14 +108,20 @@ do
     minId=`cat $nomeDir/minId.$myPid.txt | grep "\"id\"" | cut -d":" -f2 | tr -d "\"" | tr -d ","`
 	echo "minId: "$minId
 
-	#cancella dati in eccesso da mongo	
-
-    echo mongo $MONGO_HOST:$MONGO_PORT/$collectionDb -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1='$collectionName'; var param2=$idDataset; var param3='$minId'" svecchia_dati_osl.js 
-    mongo $MONGO_HOST:$MONGO_PORT/$collectionDb -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1='$collectionName'; var param2=$idDataset; var param3='$minId'" svecchia_dati_osl.js 
-    if [ $? -ne 0 ]
-    then
-      echo "FATAL ERROR during dataset $idDataset cleaning up"
-      exit 1
+	if [ ! -z "$minId" ]
+	then
+		
+		#cancella dati in eccesso da mongo
+		echo mongo $MONGO_HOST:$MONGO_PORT/$collectionDb -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1='$collectionName'; var param2=$idDataset; var param3='$minId'" svecchia_dati_osl.js 
+        mongo $MONGO_HOST:$MONGO_PORT/$collectionDb -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1='$collectionName'; var param2=$idDataset; var param3='$minId'" svecchia_dati_osl.js 
+        if [ $? -ne 0 ]
+        then
+          echo "FATAL ERROR during dataset $idDataset cleaning up"
+          exit 1
+        fi
+    else
+    	
+    	echo "ERRORE leggendo id minimo, svecchiamento non effettuato"
     fi
     
   done  

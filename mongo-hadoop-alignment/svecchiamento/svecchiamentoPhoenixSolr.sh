@@ -38,7 +38,7 @@ then
 fi
 
 # cicla sui tenant
-for tenantInfo in `cat $nomeDir/lista_tenant_org.$myPid.txt` ;
+for tenantInfo in `cat $nomeDir/lista_tenant_org.$myPid.txt | sort | uniq` ;
 do
 
   dataPhoenixTableName=`echo $tenantInfo | awk -F\; '{print $1}'`
@@ -70,8 +70,8 @@ do
   #fi
   
   #svecchiamento 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$maxRecords}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$maxRecords}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords + 1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords + 1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
 
   for riga in `cat $nomeDir/lista_dataset.$myPid.json` ;
   do
@@ -113,17 +113,24 @@ do
 	curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20desc&wt=json&indent=true&rows=1&start=$maxRecords" > $nomeDir/minId.$myPid.txt
     minId=`cat $nomeDir/minId.$myPid.txt | grep "\"id\"" | cut -d":" -f2 | tr -d "\"" | tr -d ","`
 	echo "minId: "$minId
-
-	#cancella dati in eccesso da phoenix	
-	echo "DELETE FROM ${phoenixSchemaName}.${phoenixTableName} WHERE id < '${minId}' AND iddataset_l = ${idDataset};"
-	phoenix-sqlline sdnet-master1.sdp.csi.it,sdnet-master2.sdp.csi.it,sdnet-master3.sdp.csi.it,sdnet-master4.sdp.csi.it,sdnet-master5.sdp.csi.it <<EOF
+	
+	if [ ! -z "$minId" ]
+	then
+		
+		#cancella dati in eccesso da phoenix	
+	    echo "DELETE FROM ${phoenixSchemaName}.${phoenixTableName} WHERE id < '${minId}' AND iddataset_l = ${idDataset};"
+	    phoenix-sqlline sdnet-master1.sdp.csi.it,sdnet-master2.sdp.csi.it,sdnet-master3.sdp.csi.it,sdnet-master4.sdp.csi.it,sdnet-master5.sdp.csi.it <<EOF
 DELETE FROM ${phoenixSchemaName}.${phoenixTableName} WHERE id < '${minId}' AND iddataset_l = ${idDataset};
 EOF
 
-	#cancella dati in eccesso da solr	
-	echo "curl -v -g -u $solrUsr:$solrPwd \"https://$solrServer:8443/gateway/default/solr/$solrCollectionName/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20id%3A[*%20TO%20${minId}]</query></delete>&commit=true\""
-	curl -v -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollectionName/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20id%3A[*%20TO%20${minId}]</query></delete>&commit=true"
+	    #cancella dati in eccesso da solr	
+	    echo "curl -v -g -u $solrUsr:$solrPwd \"https://$solrServer:8443/gateway/default/solr/$solrCollectionName/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20id%3A[*%20TO%20${minId}]</query></delete>&commit=true\""
+	    curl -v -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollectionName/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20id%3A[*%20TO%20${minId}]</query></delete>&commit=true"
  
+    else
+    	
+    	echo "ERRORE leggendo id minimo, svecchiamento non effettuato"
+    fi 
   done  
 
   # unlock tenant
