@@ -9,7 +9,7 @@ origin=$6
 zookeeperQuorum=$7
 solrServer=$8
 solrUsr=$9
-solrPwd=$10
+solrPwd=${10}
 myPid=$$
 
 echo "Deleting from Phoenix: "
@@ -23,7 +23,7 @@ echo "where iddataset_l = $idDataset and datasetversion_l <= $datasetVersion and
 rm deletePhoenix.$idDataset.$datasetVersion.$myPid.sql
 
 echo "Deleting from Solr: "
-echo "https://$solrServer:8443/gateway/default/solr/$solrCollection/update?stream.body=<delete><query>iddataset_l:$idDataset and datasetversion_l:[* TO $datasetVersion] and origin_s:$origin</query></delete>&commit=true"
+echo "https://$solrServer:8443/gateway/default/solr/$solrCollection/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20datasetversion_l%3A[*%20TO%20$datasetVersion]%20AND%20origin_s%3A$origin</query></delete>&commit=true"
 
 curl -v -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollection/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20datasetversion_l%3A[*%20TO%20$datasetVersion]%20AND%20origin_s%3A$origin</query></delete>&commit=true"
   
