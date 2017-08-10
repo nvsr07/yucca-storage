@@ -98,6 +98,7 @@ public class MetadataService {
 	public static final String IMPORT_DATABASE_IMPORT_CONFIG_JDBC_DBNAME_KEY = "jdbc_dbname";
 	public static final String IMPORT_DATABASE_IMPORT_CONFIG_JDBC_USERNAME_KEY = "jdbc_username";
 	public static final String IMPORT_DATABASE_IMPORT_CONFIG_JDBC_PASSWORD_KEY = "jdbc_password";
+	public static final String IMPORT_DATABASE_IMPORT_CONFIG_ORGANIZATION_CODE = "organizationCode";
 
 	public static final String IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC = "database";
 	public static final String IMPORT_DATABASE_CONFIG_IMPORT_TYPE_SCRIPT = "script";
@@ -1137,11 +1138,14 @@ public class MetadataService {
 	 * 
 	 * @Produces("application/json; charset=UTF-8") public Response
 	 * importDatabaseGet(@PathParam("tenant") String tenantCode,
+	 * 
 	 * @QueryParam("dbType") String dbType, @QueryParam("sourceType") String
 	 * sourceType, @QueryParam("jdbc_hostname") String jdbcHostname,
 	 * 
 	 * @QueryParam("jdbc_dbname") String jdbcDbname,
+	 * 
 	 * @QueryParam("jdbc_username") String jdbcUsername,
+	 * 
 	 * @QueryParam("jdbc_password") String jdbcPassword) throws
 	 * NumberFormatException, UnknownHostException {
 	 * 
@@ -1158,8 +1162,7 @@ public class MetadataService {
 	 * 
 	 * return response; // return dbSchema; }
 	 */
-	
-	
+
 	// Import Database
 	@POST
 	@Path("/importDatabase/{tenant}")
@@ -1178,6 +1181,7 @@ public class MetadataService {
 		String jdbcDbname = null;
 		String jdbcUsername = null;
 		String jdbcPassword = null;
+		String organizationCode = null;
 
 		Response response;
 		try {
@@ -1198,6 +1202,8 @@ public class MetadataService {
 					jdbcUsername = read(item.openStream());
 				else if (IMPORT_DATABASE_IMPORT_CONFIG_JDBC_PASSWORD_KEY.equals(item.getFieldName()))
 					jdbcPassword = read(item.openStream());
+				else if (IMPORT_DATABASE_IMPORT_CONFIG_ORGANIZATION_CODE.equals(item.getFieldName()))
+					organizationCode = read(item.openStream());
 
 				else if (IMPORT_DATABASE_FILE_SQL_KEY.equals(item.getFieldName())) {
 					// sqlScript = readFileRows(item.openStream(), encoding);
@@ -1210,7 +1216,7 @@ public class MetadataService {
 			// String dbSchema = importDatabaseJdbc(dbType, jdbcHostname,
 			// jdbcDbname, jdbcUsername, jdbcPassword);
 			if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType))
-				dbSchema = importDatabaseJdbc(tenantCode, dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
+				dbSchema = importDatabaseJdbc(organizationCode, tenantCode, dbType, jdbcHostname, jdbcDbname, jdbcUsername, jdbcPassword);
 			else if (IMPORT_DATABASE_CONFIG_IMPORT_TYPE_JDBC.equals(sourceType) && scriptItemStream != null)
 				dbSchema = importDatabaseScript(dbType, scriptItemStream);
 
@@ -1231,9 +1237,9 @@ public class MetadataService {
 		return null;
 	}
 
-	private String importDatabaseJdbc(String tenantCode, String dbType, String hostname, String dbname, String username, String password) throws ClassNotFoundException,
-			SQLException, ImportDatabaseException {
-		DatabaseReader databaseReader = new DatabaseReader(tenantCode, dbType, hostname, dbname, username, password);
+	private String importDatabaseJdbc(String organizationCode, String tenantCode, String dbType, String hostname, String dbname, String username, String password)
+			throws ClassNotFoundException, SQLException, ImportDatabaseException {
+		DatabaseReader databaseReader = new DatabaseReader(organizationCode, tenantCode, dbType, hostname, dbname, username, password);
 		return databaseReader.loadSchema();
 	}
 }

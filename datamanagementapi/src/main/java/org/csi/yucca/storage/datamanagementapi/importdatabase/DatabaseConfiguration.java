@@ -30,7 +30,7 @@ public abstract class DatabaseConfiguration {
 
 	protected abstract void initDbDriver();
 
-	public static DatabaseConfiguration getDatabaseConfiguation(String dbType) {
+	public static DatabaseConfiguration getDatabaseConfiguration(String dbType) {
 		if (DB_TYPE_MYSQL.equals(dbType))
 			return new MySQLConfiguration();
 		if (DB_TYPE_ORACLE.equals(dbType))

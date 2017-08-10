@@ -31,6 +31,13 @@
 								<include>**/*.jar</include>
 							</includes>
 						</resource>
+						<resource>
+							<directory>${project.basedir}/lib/hive-jdbc</directory>
+							<targetPath>WEB-INF/lib</targetPath>
+							<includes>
+								<include>**/*.jar</include>
+							</includes>
+						</resource>
 					</webResources>
 					<webXml>${webXmlPath}/web.xml</webXml>
 				</configuration>
@@ -115,38 +122,49 @@
 			<artifactId>ojdbc6</artifactId>
 			<version>1.0</version>
 			<scope>system</scope>
-			<!-- <systemPath>${project.basedir}/lib/ojdbc6/ojdbc14-10.2.0.4.0.jar</systemPath>-->
+			<!-- <systemPath>${project.basedir}/lib/ojdbc6/ojdbc14-10.2.0.4.0.jar</systemPath> -->
 			<systemPath>${project.basedir}/lib/ojdbc6/ojdbc6.jar</systemPath>
-			
 		</dependency>
+		<dependency>
+			<groupId>com.apache.hive</groupId>
+			<artifactId>hive-jdbc-1.2.1</artifactId>
+			<version>1.2.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/hive-jdbc/hive-jdbc-1.2.1.jar</systemPath>
+		</dependency>
+
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<!-- <version>42.1.1</version> -->
 			<version>42.1.1.jre7</version>
 		</dependency>
-<!-- 		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-jdbc</artifactId>
-			<version>2.1.1</version>
+		<!-- <dependency> <groupId>org.apache.hive</groupId> <artifactId>hive-jdbc</artifactId> 
+			<version>1.2.1</version> <exclusions> <exclusion> <artifactId>jetty-all</artifactId> 
+			<groupId>org.eclipse.jetty.aggregate</groupId> </exclusion> <exclusion> <artifactId>jersey-json</artifactId> 
+			<groupId>com.sun.jersey</groupId> </exclusion> <exclusion> <artifactId>jersey-guice</artifactId> 
+			<groupId>com.sun.jersey.contribs</groupId> </exclusion> <exclusion> <artifactId>jersey-core</artifactId> 
+			<groupId>com.sun.jersey</groupId> </exclusion> <exclusion> <artifactId>jersey-client</artifactId> 
+			<groupId>com.sun.jersey</groupId> </exclusion> <exclusion> <artifactId>jdk.tools</artifactId> 
+			<groupId>jdk.tools</groupId> </exclusion> <exclusion> <artifactId>jersey-server</artifactId> 
+			<groupId>com.sun.jersey</groupId> </exclusion> <exclusion> <artifactId>jetty-util</artifactId> 
+			<groupId>org.mortbay.jetty</groupId> </exclusion> <exclusion> <artifactId>jetty</artifactId> 
+			<groupId>org.mortbay.jetty</groupId> </exclusion> <exclusion> <artifactId>jettison</artifactId> 
+			<groupId>org.codehaus.jettison</groupId> </exclusion> </exclusions> </dependency> -->
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr4</artifactId>
+			<version>4.5</version>
+			<scope>compile</scope>
 		</dependency>
-	-->
-	
-	    <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4</artifactId>
-            <version>4.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <version>4.5</version>
-        </dependency>
-        <!-- <dependency>
-			<groupId>com.github.jsqlparser</groupId>
-			<artifactId>jsqlparser</artifactId>
-			<version>0.9</version>
-		</dependency>-->
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr4-runtime</artifactId>
+			<version>4.5</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- <dependency> <groupId>com.github.jsqlparser</groupId> <artifactId>jsqlparser</artifactId> 
+			<version>0.9</version> </dependency> -->
 		<!-- <dependency> <groupId>org.apache.httpcomponents</groupId> <artifactId>httpclient</artifactId> 
 			<version>4.3.5</version> </dependency> <dependency> <groupId>org.apache.httpcomponents</groupId> 
 			<artifactId>httpclient-cache</artifactId> <version>4.3.5</version> </dependency> 
@@ -306,7 +324,7 @@
 							</execution>
 						</executions>
 					</plugin>
-					<plugin>
+					<!-- <plugin>
 						<groupId>com.lazerycode.jmeter</groupId>
 						<artifactId>jmeter-maven-plugin</artifactId>
 						<version>2.0.3</version>
@@ -323,7 +341,7 @@
 								</configuration>
 							</execution>
 						</executions>
-					</plugin>
+					</plugin>-->
 				</plugins>
 				<resources>
 					<resource>

@@ -67,6 +67,10 @@ public class Config {
 	public static final String DATA_INSERT_BASE_URL = "DATA_INSERT_BASE_URL";
 	public static final String DATA_DELETE_BASE_URL = "DATA_DELETE_BASE_URL";
 	
+	public static final String HIVE_JDBC_CONNECTION_USER = "HIVE_JDBC_CONNECTION_USER";
+	public static final String HIVE_JDBC_CONNECTION_PASSWORD = "HIVE_JDBC_CONNECTION_PASSWORD";
+	public static final String HIVE_JDBC_CONNECTION_URL = "HIVE_JDBC_CONNECTION_URL";
+	
 	private static Map<String, String> params = null;
 	private static Config instance = null;
 	static Logger log = Logger.getLogger(Config.class);
@@ -130,6 +134,10 @@ public class Config {
 		params.put(KNOX_USER, rbSecret.getString(KNOX_USER));
 		params.put(KNOX_PWD, rbSecret.getString(KNOX_PWD));
 		params.put(SOLR_PASSWORD, rbSecret.getString(SOLR_PASSWORD));
+		
+		params.put(HIVE_JDBC_CONNECTION_USER, rbSecret.getString(HIVE_JDBC_CONNECTION_USER));
+		params.put(HIVE_JDBC_CONNECTION_PASSWORD, rbSecret.getString(HIVE_JDBC_CONNECTION_PASSWORD));
+		params.put(HIVE_JDBC_CONNECTION_URL, rbSecret.getString(HIVE_JDBC_CONNECTION_URL));
 	}
 
 	
@@ -362,6 +370,18 @@ public class Config {
 		return loadConfiguration("authorization.properties");
 	}
 
+	public String getHiveJdbcConnectionUser(){
+		return params.get(HIVE_JDBC_CONNECTION_USER);
+	}
+
+	public String getHiveJdbcConnectionPassword(){
+		return params.get(HIVE_JDBC_CONNECTION_PASSWORD);
+	}
+	
+	public String getHiveJdbcConnectionUrl(){
+		return params.get(HIVE_JDBC_CONNECTION_URL);
+	}
+	
 	private static Properties loadConfiguration(String configPath) throws IOException {
 		log.debug("[Config::loadConfiguration] - START, configPath " + configPath);
 		try {

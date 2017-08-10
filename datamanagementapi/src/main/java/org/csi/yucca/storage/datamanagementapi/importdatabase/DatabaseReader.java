@@ -30,6 +30,7 @@ import com.mongodb.MongoClient;
 
 public class DatabaseReader {
 
+	private String organizationCode;
 	private String tenantCode;
 	private String dbType;
 	private String dbUrl;
@@ -44,17 +45,23 @@ public class DatabaseReader {
 	Map<String, String> fkMap;
 	static Logger log = Logger.getLogger(DatabaseReader.class);
 
-	public DatabaseReader(String tenantCode, String dbType, String dbUrl, String dbName, String username, String password) throws ImportDatabaseException {
+	public DatabaseReader(String organizationCode, String tenantCode, String dbType, String dbUrl, String dbName, String username, String password) throws ImportDatabaseException {
 		super();
 		log.debug("[DatabaseReader::DatabaseReader] START - dbType:  " + dbType + ", dbUrl: " + dbUrl + ", dbName: " + dbName + ", username: " + username);
+		this.organizationCode = organizationCode;
+		this.tenantCode = tenantCode;
 		this.dbType = dbType;
 		this.dbUrl = dbUrl;
 		this.dbName = dbName;
 		this.username = username;
 		this.password = password;
-		this.tenantCode = tenantCode;
 
-		databaseConfiguation = DatabaseConfiguration.getDatabaseConfiguation(dbType);
+		if(DatabaseConfiguration.DB_TYPE_HIVE.equals(dbType)){
+			this.username = Config.getInstance().getHiveJdbcConnectionUser();
+			this.password = Config.getInstance().getHiveJdbcConnectionPassword();
+		}
+		
+		databaseConfiguation = DatabaseConfiguration.getDatabaseConfiguration(dbType);
 		if (databaseConfiguation == null)
 			throw new ImportDatabaseException(ImportDatabaseException.INVALID_DB_TYPE, "Database type used: " + dbType
 					+ " - Database type supported: MYSQL, ORACLE, POSTGRESQL, HIVE");
@@ -113,6 +120,7 @@ public class DatabaseReader {
 		// REF_GENERATION String => specifies how values in
 		// SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER",
 		// "DERIVED". (may be null)
+		String hiveStageArea =  ("stg_"+organizationCode+"_"+tenantCode).toLowerCase();
 
 		while (tablesResultSet.next()) {
 
@@ -128,8 +136,11 @@ public class DatabaseReader {
 			table.setTableName(tableName);
 
 			System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
-			if (!tableName.equals("TOAD_PLAN_TABLE") && !tableName.equals("PLAN_TABLE") && (tableSchema == null || username.toUpperCase().equalsIgnoreCase(tableSchema))
-					&& (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))) {
+			if (!tableName.equals("TOAD_PLAN_TABLE") && 
+				!tableName.equals("PLAN_TABLE") && 
+				((dbType.equals(DatabaseConfiguration.DB_TYPE_HIVE) && tableSchema.toLowerCase().startsWith(hiveStageArea))||
+				  ((tableSchema == null || username.toUpperCase().equalsIgnoreCase(tableSchema)) && 
+				  (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))))) {
 				// printResultSetColumns(tablesResultSet);
 
 				Field[] fields = new Field[0];
@@ -382,4 +393,6 @@ public class DatabaseReader {
 		return columnsName;
 	}
 
+	
+	
 }

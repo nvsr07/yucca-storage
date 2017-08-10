@@ -1,6 +1,8 @@
 package org.csi.yucca.storage.datamanagementapi.importdatabase.conf;
 
 import org.csi.yucca.storage.datamanagementapi.importdatabase.DatabaseConfiguration;
+import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+
 
 public class HiveConfiguration extends DatabaseConfiguration {
 
@@ -25,13 +27,13 @@ public class HiveConfiguration extends DatabaseConfiguration {
 
 	@Override
 	protected String getConnectionUrl(String hostname, String dbname) {
-		
-		return "jdbc:hive2://" + hostname + "/" + dbname; // "jdbc:hive2://localhost:10000/default"
+		return Config.getInstance().getHiveJdbcConnectionUrl();
 	}
 
 	@Override
 	protected void initDbDriver() {
-		dbDriver = "org.apache.hadoop.hive.jdbc.HiveDriver";
+		//dbDriver = "org.apache.hadoop.hive.jdbc.HiveDriver";
+		dbDriver = "org.apache.hive.jdbc.HiveDriver";
 	}
 
 }
