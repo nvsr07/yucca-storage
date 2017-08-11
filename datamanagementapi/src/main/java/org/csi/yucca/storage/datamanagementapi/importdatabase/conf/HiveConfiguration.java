@@ -18,11 +18,15 @@ public class HiveConfiguration extends DatabaseConfiguration {
 		typesMap.put("DOUBLE PRECISION", "double");
 		typesMap.put("DECIMAL", "double");
 		typesMap.put("NUMERIC", "double");
-		typesMap.put("TIMESTAMP", "long");
+		typesMap.put("TIMESTAMP", "dateTime");
 		typesMap.put("DATE", "dateTime");
 		typesMap.put("INTERVAL", "string");
 		typesMap.put("STRING", "string");
 		typesMap.put("VARCHAR", "string");
+		typesMap.put("CHAR", "string");
+		typesMap.put("BOOLEAN", "boolean");
+		
+		
 	}
 
 	@Override
