@@ -57,6 +57,8 @@ public class DatabaseReader {
 		this.password = password;
 
 		if(DatabaseConfiguration.DB_TYPE_HIVE.equals(dbType)){
+			this.dbUrl = "yucca_datalake";
+			this.dbName = ("stg_"+organizationCode+"_"+tenantCode).toLowerCase(); //stage area
 			this.username = Config.getInstance().getHiveJdbcConnectionUser();
 			this.password = Config.getInstance().getHiveJdbcConnectionPassword();
 		}
