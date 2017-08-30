@@ -56,13 +56,14 @@ public class DatabaseReader {
 		this.username = username;
 		this.password = password;
 
-		if(DatabaseConfiguration.DB_TYPE_HIVE.equals(dbType)){
+		if (DatabaseConfiguration.DB_TYPE_HIVE.equals(dbType)) {
 			this.dbUrl = "yucca_datalake";
-			this.dbName = ("stg_"+organizationCode+"_"+tenantCode).toLowerCase(); //stage area
+			this.dbName = ("stg_" + organizationCode + "_" + tenantCode).toLowerCase(); // stage
+																						// area
 			this.username = Config.getInstance().getHiveJdbcConnectionUser();
 			this.password = Config.getInstance().getHiveJdbcConnectionPassword();
 		}
-		
+
 		databaseConfiguation = DatabaseConfiguration.getDatabaseConfiguration(dbType);
 		if (databaseConfiguation == null)
 			throw new ImportDatabaseException(ImportDatabaseException.INVALID_DB_TYPE, "Database type used: " + dbType
@@ -122,7 +123,7 @@ public class DatabaseReader {
 		// REF_GENERATION String => specifies how values in
 		// SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER",
 		// "DERIVED". (may be null)
-		String hiveStageArea =  ("stg_"+organizationCode+"_"+tenantCode).toLowerCase();
+		String hiveStageArea = ("stg_" + organizationCode + "_" + tenantCode).toLowerCase();
 
 		while (tablesResultSet.next()) {
 
@@ -138,11 +139,10 @@ public class DatabaseReader {
 			table.setTableName(tableName);
 
 			System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
-			if (!tableName.equals("TOAD_PLAN_TABLE") && 
-				!tableName.equals("PLAN_TABLE") && 
-				((dbType.equals(DatabaseConfiguration.DB_TYPE_HIVE) && tableSchema.toLowerCase().startsWith(hiveStageArea))||
-				  ((tableSchema == null || username.toUpperCase().equalsIgnoreCase(tableSchema)) && 
-				  (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))))) {
+			if (!tableName.equals("TOAD_PLAN_TABLE")
+					&& !tableName.equals("PLAN_TABLE")
+					&& ((dbType.equals(DatabaseConfiguration.DB_TYPE_HIVE) && tableSchema.toLowerCase().startsWith(hiveStageArea)) || ((tableSchema == null || username
+							.toUpperCase().equalsIgnoreCase(tableSchema)) && (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))))) {
 				// printResultSetColumns(tablesResultSet);
 
 				Field[] fields = new Field[0];
@@ -184,8 +184,8 @@ public class DatabaseReader {
 					metadata = new Metadata();
 					Info info = new Info();
 					info.setDatasetName(tableName);
-					if (tableComment != null)
-						info.setDescription(tableComment);
+					String description = "Imported from " + dbName + " " + tableName + (tableComment != null ? " - " + tableComment : "");
+					info.setDescription(description);
 					info.setFields(fields);
 					metadata.setInfo(info);
 
@@ -208,8 +208,8 @@ public class DatabaseReader {
 						if (existingField == null) {
 							newFields.add(fields[i]);
 						} else {
-							if(existingField.getSourceColumn()==null)
-								existingField.setSourceColumn(i+1);
+							if (existingField.getSourceColumn() == null)
+								existingField.setSourceColumn(i + 1);
 							fields[i] = existingField;
 						}
 					}
@@ -395,6 +395,4 @@ public class DatabaseReader {
 		return columnsName;
 	}
 
-	
-	
 }
