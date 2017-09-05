@@ -260,7 +260,8 @@ public class DatabaseReader {
 				List<Metadata> existingMedatataList = metadataDAO.readAllMetadataByJdbc(tenantCode, dbType, dbUrl, dbName, true);
 				if (existingMedatataList != null && existingMedatataList.size() > 0) {
 					for (Metadata metadata : existingMedatataList) {
-						existingMedatata.put(metadata.getConfigData().getJdbc().getTableName(), metadata);
+						if (metadata.getConfigData().getDeleted() ==null || metadata.getConfigData().getDeleted()  != 1)
+							existingMedatata.put(metadata.getConfigData().getJdbc().getTableName(), metadata);
 					}
 				}
 
