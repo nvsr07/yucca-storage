@@ -80,7 +80,7 @@ if results.isSuccessful():
         while fieldsIt.hasNext():
             field = fieldsIt.next()
             name = field['fieldName']
-            value = field['dataType']
+            value = field['dataType'].lower()
             aliasString = aliasString +'$'+ str(i) +' as '+ name
             pigSchema = pigSchema + name + ":" + globalVars.dataType2Pig[value]
             mongoFields = mongoFields + name + ":chararray "
