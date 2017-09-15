@@ -1000,6 +1000,7 @@ public class MetadataService {
 				Field[] fields = new Field[inputMetadata.getInfo().getFields().length];
 				int counter = 0;
 				for (Field field : inputMetadata.getInfo().getFields()) {
+					
 					Field existingField = newMetadata.getFieldFromFieldName(field.getFieldName());
 					if (existingField != null) {
 						if (existingField.getSinceVersion() == null)
@@ -1008,6 +1009,7 @@ public class MetadataService {
 							field.setSinceVersion(existingField.getSinceVersion());
 
 					} else {
+						field.setFieldName(Util.cleanStringCamelCase(field.getFieldName()));
 						field.setSinceVersion(newMetadata.getDatasetVersion() + 1);
 					}
 					fields[counter] = field;
@@ -1016,36 +1018,41 @@ public class MetadataService {
 
 				newMetadata.getInfo().setFields(fields);
 			}
-			existingMetadata.getConfigData().setCurrent(0);
-			metadataDAO.updateMetadata(existingMetadata);
-			metadataDAO.createNewVersion(newMetadata);
 
-			updateDatasetResponse.setMetadata(newMetadata);
-
-			/*
-			 * Create api in the store
-			 */
-			String apiName = "";
-			// Boolean updateOperation = false;
-			try {
-				apiName = StoreService.createApiforBulk(newMetadata, false, metadataInput);
-			} catch (Exception duplicate) {
-				if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
-					try {
-						apiName = StoreService.createApiforBulk(newMetadata, true, metadataInput);
-						// updateOperation = true;
-					} catch (Exception e) {
-						log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+			if (newMetadata.hasFieldNameDuplicate()) {
+				updateDatasetResponse.addErrorMessage(new ErrorMessage("ERROR_DUPLICATE_FIELD", "Field Name Duplicate", "The field names must be unique case insensitive"));
+				updateDatasetResponse.setMetadata(newMetadata);
+			} else {
+				existingMetadata.getConfigData().setCurrent(0);
+				metadataDAO.updateMetadata(existingMetadata);
+				metadataDAO.createNewVersion(newMetadata);
+	
+				updateDatasetResponse.setMetadata(newMetadata);
+	
+				/*
+				 * Create api in the store
+				 */
+				String apiName = "";
+				// Boolean updateOperation = false;
+				try {
+					apiName = StoreService.createApiforBulk(newMetadata, false, metadataInput);
+				} catch (Exception duplicate) {
+					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
+						try {
+							apiName = StoreService.createApiforBulk(newMetadata, true, metadataInput);
+							// updateOperation = true;
+						} catch (Exception e) {
+							log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+						}
+					} else {
+						log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 					}
-				} else {
-					log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 				}
+				// if (!updateOperation) {
+				StoreService.publishStore("1.0", apiName, "admin");
+				CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+				ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
 			}
-			// if (!updateOperation) {
-			StoreService.publishStore("1.0", apiName, "admin");
-			CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
-			ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
-
 			// }
 		} catch (Exception e) {
 			log.debug("[MetadataService::updateMetadata] - ERROR " + e.getMessage());
