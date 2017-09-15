@@ -70,13 +70,14 @@ do
   #fi
   
   #svecchiamento 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords + 1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords + 1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords + 1))}}&rows=0&wt=json&indent=true" | grep -A1 "\"val\"" | grep -v "-" | cut -d":" -f2 | tr -d ",]}" | paste -d ";"  - - | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords + 1))}}&rows=0&wt=json&indent=true"  | grep -A1 "\"val\"" | grep -v "-" | cut -d":" -f2 | tr -d ",]}" | paste -d ";"  - - | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
 
   for riga in `cat $nomeDir/lista_dataset.$myPid.json` ;
   do
     idDataset=`echo $riga | awk -F\; '{print $1}'`
-	domain=`echo $riga | awk -F\; '{print $2}'`
+	datasetCount=`echo $riga | awk -F\; '{print $2}'`
+    domain=`echo $riga | awk -F\; '{print $3}'`
 	
 	if [ "$domain" = "data" ]
 	then
@@ -109,9 +110,9 @@ do
 	fi
 	
 	#cerca l'id minimo	
-	echo "curl -g -u $solrUsr:$solrPwd \"https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20desc&wt=json&indent=true&rows=1&start=$maxRecords\""
-	curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20desc&wt=json&indent=true&rows=1&start=$maxRecords" > $nomeDir/minId.$myPid.txt
-    minId=`cat $nomeDir/minId.$myPid.txt | grep "\"id\"" | cut -d":" -f2 | tr -d "\"" | tr -d ","`
+	echo "curl -g -u $solrUsr:$solrPwd \"https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20asc&fl=id&wt=json&indent=true&rows=1&start=$((datasetCount-maxRecords))\""
+	curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20asc&fl=id&wt=json&indent=true&rows=1&start=$((datasetCount-maxRecords))" > $nomeDir/minId.$myPid.txt
+    minId=`cat $nomeDir/minId.$myPid.txt | grep "\"id\":" | cut -d":" -f2 | tr -d "\",]}"`
 	echo "minId: "$minId
 	
 	if [ ! -z "$minId" ]

@@ -22,38 +22,24 @@ fi
 
 nomeDir=$EXP_DIR
 myPid=$$
+maxRecords=8035200 # 1 record/sec per 3 mesi da 31 giorni
 
-# crea lista tenant
-mongo $MONGO_HOST:$MONGO_PORT/DB_SUPPORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet elenco_tenant_osl.js > $nomeDir/lista_tenant_org.$myPid.txt
+# crea lista collection solr
+mongo $MONGO_HOST:$MONGO_PORT/DB_SUPPORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet elenco_coll_solr_osl.js > $nomeDir/lista_coll_solr.$myPid.txt
 if [ $? -ne 0 ]
 then
   echo "FATAL ERROR during tenants list creation"
   exit 1
 fi
 
-# cicla sui tenant
-for tenantInfo in `cat $nomeDir/lista_tenant_org.$myPid.txt` ;
+# cicla sulle collection
+for solrInfo in `cat $nomeDir/lista_coll_solr.$myPid.txt | sort | uniq` ;
 do
   
-  dataCollectionDb=`echo $tenantInfo | awk -F\; '{print $1}'`
-  dataCollectionName=`echo $tenantInfo | awk -F\; '{print $2}'`
-  measuresCollectionDb=`echo $tenantInfo | awk -F\; '{print $3}'`
-  measuresCollectionName=`echo $tenantInfo | awk -F\; '{print $4}'`
-  mediaCollectionDb=`echo $tenantInfo | awk -F\; '{print $5}'`
-  mediaCollectionName=`echo $tenantInfo | awk -F\; '{print $6}'`
-  socialCollectionDb=`echo $tenantInfo | awk -F\; '{print $7}'`
-  socialCollectionName=`echo $tenantInfo | awk -F\; '{print $8}'`
-  dataSolrCollectionName=`echo $tenantInfo | awk -F\; '{print $9}'`
-  measuresSolrCollectionName=`echo $tenantInfo | awk -F\; '{print $10}'`
-  mediaSolrCollectionName=`echo $tenantInfo | awk -F\; '{print $11}'`
-  socialSolrCollectionName=`echo $tenantInfo | awk -F\; '{print $12}'`
-  maxRecords=`echo $tenantInfo | awk -F\; '{print $13}'`
-  
-  if [ -z "$maxRecords" ]
-  then
-	maxRecords=8035200 # 1 record/sec per 3 mesi da 31 giorni
-  fi
-  
+  dataSolrCollectionName=`echo $solrInfo | awk -F\; '{print $1}'`
+  measuresSolrCollectionName=`echo $solrInfo | awk -F\; '{print $2}'`
+  mediaSolrCollectionName=`echo $solrInfo | awk -F\; '{print $3}'`
+  socialSolrCollectionName=`echo $solrInfo | awk -F\; '{print $4}'`  
 
   # locka tenant
   #mongo $MONGO_HOST:$MONGO_PORT/DB_SUPPORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1='$tenantCode'" lock_tenant.js
@@ -64,48 +50,58 @@ do
   #fi
   
   #svecchiamento 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords+1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
-  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords+1))}}&rows=0&wt=json&indent=true"  | grep "\"val\"" |cut -d":" -f2 | tr -d "," | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$measuresSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords+1))}}&rows=0&wt=json&indent=true" | grep -A1 "\"val\"" | grep -v "-" | cut -d":" -f2 | tr -d ",]}" | paste -d ";"  - - | sed -e 's/.*/&;measures/' > $nomeDir/lista_dataset.$myPid.json 
+  curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$socialSolrCollectionName/select?q=*:*&facet=true&json.facet={dataset:{type:terms,field:iddataset_l,mincount:$((maxRecords+1))}}&rows=0&wt=json&indent=true"| grep -A1 "\"val\"" | grep -v "-" | cut -d":" -f2 | tr -d ",]}" | paste -d ";"  - - | sed -e 's/.*/&;social/' >> $nomeDir/lista_dataset.$myPid.json
 
   for riga in `cat $nomeDir/lista_dataset.$myPid.json` ;
   do
     idDataset=`echo $riga | awk -F\; '{print $1}'`
-	domain=`echo $riga | awk -F\; '{print $2}'`
+    datasetCount=`echo $riga | awk -F\; '{print $2}'`
+	domain=`echo $riga | awk -F\; '{print $3}'`
+	
+	echo "recupero metadata dataset: "$idDataset
+	
+	mongo $MONGO_HOST:$MONGO_PORT/DB_SUPPORT -u $MONGO_USER -p $MONGO_PWD --authenticationDatabase admin --quiet --eval "var param1=$idDataset;" elenco_coll_mongo_osl.js > $nomeDir/lista_coll_mongo.$myPid.txt
+    if [ $? -ne 0 ]
+    then
+      echo "ERRORE leggendo metadati da mongo, svecchiamento non effettuato"
+      continue 
+    fi
 	
 	if [ "$domain" = "data" ]
 	then
 	  
-	  collectionName=$dataCollectionName
-      collectionDb=$dataCollectionDb
+	  collectionName=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $1}'`
+      collectionDb=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $2}'`
       solrCollectionName=$dataSolrCollectionName
   
 	elif [ "$domain" = "measures" ]
 	then 
 	
-	  collectionName=$measuresCollectionName
-      collectionDb=$measuresCollectionDb
+      collectionName=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $3}'`
+      collectionDb=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $4}'`
       solrCollectionName=$measuresSolrCollectionName
 	  
 	elif [ "$domain" = "media" ]
 	then
 	
-	  collectionName=$mediaCollectionName
-      collectionDb=$mediaCollectionDb
+	  collectionName=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $5}'`
+      collectionDb=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $6}'`
 	  solrCollectionName=$mediaSolrCollectionName
 	  
 	elif [ "$domain" = "social" ]
 	then
 	  
-	  collectionName=$socialCollectionName
-      collectionDb=$socialCollectionDb
+	  collectionName=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $7}'`
+      collectionDb=`cat $nomeDir/lista_coll_mongo.$myPid.txt | awk -F\; '{print $8}'`
 	  solrCollectionName=$socialSolrCollectionName
 	
 	fi
-	
+		
 	#cerca l'id minimo	
-	echo "curl -g -u $solrUsr:$solrPwd \"https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20desc&wt=json&indent=true&rows=1&start=$maxRecords\""
-	curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20desc&wt=json&indent=true&rows=1&start=$maxRecords" > $nomeDir/minId.$myPid.txt
-    minId=`cat $nomeDir/minId.$myPid.txt | grep "\"id\"" | cut -d":" -f2 | tr -d "\"" | tr -d ","`
+	echo "curl -g -u $solrUsr:$solrPwd \"https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20asc&wt=json&indent=true&rows=1&start=$((datasetCount-maxRecords))\""
+	curl -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollectionName/select?q=iddataset_l%3a$idDataset&sort=id%20asc&wt=json&indent=true&rows=1&start=$((datasetCount-maxRecords))" > $nomeDir/minId.$myPid.txt
+    minId=`cat $nomeDir/minId.$myPid.txt | grep "\"id\":" | cut -d":" -f2 | tr -d "\",]}"`
 	echo "minId: "$minId
 
 	if [ ! -z "$minId" ]
@@ -136,7 +132,8 @@ do
 done
 
 # elimino lista tenant
-rm $nomeDir/lista_tenant_org.$myPid.txt
+rm $nomeDir/lista_coll_solr.$myPid.txt
+rm $nomeDir/lista_coll_mongo.$myPid.txt
 rm $nomeDir/lista_dataset.$myPid.json
 rm $nomeDir/minId.$myPid.txt
 

@@ -90,7 +90,7 @@ if callResult == 0:
             
             i = 0            
             for field in fields:
-                dataType = field['dataType']     
+                dataType = field['dataType'].lower()   
                 name = field['fieldName'].lower()
                 aliasString += "(" + globalVars.dataType2Pig[dataType] + ")$" + str(i) + ",\ "   
                 dynamicPhoenixColumns += ',' + globalVars.dataType2Phoenix[dataType] + '#' + name + globalVars.dataTypeSuffixes[dataType]
