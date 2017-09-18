@@ -420,7 +420,7 @@ public class Metadata extends AbstractEntity {
 			}
 		return false;
 	}
-	
+
 	public Field getFieldFromSourceColumnName(String sourceColumnName) {
 		if (sourceColumnName != null && this.getInfo() != null && this.getInfo().getFields() != null)
 			for (Field field : this.getInfo().getFields()) {
@@ -437,6 +437,39 @@ public class Metadata extends AbstractEntity {
 					return field;
 			}
 		return null;
+	}
+
+	public static Metadata slimmify(Metadata metadata) {
+		Metadata metadataSlim = new Metadata();
+		metadataSlim.setDatasetCode(metadata.getDatasetCode());
+		metadataSlim.setDatasetVersion(metadata.getDatasetVersion());
+		if (metadata != null) {
+			if (metadata.getInfo() != null) {
+				Info info = new Info();
+				if(metadata.getInfo().getIcon()==null)
+					info.setIcon("img/dataset-icon-default.png");
+				else if(metadata.getInfo().getIcon().equals("img/stream-icon-default.png") || metadata.getInfo().getIcon().equals("img/dataset-icon-default.png"))
+					info.setIcon(metadata.getInfo().getIcon());
+					
+					
+				//info.setIcon(metadata.getInfo().getIcon());
+				info.setDatasetName(metadata.getInfo().getDatasetName());
+				info.setDataDomain(metadata.getInfo().getDataDomain());
+				info.setCodSubDomain(metadata.getInfo().getCodSubDomain());
+				info.setBinaryIdDataset(metadata.getInfo().getBinaryIdDataset());
+				info.setRegistrationDate(metadata.getInfo().getRegistrationDate());
+				metadataSlim.setInfo(info);
+			}
+			if (metadata.getConfigData() != null) {
+				ConfigData configData = new ConfigData();
+				configData.setType(metadata.getConfigData().getType());
+				configData.setSubtype(metadata.getConfigData().getSubtype());
+				configData.setDeleted(metadata.getConfigData().getDeleted());
+				metadataSlim.setConfigData(configData);
+			}
+
+		}
+		return metadataSlim;
 	}
 
 }

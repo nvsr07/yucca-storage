@@ -7,6 +7,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
@@ -55,77 +56,94 @@ public class StatisticsService {
 		return JSON.serialize(statistics);
 	}
 
+	private static final long CACHE_TIME_TO_LIVE = 1000 * 60 * 60 * 12;
+	private static long lastLoad = System.currentTimeMillis();
+	private static String gloablStatisticJson;
+
 	@GET
 	@Path("/getGlobalStatistics")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getGlobalStatistics() throws UnknownHostException {
-		return loadGlobalStatistic(null, null, null);
+	public String getGlobalStatistics(@QueryParam(value = "clearCache") String clearCache) throws UnknownHostException {
+
+		if (System.currentTimeMillis() - lastLoad > CACHE_TIME_TO_LIVE) {
+
+			gloablStatisticJson = null;
+			lastLoad = System.currentTimeMillis();
+		}
+
+		if (clearCache != null) {
+			gloablStatisticJson = null;
+			lastLoad = System.currentTimeMillis();
+		}
+
+		if (gloablStatisticJson == null)
+			gloablStatisticJson = loadGlobalStatistic(null, null, null);
+		return gloablStatisticJson;
 	}
 
 	@GET
 	@Path("/getGlobalStatistics/{year}/{month}/{day}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getGlobalStatistics(@PathParam("year") Integer year, @PathParam("month") Integer month, @PathParam("day") Integer day)
-			throws UnknownHostException {
+	public String getGlobalStatistics(@PathParam("year") Integer year, @PathParam("month") Integer month, @PathParam("day") Integer day) throws UnknownHostException {
 
-		BasicDBObject yearElement = new BasicDBObject( "date.year", new BasicDBObject("$lte",year ));
-		BasicDBObject monthElement = new BasicDBObject( "date.month", new BasicDBObject("$lte",month ));
-		BasicDBObject dayElement = new BasicDBObject( "date.day", new BasicDBObject("$lte",day ));
+		BasicDBObject yearElement = new BasicDBObject("date.year", new BasicDBObject("$lte", year));
+		BasicDBObject monthElement = new BasicDBObject("date.month", new BasicDBObject("$lte", month));
+		BasicDBObject dayElement = new BasicDBObject("date.day", new BasicDBObject("$lte", day));
 		return loadGlobalStatistic(yearElement, monthElement, dayElement);
 	}
 
 	private String loadGlobalStatistic(BasicDBObject year, BasicDBObject month, BasicDBObject day) throws NumberFormatException, UnknownHostException {
 		mongo = MongoSingleton.getMongoClient();
-		
-		
+
 		DBObject statistics = null;
 		DB db = mongo.getDB(Config.getInstance().getDbSupport());
 		String aa = Config.getInstance().getCollectionSupportStreamStats();
 		System.out.println(aa);
 		DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportStreamStats());
 
-		BasicDBObject sortOb = new BasicDBObject("date.year",-1 ).append("date.month",-1).append("date.day",-1);		
-		
-		
+		BasicDBObject sortOb = new BasicDBObject("date.year", -1).append("date.month", -1).append("date.day", -1);
+
 		DBCursor list = null;
-		if (year==null|| month==null || day ==null) {
+		if (year == null || month == null || day == null) {
 			list = col.find().sort(sortOb).limit(1);
 		} else {
-			 BasicDBList listaQuery= new BasicDBList();
-			 listaQuery.add(year);
-			 listaQuery.add(month);
-			 listaQuery.add(day);
-			  
-			 BasicDBObject query= new BasicDBObject("$and",listaQuery);
+			BasicDBList listaQuery = new BasicDBList();
+			listaQuery.add(year);
+			listaQuery.add(month);
+			listaQuery.add(day);
+
+			BasicDBObject query = new BasicDBObject("$and", listaQuery);
 			list = col.find(query).sort(sortOb).limit(1);
 		}
-			
-		
 
-		if (list!=null && list.hasNext()) {
+		if (list != null && list.hasNext()) {
 			statistics = list.next();
 		}
 		return JSON.serialize(statistics);
 
 	}
-	
-//	
-//	 basicdbobject elementoAnno= new basicdbobject( "date.year", new basicdbobject("$lte",new Integer(2015) )
-//	 basicdbobject elementomese= new basicdbobject( "date.month", new basicdbobject("$lte",new Integer(6) )
-//	 basicdbobject elementoGiorno= new basicdbobject( "date.day", new basicdbobject("$lte",new Integer(15) )
-//	  
-//	 basicDblist listaQuery= new basicDblist();
-//	 listaQuery.add(elementoAnno)
-//	 listaQuery.add(elementoMese)
-//	 listaQuery.add(elementoGiorno)
-//	  
-//	 basicDbObject query= new basicDbobject("$and",listaQuery)
-//
-//
-//	 creazione sort
-//
-//	  
-//
-//	 basicDbobject sort = new basicdbobject("date.year",-1 ).append("date.month",-1).append("date.day",-1)
+
+	//
+	// basicdbobject elementoAnno= new basicdbobject( "date.year", new
+	// basicdbobject("$lte",new Integer(2015) )
+	// basicdbobject elementomese= new basicdbobject( "date.month", new
+	// basicdbobject("$lte",new Integer(6) )
+	// basicdbobject elementoGiorno= new basicdbobject( "date.day", new
+	// basicdbobject("$lte",new Integer(15) )
+	//
+	// basicDblist listaQuery= new basicDblist();
+	// listaQuery.add(elementoAnno)
+	// listaQuery.add(elementoMese)
+	// listaQuery.add(elementoGiorno)
+	//
+	// basicDbObject query= new basicDbobject("$and",listaQuery)
+	//
+	//
+	// creazione sort
+	//
+	//
+	//
+	// basicDbobject sort = new basicdbobject("date.year",-1
+	// ).append("date.month",-1).append("date.day",-1)
 
 }

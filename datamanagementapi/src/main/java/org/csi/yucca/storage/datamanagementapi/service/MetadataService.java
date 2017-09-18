@@ -111,7 +111,7 @@ public class MetadataService {
 	@Path("/{tenant}")
 	// @Produces(MediaType.APPLICATION_JSON)
 	@Produces("application/json; charset=UTF-8")
-	public String getAllCurrent(@PathParam("tenant") String tenant) throws NumberFormatException, UnknownHostException {
+	public String getAllCurrent(@PathParam("tenant") String tenant, @QueryParam("full") boolean full) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getAll] - START");
 		MongoClient mongo = MongoSingleton.getMongoClient();
 		String supportDb = Config.getInstance().getDbSupport();
@@ -122,7 +122,16 @@ public class MetadataService {
 		List<Metadata> allDataset = metadataDAO.readAllMetadata(tenant, true);
 		if (allDataset != null) {
 			Gson gson = JSonHelper.getInstance();
-			result = gson.toJson(allDataset);
+
+			if(!full){
+				List<Metadata> allDatasetSlim= new LinkedList<Metadata>();
+				for (Metadata metadata : allDataset) {
+					allDatasetSlim.add(Metadata.slimmify(metadata));
+				}
+				result = gson.toJson(allDatasetSlim);
+			}
+			else
+				result = gson.toJson(allDataset);
 		}
 		return result;
 	}
