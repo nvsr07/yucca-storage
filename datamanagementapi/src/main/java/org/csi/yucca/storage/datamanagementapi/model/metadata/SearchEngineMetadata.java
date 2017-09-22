@@ -721,6 +721,7 @@ public class SearchEngineMetadata {
 		ret.addField("soCode",soCode);
 		ret.addField("soName",soName);
 		ret.addField("soType",soType);
+		ret.addField("soCategory",soCategory);
 		ret.addField("soDescription",soDescription);
 		ret.addField("jsonFields",jsonFields);
 		ret.addField("jsonSo",jsonSo);
