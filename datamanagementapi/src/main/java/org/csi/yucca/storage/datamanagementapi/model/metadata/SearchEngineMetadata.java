@@ -840,7 +840,7 @@ public class SearchEngineMetadata {
 				jsonSo += "\"room\":"+position.getRoom()+",";
 			
 			if(jsonSo.endsWith(","))
-				jsonSo.substring(0, jsonSo.length() - 1);
+				jsonSo = jsonSo.substring(0, jsonSo.length() - 1);
 			
 			jsonSo += "}]}";
 			
@@ -852,6 +852,8 @@ public class SearchEngineMetadata {
 		}
 
 	}
+	
+
 	
 	public void setupEngine(Metadata metadata) {
 		this.setCopyright(metadata.getInfo().getCopyright());
