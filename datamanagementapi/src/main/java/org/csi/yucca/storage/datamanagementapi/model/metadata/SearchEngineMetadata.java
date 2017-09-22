@@ -827,7 +827,10 @@ public class SearchEngineMetadata {
 			this.setLat(position.getLat()!=null?""+position.getLat():"");
 			this.setLon(position.getLon()!=null?""+position.getLon():"");
 
-			if(position.getLat()!=null && position.getLon()!=null)
+			if(position.getLat()!=null && position.getLon()!=null && 
+				position.getLat()>=-90 && position.getLat()<=90 &&
+				position.getLat()>=-180 && position.getLon()<=180 )
+					
 				this.setGeogeo(position.getLat()+","+position.getLon());
 			
 			// {\"position\":[{\"lon\":7.693482,\"lat\":45.071106,\"elevation\":0.0,\"floor\":1,\"building\":\"I.T.I.S. Amedeo Avogadro\",\"room\":\"6\"}]}",
@@ -841,9 +844,9 @@ public class SearchEngineMetadata {
 			if(position.getFloor()!=null)
 				jsonSo += "\"floor\":"+position.getFloor()+",";
 			if(position.getBuilding()!=null)
-				jsonSo += "\"building\":"+position.getBuilding()+",";
+				jsonSo += "\"building\":\""+position.getBuilding()+"\",";
 			if(position.getRoom()!=null)
-				jsonSo += "\"room\":"+position.getRoom()+",";
+				jsonSo += "\"room\":\""+position.getRoom()+"\",";
 			
 			if(jsonSo.endsWith(","))
 				jsonSo = jsonSo.substring(0, jsonSo.length() - 1);
