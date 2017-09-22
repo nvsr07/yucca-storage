@@ -97,6 +97,7 @@ public class SearchEngineMetadata {
 	private List<String> sdpComponentsName;
 	private ArrayList<String> phenomenon;
 	private String externalReference;
+	private String geogeo;
 
 	
 	
@@ -740,10 +741,8 @@ public class SearchEngineMetadata {
 		ret.addField("importFileType",	importFileType	);
 		ret.addField("isCurrent", "1"	);
 		ret.addField("externalReference", externalReference	);
-
 		
-		
-		ret.addField("id",	id	);
+		ret.addField("geogeo",	geogeo);
 
 		return ret;
 	}
@@ -825,6 +824,9 @@ public class SearchEngineMetadata {
 			Position position = st.getVirtualEntityPositions().getPosition().get(0);
 			this.setLat(position.getLat()!=null?""+position.getLat():"");
 			this.setLon(position.getLon()!=null?""+position.getLon():"");
+
+			if(position.getLat()!=null && position.getLon()!=null)
+				this.setGeogeo(position.getLat()+","+position.getLon());
 			
 			// {\"position\":[{\"lon\":7.693482,\"lat\":45.071106,\"elevation\":0.0,\"floor\":1,\"building\":\"I.T.I.S. Amedeo Avogadro\",\"room\":\"6\"}]}",
 			String jsonSo = "{\"position\":[{";
@@ -1001,6 +1003,14 @@ public class SearchEngineMetadata {
 
 	public void setSoFps(String soFps) {
 		this.soFps = soFps;
+	}
+
+	public String getGeogeo() {
+		return geogeo;
+	}
+
+	public void setGeogeo(String geogeo) {
+		this.geogeo = geogeo;
 	}
 	
 	
