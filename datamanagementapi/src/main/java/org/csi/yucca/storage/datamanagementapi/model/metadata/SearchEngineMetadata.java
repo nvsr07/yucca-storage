@@ -86,7 +86,7 @@ public class SearchEngineMetadata {
 	private String twtLastSearchId;
 	private String soCode;
 	private String soName;
-	private String soCategory;
+	private List<String> soCategory;
 	private String soFps;
 	private String soType;
 	private String soDescription;
@@ -817,7 +817,9 @@ public class SearchEngineMetadata {
 		
 		this.setSoCode(soCode);
 		
-		this.setSoCategory(st.getCategoriaVirtualEntity());
+		if(st.getCategoriaVirtualEntity()!=null){
+			this.setSoCategory(new ArrayList<String>(Arrays.asList(st.getCategoriaVirtualEntity())));
+		}
 		this.setSoFps(st.getFps()!=null?""+st.getFps():"");
 		if(st.getVirtualEntityPositions()!=null && st.getVirtualEntityPositions().getPosition() !=null && st.getVirtualEntityPositions().getPosition().size()>0){
 			Position position = st.getVirtualEntityPositions().getPosition().get(0);
@@ -985,11 +987,11 @@ public class SearchEngineMetadata {
 //		return formattedDate;
 	}
 
-	public String getSoCategory() {
+	public List<String> getSoCategory() {
 		return soCategory;
 	}
 
-	public void setSoCategory(String soCategory) {
+	public void setSoCategory(List<String> soCategory) {
 		this.soCategory = soCategory;
 	}
 
