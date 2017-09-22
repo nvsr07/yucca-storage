@@ -742,6 +742,7 @@ public class SearchEngineMetadata {
 		ret.addField("isCurrent", "1"	);
 		ret.addField("externalReference", externalReference	);
 		
+		ret.addField("id",	id);
 		ret.addField("geogeo",	geogeo);
 
 		return ret;
