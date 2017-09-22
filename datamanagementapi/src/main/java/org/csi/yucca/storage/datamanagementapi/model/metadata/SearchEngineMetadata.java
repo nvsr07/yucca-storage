@@ -10,6 +10,7 @@ import java.util.TimeZone;
 
 import org.apache.solr.common.SolrInputDocument;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Element;
+import org.csi.yucca.storage.datamanagementapi.model.streaminput.Position;
 import org.csi.yucca.storage.datamanagementapi.model.streaminput.Stream;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.json.JSonHelper;
@@ -85,15 +86,9 @@ public class SearchEngineMetadata {
 	private String twtLastSearchId;
 	private String soCode;
 	private String soName;
+	private String soCategory;
+	private String soFps;
 	private String soType;
-	public String getSoType() {
-		return soType;
-	}
-
-	public void setSoType(String soType) {
-		this.soType = soType;
-	}
-
 	private String soDescription;
 	private String jsonFields;
 	private String jsonSo;
@@ -660,6 +655,14 @@ public class SearchEngineMetadata {
 		this.phenomenon = phenomenon;
 	}
 	
+	public String getSoType() {
+		return soType;
+	}
+
+	public void setSoType(String soType) {
+		this.soType = soType;
+	}
+
 	
 
 	public SolrInputDocument getSolrDocument() {
@@ -811,6 +814,43 @@ public class SearchEngineMetadata {
 		
 		//TODO verificare underscore
 		this.setId(tenantCode + "_" + soCode + "_" + streamCode);
+		
+		this.setSoCode(soCode);
+		
+		this.setSoCategory(st.getCategoriaVirtualEntity());
+		this.setSoFps(st.getFps()!=null?""+st.getFps():"");
+		if(st.getVirtualEntityPositions()!=null && st.getVirtualEntityPositions().getPosition() !=null && st.getVirtualEntityPositions().getPosition().size()>0){
+			Position position = st.getVirtualEntityPositions().getPosition().get(0);
+			this.setLat(position.getLat()!=null?""+position.getLat():"");
+			this.setLon(position.getLon()!=null?""+position.getLon():"");
+			
+			// {\"position\":[{\"lon\":7.693482,\"lat\":45.071106,\"elevation\":0.0,\"floor\":1,\"building\":\"I.T.I.S. Amedeo Avogadro\",\"room\":\"6\"}]}",
+			String jsonSo = "{\"position\":[{";
+			if(position.getLat()!=null)
+				jsonSo += "\"lat\":"+position.getLat()+",";
+			if(position.getLon()!=null)
+				jsonSo += "\"lon\":"+position.getLon()+",";
+			if(position.getElevation()!=null)
+				jsonSo += "\"elevation\":"+position.getElevation()+",";
+			if(position.getFloor()!=null)
+				jsonSo += "\"floor\":"+position.getFloor()+",";
+			if(position.getBuilding()!=null)
+				jsonSo += "\"building\":"+position.getBuilding()+",";
+			if(position.getRoom()!=null)
+				jsonSo += "\"room\":"+position.getRoom()+",";
+			
+			if(jsonSo.endsWith(","))
+				jsonSo.substring(0, jsonSo.length() - 1);
+			
+			jsonSo += "}]}";
+			
+			
+			
+			
+			this.setJsonSo(jsonSo);
+			
+		}
+
 	}
 	
 	public void setupEngine(Metadata metadata) {
@@ -941,6 +981,22 @@ public class SearchEngineMetadata {
 //			formattedDate = df.format(date);
 //		}
 //		return formattedDate;
+	}
+
+	public String getSoCategory() {
+		return soCategory;
+	}
+
+	public void setSoCategory(String soCategory) {
+		this.soCategory = soCategory;
+	}
+
+	public String getSoFps() {
+		return soFps;
+	}
+
+	public void setSoFps(String soFps) {
+		this.soFps = soFps;
 	}
 	
 	
