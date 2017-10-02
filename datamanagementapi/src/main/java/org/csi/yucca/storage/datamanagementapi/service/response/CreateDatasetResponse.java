@@ -67,4 +67,8 @@ public class CreateDatasetResponse {
 	public void setDatasetStatus(int datasetStatus) {
 		this.datasetStatus = datasetStatus;
 	}
+	
+	public boolean hasError(){
+		return getErrors()!=null && getErrors().size()>0;
+	}
 }

@@ -17,9 +17,8 @@ import com.mongodb.util.JSON;
 
 public class MongoDBApiDAO {
 	private DBCollection collection;
-	
-	static Logger log = Logger.getLogger(MongoDBApiDAO.class);
 
+	static Logger log = Logger.getLogger(MongoDBApiDAO.class);
 
 	public MongoDBApiDAO(MongoClient mongo, String db, String collection) {
 		this.collection = mongo.getDB(db).getCollection(collection);
@@ -80,14 +79,18 @@ public class MongoDBApiDAO {
 		apiLoaded.setId(id.toString());
 		return apiLoaded;
 	}
-	
+
 	public MyApi readApiByCode(String apiCode) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("apiCode", apiCode);
 		DBObject data = collection.find(searchQuery).one();
-		ObjectId id = (ObjectId) data.get("_id");
-		MyApi apiLoaded = MyApi.fromJson(JSON.serialize(data));
-		apiLoaded.setId(id.toString());
+
+		MyApi apiLoaded = null;
+		if (data != null) {
+			ObjectId id = (ObjectId) data.get("_id");
+			apiLoaded = MyApi.fromJson(JSON.serialize(data));
+			apiLoaded.setId(id.toString());
+		}
 		return apiLoaded;
 	}
 

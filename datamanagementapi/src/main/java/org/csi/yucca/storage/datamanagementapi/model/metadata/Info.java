@@ -25,6 +25,7 @@ public class Info extends AbstractEntity {
 	private String codSubDomain;
 	private Double fps;
 	private String externalReference;
+	private Boolean unpublished;
 
 	private Date startIngestionDate;
 	private Date endIngestionDate;
@@ -283,5 +284,14 @@ public class Info extends AbstractEntity {
 		}
 
 	}
+
+	public Boolean getUnpublished() {
+		return unpublished;
+	}
+
+	public void setUnpublished(Boolean unpublished) {
+		this.unpublished = unpublished;
+	}
+
 
 }

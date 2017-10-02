@@ -42,4 +42,8 @@ public class UpdateDatasetResponse {
 			errors = new LinkedList<ErrorMessage>();
 		errors.add(errorMessage);
 	}
+	
+	public boolean hasError(){
+		return getErrors()!=null && getErrors().size()>0;
+	}
 }

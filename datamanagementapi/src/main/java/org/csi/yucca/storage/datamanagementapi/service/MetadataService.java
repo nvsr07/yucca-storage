@@ -39,6 +39,9 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.log4j.Logger;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBApiDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBMetadataDAO;
 import org.csi.yucca.storage.datamanagementapi.dao.MongoDBStreamDAO;
@@ -61,8 +64,11 @@ import org.csi.yucca.storage.datamanagementapi.model.streamOutput.StreamOut;
 import org.csi.yucca.storage.datamanagementapi.service.response.CreateDatasetResponse;
 import org.csi.yucca.storage.datamanagementapi.service.response.ErrorMessage;
 import org.csi.yucca.storage.datamanagementapi.service.response.UpdateDatasetResponse;
+import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
+import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton.TEHttpSolrClient;
 import org.csi.yucca.storage.datamanagementapi.upload.DataInsertDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.DataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
@@ -123,14 +129,13 @@ public class MetadataService {
 		if (allDataset != null) {
 			Gson gson = JSonHelper.getInstance();
 
-			if(!full){
-				List<Metadata> allDatasetSlim= new LinkedList<Metadata>();
+			if (!full) {
+				List<Metadata> allDatasetSlim = new LinkedList<Metadata>();
 				for (Metadata metadata : allDataset) {
 					allDatasetSlim.add(Metadata.slimmify(metadata));
 				}
 				result = gson.toJson(allDatasetSlim);
-			}
-			else
+			} else
 				result = gson.toJson(allDataset);
 		}
 		return result;
@@ -373,11 +378,13 @@ public class MetadataService {
 			return "{\"errorMsg\": \"Dataset not Found\"}";
 		} else {
 
-			MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
-
-			MyApi api = apiDAO.readApiByCode(datasetCode);
-
-			String baseApiUrl = Config.getInstance().getStoreApiAddress();
+			MyApi api = null;
+			String baseApiUrl = null;
+			if (metadata.getInfo().getUnpublished() == null || !metadata.getInfo().getUnpublished()) {
+				MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+				api = apiDAO.readApiByCode(datasetCode);
+				baseApiUrl = Config.getInstance().getStoreApiAddress();
+			}
 
 			String supportStreamCollection = Config.getInstance().getCollectionSupportStream();
 			MongoDBStreamDAO streamDAO = new MongoDBStreamDAO(mongo, supportDb, supportStreamCollection);
@@ -599,8 +606,29 @@ public class MetadataService {
 		}
 		metadata.getInfo().setRegistrationDate(new Date());
 
-		if (metadata.hasFieldNameDuplicate()) {
+		if (metadata.getInfo().getUnpublished() != null && metadata.getInfo().getUnpublished()) {
+
+			metadata.setDcatCreatorName(null);
+			metadata.setDcatCreatorType(null);
+			metadata.setDcatCreatorId(null);
+			metadata.setDcatRightsHolderName(null);
+			metadata.setDcatRightsHolderType(null);
+			metadata.setDcatRightsHolderId(null);
+			metadata.setDcatNomeOrg(null);
+			metadata.setDcatEmailOrg(null);
+			metadata.setDcatDataUpdate(null);
+
+			metadata.getInfo().setVisibility("private");
+
+			if (metadata.getInfo().getCodSubDomain() == null || !metadata.getInfo().getCodSubDomain().matches(Constants.SUBDOMAIN_VALIDATION_PATTERN)) {
+				createDatasetResponse.addErrorMessage(new ErrorMessage("ERROR_SUBDOMAIN_ERROR", "INVALID SUBDOMAIN", "The subdomain must no contain space"));
+			}
+		}
+
+		if (metadata.hasFieldNameDuplicate())
 			createDatasetResponse.addErrorMessage(new ErrorMessage("ERROR_DUPLICATE_FIELD", "Field Name Duplicate", "The field names must be unique case insensitive"));
+
+		if (createDatasetResponse.hasError()) {
 			createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_NOT_CREATED);
 		} else {
 
@@ -700,93 +728,53 @@ public class MetadataService {
 					metadata.setDcatReady(1);
 
 					Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
-
-					MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
-					api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
-					api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
-
-					MyApi apiCreated = apiDAO.createApi(api);
-
 					createDatasetResponse.setMetadata(metadataCreated);
-					createDatasetResponse.setApi(apiCreated);
+					if (metadata.getInfo().getUnpublished() == null || !metadata.getInfo().getUnpublished()) {
+						MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
+						api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
+						api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
+
+						MyApi apiCreated = apiDAO.createApi(api);
+						createDatasetResponse.setApi(apiCreated);
+						String apiName = "";
+
+						log.info("[MetadataService::createMetadata] - CALL API PUB SOLR");
+
+						try {
+
+							// SOLR
+							// apiName = StoreService.createApiforBulk(metadata,
+							// false, datasetMetadata);
+							apiName = StoreService.createApiforBulk(metadataCreated, false, datasetMetadata);
+						} catch (Exception duplicate) {
+							if (duplicate.getMessage() != null && duplicate.getMessage().toLowerCase().contains("duplicate")) {
+								try {
+									// SOLR
+									// apiName =
+									// StoreService.createApiforBulk(metadata,
+									// true,
+									// datasetMetadata);
+									apiName = StoreService.createApiforBulk(metadataCreated, true, datasetMetadata);
+								} catch (Exception e) {
+									log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+								}
+							} else {
+								log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
+							}
+						}
+						try {
+							StoreService.publishStore("1.0", apiName, "admin");
+							CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+							ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, metadata.getInfo().getVisibility(), metadata.getInfo(), apiName);
+							createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_PUT_INTO_STORE);
+						} catch (Exception e) {
+							log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
+						}
+					}
 
 					createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_CREATED);
 
-					/*
-					 * Create api in the store
-					 */
-					String apiName = "";
-
-					log.info("[MetadataService::createMetadata] - CALL API PUB SOLR");
-
-					try {
-
-						// SOLR
-						// apiName = StoreService.createApiforBulk(metadata,
-						// false, datasetMetadata);
-						apiName = StoreService.createApiforBulk(metadataCreated, false, datasetMetadata);
-					} catch (Exception duplicate) {
-						if (duplicate.getMessage() != null && duplicate.getMessage().toLowerCase().contains("duplicate")) {
-							try {
-								// SOLR
-								// apiName =
-								// StoreService.createApiforBulk(metadata, true,
-								// datasetMetadata);
-								apiName = StoreService.createApiforBulk(metadataCreated, true, datasetMetadata);
-							} catch (Exception e) {
-								log.error("[MetadataService::createMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
-							}
-						} else {
-							log.error("[MetadataService::createMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
-						}
-					}
 					log.info("[MetadataService::createMetadata] - END API PUB SOLR");
-					/*
-					 * try {
-					 * 
-					 * StoreService.publishStore("1.0", apiName, "admin");
-					 * Set<String> tenantSet = new TreeSet<String>();
-					 * 
-					 * CloseableHttpClient httpClient =
-					 * ApiManagerFacade.registerToStoreInit
-					 * (Config.getInstance().getStoreUsername(),
-					 * Config.getInstance().getStorePassword()); if
-					 * (metadata.getInfo().getTenantssharing() != null) {
-					 * 
-					 * for (Tenantsharing tenantSh :
-					 * metadata.getInfo().getTenantssharing
-					 * ().getTenantsharing()) {
-					 * tenantSet.add(tenantSh.getTenantCode()); String appName =
-					 * "userportal_" + tenantSh.getTenantCode();
-					 * SubscriptionAPIResponse listSubscriptions =
-					 * ApiManagerFacade.listSubscription(httpClient, appName);
-					 * 
-					 * ApiManagerFacade.subscribeApi(httpClient, apiName,
-					 * appName);
-					 * 
-					 * //StoreService.addSubscriptionForTenant(apiName,
-					 * appName); } } if
-					 * (!tenantSet.contains(metadata.getConfigData
-					 * ().getTenantCode())) { String appName = "userportal_" +
-					 * metadata.getConfigData().getTenantCode();
-					 * ApiManagerFacade.subscribeApi(httpClient, apiName,
-					 * appName);
-					 * 
-					 * //StoreService.addSubscriptionForTenant(apiName,
-					 * appName); }
-					 * 
-					 * } catch (Exception e) { log.error(
-					 * "[MetadataService::createMetadata] - ERROR in publish Api in store - message: "
-					 * + e.getMessage()); }
-					 */
-					try {
-						StoreService.publishStore("1.0", apiName, "admin");
-						CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
-						ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, metadata.getInfo().getVisibility(), metadata.getInfo(), apiName);
-						createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_PUT_INTO_STORE);
-					} catch (Exception e) {
-						log.error("[MetadataService::createMetadata] - ERROR in publish Api in store - message: " + e.getMessage());
-					}
 
 					if (csvData != null) {
 						try { // TODO create data da aggiornare
@@ -906,8 +894,8 @@ public class MetadataService {
 		log.debug("[MetadataService::updateMetadata] - START");
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 
-		boolean fromPublicToPrivate = false;
-		boolean fromPrivateToPublic = false;
+//		boolean fromPublicToPrivate = false;
+//		boolean fromPrivateToPublic = false;
 
 		try {
 			MongoClient mongo = MongoSingleton.getMongoClient();
@@ -927,7 +915,6 @@ public class MetadataService {
 			newMetadata.getInfo().setDatasetName(inputMetadata.getInfo().getDatasetName());
 			newMetadata.getInfo().setExternalReference(inputMetadata.getInfo().getExternalReference());
 			newMetadata.getInfo().setCopyright(inputMetadata.getInfo().getCopyright());
-			newMetadata.getInfo().setDataDomain(inputMetadata.getInfo().getDataDomain());
 			newMetadata.getInfo().setDescription(inputMetadata.getInfo().getDescription());
 			newMetadata.getInfo().setDisclaimer(inputMetadata.getInfo().getDisclaimer());
 			newMetadata.getInfo().setLicense(inputMetadata.getInfo().getLicense());
@@ -937,19 +924,27 @@ public class MetadataService {
 			newMetadata.getInfo().setIcon(inputMetadata.getInfo().getIcon());
 			newMetadata.getInfo().setTenantssharing(inputMetadata.getInfo().getTenantssharing());
 
+			newMetadata.getInfo().setDataDomain(existingMetadata.getInfo().getDataDomain());
+			newMetadata.getInfo().setCodSubDomain(existingMetadata.getInfo().getCodSubDomain());
+
 			newMetadata.setAvailableHive(existingMetadata.getAvailableHive());
 			newMetadata.setAvailableSpeed(existingMetadata.getAvailableSpeed());
 			newMetadata.setIsTransformed(existingMetadata.getIsTransformed());
 			newMetadata.setDbHiveSchema(existingMetadata.getDbHiveSchema());
 			newMetadata.setDbHiveTable(existingMetadata.getDbHiveTable());
 
-			if (newMetadata.getInfo().getVisibility() != existingMetadata.getInfo().getVisibility()) {
-				if (newMetadata.getInfo().getVisibility().equals("public")) {
-					fromPrivateToPublic = true;
-				} else {
-					fromPublicToPrivate = true;
-				}
-			}
+			if ("MULTI".equals(newMetadata.getInfo().getCodSubDomain()))
+				newMetadata.getInfo().setUnpublished(existingMetadata.getInfo().getUnpublished());
+			else
+				newMetadata.getInfo().setUnpublished(inputMetadata.getInfo().getUnpublished());
+
+//			if (newMetadata.getInfo().getVisibility() != existingMetadata.getInfo().getVisibility()) {
+//				if (newMetadata.getInfo().getVisibility().equals("public")) {
+//					fromPrivateToPublic = true;
+//				} else {
+//					fromPublicToPrivate = true;
+//				}
+//			}
 
 			if ("public".equals(newMetadata.getInfo().getVisibility()) && inputMetadata.getOpendata() != null && inputMetadata.getOpendata().isOpendata()) {
 				Opendata opendata = new Opendata();
@@ -963,15 +958,34 @@ public class MetadataService {
 			}
 
 			newMetadata.setDcatReady(1);
-			newMetadata.setDcatNomeOrg(inputMetadata.getDcatNomeOrg());
-			newMetadata.setDcatEmailOrg(inputMetadata.getDcatEmailOrg());
-			newMetadata.setDcatCreatorName(inputMetadata.getDcatCreatorName());
-			newMetadata.setDcatCreatorType(inputMetadata.getDcatCreatorType());
-			newMetadata.setDcatCreatorId(inputMetadata.getDcatCreatorId());
-			newMetadata.setDcatRightsHolderName(inputMetadata.getDcatRightsHolderName());
-			newMetadata.setDcatRightsHolderType(inputMetadata.getDcatRightsHolderType());
-			newMetadata.setDcatRightsHolderId(inputMetadata.getDcatRightsHolderId());
 
+			if (newMetadata.getInfo().getUnpublished() != null && newMetadata.getInfo().getUnpublished()) {
+
+				newMetadata.setDcatCreatorName(null);
+				newMetadata.setDcatCreatorType(null);
+				newMetadata.setDcatCreatorId(null);
+				newMetadata.setDcatRightsHolderName(null);
+				newMetadata.setDcatRightsHolderType(null);
+				newMetadata.setDcatRightsHolderId(null);
+				newMetadata.setDcatNomeOrg(null);
+				newMetadata.setDcatEmailOrg(null);
+				newMetadata.setDcatDataUpdate(null);
+
+				newMetadata.getInfo().setVisibility("private");
+
+				if (newMetadata.getInfo().getCodSubDomain() == null || !newMetadata.getInfo().getCodSubDomain().matches(Constants.SUBDOMAIN_VALIDATION_PATTERN)) {
+					updateDatasetResponse.addErrorMessage(new ErrorMessage("ERROR_SUBDOMAIN_ERROR", "INVALID SUBDOMAIN", "The subdomain must no contain space"));
+				}
+			} else {
+				newMetadata.setDcatNomeOrg(inputMetadata.getDcatNomeOrg());
+				newMetadata.setDcatEmailOrg(inputMetadata.getDcatEmailOrg());
+				newMetadata.setDcatCreatorName(inputMetadata.getDcatCreatorName());
+				newMetadata.setDcatCreatorType(inputMetadata.getDcatCreatorType());
+				newMetadata.setDcatCreatorId(inputMetadata.getDcatCreatorId());
+				newMetadata.setDcatRightsHolderName(inputMetadata.getDcatRightsHolderName());
+				newMetadata.setDcatRightsHolderType(inputMetadata.getDcatRightsHolderType());
+				newMetadata.setDcatRightsHolderId(inputMetadata.getDcatRightsHolderId());
+			}
 			List<Tenantsharing> lista = new ArrayList<Tenantsharing>();
 			if (newMetadata.getInfo().getTenantssharing() != null) {
 				Set<String> tenantSet = new TreeSet<String>();
@@ -1009,7 +1023,7 @@ public class MetadataService {
 				Field[] fields = new Field[inputMetadata.getInfo().getFields().length];
 				int counter = 0;
 				for (Field field : inputMetadata.getInfo().getFields()) {
-					
+
 					Field existingField = newMetadata.getFieldFromFieldName(field.getFieldName());
 					if (existingField != null) {
 						if (existingField.getSinceVersion() == null)
@@ -1027,40 +1041,75 @@ public class MetadataService {
 
 				newMetadata.getInfo().setFields(fields);
 			}
-
 			if (newMetadata.hasFieldNameDuplicate()) {
 				updateDatasetResponse.addErrorMessage(new ErrorMessage("ERROR_DUPLICATE_FIELD", "Field Name Duplicate", "The field names must be unique case insensitive"));
+			}
+			if (updateDatasetResponse.hasError())
 				updateDatasetResponse.setMetadata(newMetadata);
-			} else {
+			else {
 				existingMetadata.getConfigData().setCurrent(0);
 				metadataDAO.updateMetadata(existingMetadata);
 				metadataDAO.createNewVersion(newMetadata);
-	
+
 				updateDatasetResponse.setMetadata(newMetadata);
-	
-				/*
-				 * Create api in the store
-				 */
-				String apiName = "";
-				// Boolean updateOperation = false;
-				try {
-					apiName = StoreService.createApiforBulk(newMetadata, false, metadataInput);
-				} catch (Exception duplicate) {
-					if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
-						try {
-							apiName = StoreService.createApiforBulk(newMetadata, true, metadataInput);
-							// updateOperation = true;
-						} catch (Exception e) {
-							log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+
+				if (newMetadata.getInfo().getUnpublished() == null || !newMetadata.getInfo().getUnpublished()) {
+
+					String supportApiCollection = Config.getInstance().getCollectionSupportApi();
+					MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
+
+					MyApi existingApi = apiDAO.readApiByCode(newMetadata.getDatasetCode());
+					if (existingApi == null) {
+						MyApi api = MyApi.createFromMetadataDataset(newMetadata);
+						api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
+						api.getConfigData().setSubtype(Metadata.CONFIG_DATA_SUBTYPE_API_MULTI_BULK);
+
+						apiDAO.createApi(api);
+
+					}
+
+					String apiName = "";
+					// Boolean updateOperation = false;
+					try {
+						apiName = StoreService.createApiforBulk(newMetadata, false, metadataInput);
+					} catch (Exception duplicate) {
+						if (duplicate.getMessage().toLowerCase().contains("duplicate")) {
+							try {
+								apiName = StoreService.createApiforBulk(newMetadata, true, metadataInput);
+								// updateOperation = true;
+							} catch (Exception e) {
+								log.error("[MetadataService::updateMetadata] - ERROR to update API in Store for Bulk. Message: " + duplicate.getMessage());
+							}
+						} else {
+							log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
 						}
+					}
+					// if (!updateOperation) {
+					StoreService.publishStore("1.0", apiName, "admin");
+					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
+					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
+				} else if (!existingMetadata.getInfo().getUnpublished()) {
+					String apiName = existingMetadata.getDatasetCode() + "_odata";
+					try {
+						StoreService.removeStore("1.0", apiName, "admin");
+					} catch (Exception ex) {
+						log.error("Impossible to remove " + apiName + ex.getMessage());
+					}
+					if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess())) {
+						SolrClient solrServer = null;
+						solrServer = KnoxSolrSingleton.getServer();
+						((TEHttpSolrClient) solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
+						UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(), "" + existingMetadata.getDatasetCode());
+						solrServer.commit();
+						log.info("[MetadataService::updateMetadata] deleted status" + resp.getStatus());
 					} else {
-						log.error("[MetadataService::updateMetadata] -  ERROR in create or update API in Store for Bulk. Message: " + duplicate.getMessage());
+						CloudSolrClient solrServer = CloudSolrSingleton.getServer();
+						solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
+						UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(), "" + existingMetadata.getDatasetCode());
+						solrServer.commit();
+						log.info("[MetadataService::updateMetadata] deleted status" + resp.getStatus());
 					}
 				}
-				// if (!updateOperation) {
-				StoreService.publishStore("1.0", apiName, "admin");
-				CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
-				ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
 			}
 			// }
 		} catch (Exception e) {
