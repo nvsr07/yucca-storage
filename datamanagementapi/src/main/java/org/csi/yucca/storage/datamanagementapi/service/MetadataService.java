@@ -729,6 +729,8 @@ public class MetadataService {
 
 					Metadata metadataCreated = metadataDAO.createMetadata(metadata, null);
 					createDatasetResponse.setMetadata(metadataCreated);
+					createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_CREATED);
+
 					if (metadata.getInfo().getUnpublished() == null || !metadata.getInfo().getUnpublished()) {
 						MyApi api = MyApi.createFromMetadataDataset(metadataCreated);
 						api.getConfigData().setType(Metadata.CONFIG_DATA_TYPE_API);
@@ -772,7 +774,6 @@ public class MetadataService {
 						}
 					}
 
-					createDatasetResponse.setDatasetStatus(CreateDatasetResponse.STATUS_DATASET_CREATED);
 
 					log.info("[MetadataService::createMetadata] - END API PUB SOLR");
 
