@@ -1053,8 +1053,10 @@ public class MetadataService {
 				metadataDAO.createNewVersion(newMetadata);
 
 				updateDatasetResponse.setMetadata(newMetadata);
-
+				log.info("[MetadataService::updateMetadata] - new metadata unpublished: " + newMetadata.getInfo().getUnpublished());
 				if (newMetadata.getInfo().getUnpublished() == null || !newMetadata.getInfo().getUnpublished()) {
+
+					log.info("[MetadataService::updateMetadata] - publish");
 
 					String supportApiCollection = Config.getInstance().getCollectionSupportApi();
 					MongoDBApiDAO apiDAO = new MongoDBApiDAO(mongo, supportDb, supportApiCollection);
@@ -1090,13 +1092,20 @@ public class MetadataService {
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
 					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
 				} else if (!existingMetadata.getInfo().getUnpublished()) {
+					log.info("[MetadataService::updateMetadata] - delete publish info ");
+
 					String apiName = existingMetadata.getDatasetCode() + "_odata";
+					log.info("[MetadataService::updateMetadata] - unpublish apiName: " + apiName);
 					try {
-						StoreService.removeStore("1.0", apiName, "admin");
+						boolean removeStore = StoreService.removeStore("1.0", apiName, "admin");
+						log.info("[MetadataService::updateMetadata] - unpublish removeStore: " + removeStore);
+
 					} catch (Exception ex) {
 						log.error("Impossible to remove " + apiName + ex.getMessage());
 					}
 					if ("KNOX".equalsIgnoreCase(Config.getInstance().getSolrTypeAccess())) {
+						log.info("[MetadataService::updateMetadata] - unpublish using KNOX");
+
 						SolrClient solrServer = null;
 						solrServer = KnoxSolrSingleton.getServer();
 						((TEHttpSolrClient) solrServer).setDefaultCollection(Config.getInstance().getSolrCollection());
@@ -1104,6 +1113,8 @@ public class MetadataService {
 						solrServer.commit();
 						log.info("[MetadataService::updateMetadata] deleted status" + resp.getStatus());
 					} else {
+						log.info("[MetadataService::updateMetadata] - unpublish not using KNOX");
+
 						CloudSolrClient solrServer = CloudSolrSingleton.getServer();
 						solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 						UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(), "" + existingMetadata.getDatasetCode());
