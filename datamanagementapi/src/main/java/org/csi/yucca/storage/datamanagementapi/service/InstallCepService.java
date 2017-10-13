@@ -575,8 +575,14 @@ public class InstallCepService {
 							CloudSolrClient solrServer = CloudSolrSingleton.getServer();
 							solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 							UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(),""+datasetcode);
-							solrServer.commit();
+							UpdateResponse commit = solrServer.commit();
 							log.info("[InstallCepService::deleteDatasetLogically] deleted status" + resp.getStatus());
+							
+							log.info("[InstallCepService::requestUninstallDataset] Config.getInstance().getSolrCollection() " + Config.getInstance().getSolrCollection());
+							log.info("[InstallCepService::requestUninstallDataset] datasetcode " + datasetcode);
+							log.info("[InstallCepService::requestUninstallDataset] deleted update status " + resp.getStatus());
+							log.info("[InstallCepService::requestUninstallDataset] deleted commit status " + commit.getStatus());
+
 						}
 						
 						
