@@ -1118,8 +1118,12 @@ public class MetadataService {
 						CloudSolrClient solrServer = CloudSolrSingleton.getServer();
 						solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 						UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(), "" + existingMetadata.getDatasetCode());
-						solrServer.commit();
-						log.info("[MetadataService::updateMetadata] deleted status" + resp.getStatus());
+						UpdateResponse commit = solrServer.commit();
+						
+						log.info("[MetadataService::updateMetadata] Config.getInstance().getSolrCollection() " + Config.getInstance().getSolrCollection());
+						log.info("[MetadataService::updateMetadata] existingMetadata.getDatasetCode() " + existingMetadata.getDatasetCode());
+						log.info("[MetadataService::updateMetadata] deleted update status " + resp.getStatus());
+						log.info("[MetadataService::updateMetadata] deleted commit status " + commit.getStatus());
 					}
 				}
 			}
