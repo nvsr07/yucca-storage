@@ -1091,7 +1091,7 @@ public class MetadataService {
 					StoreService.publishStore("1.0", apiName, "admin");
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
 					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
-				} else if (!existingMetadata.getInfo().getUnpublished()) {
+				} else if (existingMetadata.getInfo()!= null && existingMetadata.getInfo().getUnpublished()!=null &&  !existingMetadata.getInfo().getUnpublished()) {
 					log.info("[MetadataService::updateMetadata] - delete publish info ");
 
 					String apiName = existingMetadata.getDatasetCode() + "_odata";
