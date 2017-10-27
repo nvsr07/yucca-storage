@@ -9,6 +9,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,6 +55,7 @@ import org.csi.yucca.storage.datamanagementapi.model.api.MyApi;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.ConfigData;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Field;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Info;
+import org.csi.yucca.storage.datamanagementapi.model.metadata.Jdbc;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Metadata;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.MetadataWithExtraAttribute;
 import org.csi.yucca.storage.datamanagementapi.model.metadata.Opendata;
@@ -67,8 +70,8 @@ import org.csi.yucca.storage.datamanagementapi.service.response.UpdateDatasetRes
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
-import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton.TEHttpSolrClient;
+import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.upload.DataInsertDataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.DataUpload;
 import org.csi.yucca.storage.datamanagementapi.upload.SDPBulkInsertException;
@@ -774,7 +777,6 @@ public class MetadataService {
 						}
 					}
 
-
 					log.info("[MetadataService::createMetadata] - END API PUB SOLR");
 
 					if (csvData != null) {
@@ -895,8 +897,8 @@ public class MetadataService {
 		log.debug("[MetadataService::updateMetadata] - START");
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 
-//		boolean fromPublicToPrivate = false;
-//		boolean fromPrivateToPublic = false;
+		// boolean fromPublicToPrivate = false;
+		// boolean fromPrivateToPublic = false;
 
 		try {
 			MongoClient mongo = MongoSingleton.getMongoClient();
@@ -939,13 +941,14 @@ public class MetadataService {
 			else
 				newMetadata.getInfo().setUnpublished(inputMetadata.getInfo().getUnpublished());
 
-//			if (newMetadata.getInfo().getVisibility() != existingMetadata.getInfo().getVisibility()) {
-//				if (newMetadata.getInfo().getVisibility().equals("public")) {
-//					fromPrivateToPublic = true;
-//				} else {
-//					fromPublicToPrivate = true;
-//				}
-//			}
+			// if (newMetadata.getInfo().getVisibility() !=
+			// existingMetadata.getInfo().getVisibility()) {
+			// if (newMetadata.getInfo().getVisibility().equals("public")) {
+			// fromPrivateToPublic = true;
+			// } else {
+			// fromPublicToPrivate = true;
+			// }
+			// }
 
 			if ("public".equals(newMetadata.getInfo().getVisibility()) && inputMetadata.getOpendata() != null && inputMetadata.getOpendata().isOpendata()) {
 				Opendata opendata = new Opendata();
@@ -1091,7 +1094,7 @@ public class MetadataService {
 					StoreService.publishStore("1.0", apiName, "admin");
 					CloseableHttpClient httpClient = ApiManagerFacade.registerToStoreInit(Config.getInstance().getStoreUsername(), Config.getInstance().getStorePassword());
 					ApiManagerFacade.updateDatasetSubscriptionIntoStore(httpClient, newMetadata.getInfo().getVisibility(), newMetadata.getInfo(), apiName);
-				} else if (existingMetadata.getInfo()!= null && existingMetadata.getInfo().getUnpublished()!=null &&  !existingMetadata.getInfo().getUnpublished()) {
+				} else if (existingMetadata.getInfo() != null && existingMetadata.getInfo().getUnpublished() != null && !existingMetadata.getInfo().getUnpublished()) {
 					log.info("[MetadataService::updateMetadata] - delete publish info ");
 
 					String apiName = existingMetadata.getDatasetCode() + "_odata";
@@ -1119,7 +1122,7 @@ public class MetadataService {
 						solrServer.setDefaultCollection(Config.getInstance().getSolrCollection());
 						UpdateResponse resp = solrServer.deleteById(Config.getInstance().getSolrCollection(), "" + existingMetadata.getDatasetCode());
 						UpdateResponse commit = solrServer.commit();
-						
+
 						log.info("[MetadataService::updateMetadata] Config.getInstance().getSolrCollection() " + Config.getInstance().getSolrCollection());
 						log.info("[MetadataService::updateMetadata] existingMetadata.getDatasetCode() " + existingMetadata.getDatasetCode());
 						log.info("[MetadataService::updateMetadata] deleted update status " + resp.getStatus());
@@ -1322,5 +1325,54 @@ public class MetadataService {
 			throws ClassNotFoundException, SQLException, ImportDatabaseException {
 		DatabaseReader databaseReader = new DatabaseReader(organizationCode, tenantCode, dbType, hostname, dbname, username, password);
 		return databaseReader.loadSchema();
+	}
+
+	@GET
+	@Path("/ingestion_config/{tenant}")
+	// @Produces(MediaType.APPLICATION_JSON)
+	@Produces("application/csv; charset=UTF-8")
+	public String getIngestionConfig(@PathParam("tenant") String tenant, @QueryParam("dbname") String dbName, @QueryParam("dateformat") String dateformat,
+			@QueryParam("separator") String sep, @QueryParam("help") boolean help) throws NumberFormatException, UnknownHostException {
+		log.debug("[MetadataService::getImportInfo] - START");
+		if (help) {
+			return "CSV da usare per caricare un csv contentente la configuarazione da usare per l'ingestion\n\n" + "PARAMETRI\n"
+					+ " - dbName: nome database da includere, se omesso vengono presi tutti\n" + " - dateformat: formato data, se omesso viene usato dd/MM/yyyy\n";
+		} else {
+
+			MongoClient mongo = MongoSingleton.getMongoClient();
+			String supportDb = Config.getInstance().getDbSupport();
+			String supportDatasetCollection = Config.getInstance().getCollectionSupportDataset();
+			MongoDBMetadataDAO metadataDAO = new MongoDBMetadataDAO(mongo, supportDb, supportDatasetCollection);
+
+			if (dateformat == null)
+				dateformat = "dd/MM/yyyy";
+			DateFormat df = new SimpleDateFormat(dateformat);
+			if (sep == null)
+				sep = "\t";
+
+			String csv = "table;column;comments;datasetCode;registrationDate;dbName;dbSchema;dbUrl\n";
+			// out csv -> jdbc.url, jdbc.username, tablename_jdbc, datasetcode,
+			// registration date, colonne(? chieredere maurizio o fabrizio)
+			List<Metadata> allDataset = metadataDAO.readAllMetadata(tenant, true);
+			if (allDataset != null) {
+				for (Metadata metadata : allDataset) {
+					if (metadata.getConfigData() != null && metadata.getConfigData().getJdbc() != null && metadata.getInfo().getFields() != null
+							&& (dbName == null || dbName.equals(metadata.getConfigData().getJdbc().getDbName()))) {
+						Jdbc jdbc = metadata.getConfigData().getJdbc();
+						String registrationDate = "";
+						if (metadata.getInfo().getRegistrationDate() != null)
+							registrationDate = df.format(metadata.getInfo().getRegistrationDate());
+
+						for (Field f : metadata.getInfo().getFields()) {
+							String comments = f.getFieldAlias() == null ? "" : f.getFieldAlias().replaceAll("[\\t\\n\\r]+", " ");
+							String row = jdbc.getTableName() + sep + f.getSourceColumnName() + sep + comments + sep + metadata.getDatasetCode() + sep + registrationDate + sep
+									+ jdbc.getDbName() + sep + jdbc.getDbSchema() + sep + jdbc.getDbUrl();
+							csv += row + "\n";
+						}
+					}
+				}
+			}
+			return csv;
+		}
 	}
 }

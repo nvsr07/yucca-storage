@@ -37,6 +37,7 @@ public class DatabaseReader {
 	private String dbName;
 	private String username;
 	private String password;
+	private String dbSchema;
 
 	private DatabaseConfiguration databaseConfiguation;
 
@@ -53,7 +54,14 @@ public class DatabaseReader {
 		this.dbType = dbType;
 		this.dbUrl = dbUrl;
 		this.dbName = dbName;
-		this.username = username;
+
+		if (username.contains(":")) {
+			String[] usernameSchemaDB = username.split(":");
+			this.username = usernameSchemaDB[0];
+			this.dbSchema = usernameSchemaDB[1];
+		} else
+			this.username = username;
+
 		this.password = password;
 
 		if (DatabaseConfiguration.DB_TYPE_HIVE.equals(dbType)) {
@@ -80,6 +88,7 @@ public class DatabaseReader {
 			connection = DriverManager.getConnection(databaseConfiguation.getConnectionUrl(dbUrl, dbName), username, password);
 			if (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)) {
 				((oracle.jdbc.driver.OracleConnection) connection).setIncludeSynonyms(true);
+				((oracle.jdbc.driver.OracleConnection) connection).setRemarksReporting(true);
 			}
 
 		} catch (Exception e) {
@@ -103,8 +112,11 @@ public class DatabaseReader {
 
 		List<DatabaseTableDataset> tables = new LinkedList<DatabaseTableDataset>();
 
-		if (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE))
+		if (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)) {
 			loadFk(meta, null);
+			loadFieldsMetadata(conn);
+
+		}
 		// Map<String, String> pkMap = loadPk(meta);
 
 		//
@@ -193,6 +205,9 @@ public class DatabaseReader {
 					jdbc.setDbName(dbName);
 					jdbc.setDbUrl(dbUrl);
 					jdbc.setTableName(tableName);
+					if (dbSchema != null)
+						jdbc.setDbSchema(dbSchema);
+
 					jdbc.setDbType(dbType);
 					ConfigData configData = new ConfigData();
 					configData.setJdbc(jdbc);
@@ -260,7 +275,7 @@ public class DatabaseReader {
 				List<Metadata> existingMedatataList = metadataDAO.readAllMetadataByJdbc(tenantCode, dbType, dbUrl, dbName, true);
 				if (existingMedatataList != null && existingMedatataList.size() > 0) {
 					for (Metadata metadata : existingMedatataList) {
-						if (metadata.getConfigData().getDeleted() ==null || metadata.getConfigData().getDeleted()  != 1)
+						if (metadata.getConfigData().getDeleted() == null || metadata.getConfigData().getDeleted() != 1)
 							existingMedatata.put(metadata.getConfigData().getJdbc().getTableName(), metadata);
 					}
 				}
@@ -312,7 +327,74 @@ public class DatabaseReader {
 
 	}
 
+	private Map<String, List<String>> fieldsMetadata = new HashMap<String, List<String>>();
+
+	private void loadFieldsMetadata(Connection conn) throws SQLException {
+		String query = "select a.table_name, a.column_name,a.data_type,b.comments  from all_tab_columns a, all_col_comments b "
+				+ "WHERE a.table_name=b.table_name AND a.column_name=b.column_name";
+		if (dbSchema != null)
+			query += " a.owner=?";
+		PreparedStatement statement = conn.prepareStatement(query);
+
+		if (dbSchema != null)
+			statement.setString(1, dbSchema);
+
+		ResultSet rs = statement.executeQuery();
+		while (rs.next()) {
+			String tableName = rs.getString("table_name");
+			String columnName = rs.getString("column_name");
+			String columnComment = rs.getString("comments");
+			String columnType = rs.getString("data_type");
+
+			if (columnComment == null || columnComment.trim().equals(""))
+				columnComment = columnName.replace("_", " ");
+			else if (columnComment.length() > 500)
+				columnComment = columnComment.substring(0, 500);
+
+			if (columnType != null && databaseConfiguation.getTypesMap().get(columnType) != null)
+				columnType = databaseConfiguation.getTypesMap().get(columnType);
+			else {
+				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
+				columnType = "string";
+			}
+
+			if (!fieldsMetadata.containsKey(tableName)) {
+				fieldsMetadata.put(tableName, new LinkedList<String>());
+			}
+			fieldsMetadata.get(tableName).add(columnName + "|" + columnComment + "|" + columnType);
+		}
+	}
+
 	private Field[] loadColumnsOracle(Connection conn, String tableName, String tableSchema) throws SQLException {
+		List<Field> fields = new LinkedList<Field>();
+		try {
+			List<String> columns = fieldsMetadata.get(tableName);
+			int counter = 0;
+			for (String columnData : columns) {
+				String[] columnDataSplitted = columnData.split("[|]");
+
+				Field field = new Field();
+				field.setFieldName(columnDataSplitted[0]);
+				field.setFieldAlias(columnDataSplitted[1]);
+				field.setDataType(columnDataSplitted[2]);
+
+				field.setSourceColumn(counter);
+
+				field.setSourceColumnName(columnDataSplitted[0]);
+
+				fields.add(field);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		Field[] fieldsArr = new Field[fields.size()];
+		fieldsArr = fields.toArray(fieldsArr);
+		return fieldsArr;
+
+	}
+
+	private Field[] loadColumnsFromMetadata(Connection conn, String tableName, String tableSchema) throws SQLException {
 		List<Field> fields = new LinkedList<Field>();
 
 		PreparedStatement statement = conn.prepareStatement("SELECT * from " + tableName + " WHERE 1 = 0");
@@ -394,6 +476,25 @@ public class DatabaseReader {
 		}
 
 		return columnsName;
+	}
+
+	public static void main(String[] args) {
+		
+//		try {
+//			DatabaseReader databaseReader = new DatabaseReader(organizationCode, tenantCode, dbType, dbUrl, dbName, username, password);
+//			String schema = databaseReader.loadSchema();
+//			System.out.println("schema " + schema);
+//		} catch (ImportDatabaseException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (ClassNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+
 	}
 
 }

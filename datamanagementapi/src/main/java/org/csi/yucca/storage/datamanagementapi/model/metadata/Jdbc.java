@@ -4,7 +4,9 @@ public class Jdbc {
 	private String dbUrl;
 	private String dbName;
 	private String dbType;
+	private String dbSchema;
 	private String tableName;
+	
 
 	public Jdbc() {
 		super();
@@ -40,6 +42,14 @@ public class Jdbc {
 
 	public void setDbType(String dbType) {
 		this.dbType = dbType;
+	}
+
+	public String getDbSchema() {
+		return dbSchema;
+	}
+
+	public void setDbSchema(String dbSchema) {
+		this.dbSchema = dbSchema;
 	}
 
 }
