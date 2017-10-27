@@ -1251,7 +1251,7 @@ public class MetadataService {
 	@POST
 	@Path("/importDatabase/{tenant}")
 	// @Produces(MediaType.APPLICATION_JSON)
-	@Produces("application/json; charset=UTF-8")
+	@Produces("text/plain; charset=UTF-8")
 	// allowCredentials = true, exposeHeaders = { "X-custom-3", "X-custom-4" },
 	// allowMethods = {"POST"})
 	public Response importDatabase(@Context HttpServletRequest request, @PathParam("tenant") String tenantCode) throws NumberFormatException, UnknownHostException {
