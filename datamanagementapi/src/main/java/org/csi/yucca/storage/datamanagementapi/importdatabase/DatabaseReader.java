@@ -333,7 +333,7 @@ public class DatabaseReader {
 		String query = "select a.table_name, a.column_name,a.data_type,b.comments  from all_tab_columns a, all_col_comments b "
 				+ "WHERE a.table_name=b.table_name AND a.column_name=b.column_name";
 		if (dbSchema != null)
-			query += " a.owner=?";
+			query += " AND  a.owner=?";
 		PreparedStatement statement = conn.prepareStatement(query);
 
 		if (dbSchema != null)
@@ -480,20 +480,29 @@ public class DatabaseReader {
 
 	public static void main(String[] args) {
 		
-//		try {
-//			DatabaseReader databaseReader = new DatabaseReader(organizationCode, tenantCode, dbType, dbUrl, dbName, username, password);
-//			String schema = databaseReader.loadSchema();
-//			System.out.println("schema " + schema);
-//		} catch (ImportDatabaseException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (ClassNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		String organizationCode = "SANDBOX";
+		String tenantCode = "SANDBOX";
+		String dbType  = DatabaseConfiguration.DB_TYPE_ORACLE;
+		String dbUrl = "sitprod.csi.it:1569";
+		String dbName = "SITPROD";
+		String username  ="TOPON_SCA:TOPO";
+		String password = "topon$sca";
+
+		
+		try {
+			DatabaseReader databaseReader = new DatabaseReader(organizationCode, tenantCode, dbType, dbUrl, dbName, username, password);
+			String schema = databaseReader.loadSchema();
+			System.out.println("schema " + schema);
+		} catch (ImportDatabaseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
