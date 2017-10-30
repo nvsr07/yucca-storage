@@ -55,7 +55,7 @@ public class DatabaseReader {
 		this.dbUrl = dbUrl;
 		this.dbName = dbName;
 
-		if (username.contains(":")) {
+		if (username!=null && username.contains(":")) {
 			String[] usernameSchemaDB = username.split(":");
 			this.username = usernameSchemaDB[0];
 			this.dbSchema = usernameSchemaDB[1];
