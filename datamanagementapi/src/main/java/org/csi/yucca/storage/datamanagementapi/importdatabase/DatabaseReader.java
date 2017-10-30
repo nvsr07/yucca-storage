@@ -338,7 +338,7 @@ public class DatabaseReader {
 		PreparedStatement statement = conn.prepareStatement(query);
 
 		if (dbSchema != null)
-			statement.setString(1, dbSchema);
+			statement.setString(1, dbSchema.toUpperCase());
 
 		ResultSet rs = statement.executeQuery();
 		while (rs.next()) {

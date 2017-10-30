@@ -1350,7 +1350,7 @@ public class MetadataService {
 			if (sep == null)
 				sep = "\t";
 
-			String csv = "table;column;comments;datasetCode;registrationDate;dbName;dbSchema;dbUrl\n";
+			String csv = "table"+ sep +"column"+ sep +"comments"+ sep +"datasetCode"+ sep +"registrationDate"+ sep +"dbName"+ sep +"dbSchema"+ sep +"dbUrl\n";
 			// out csv -> jdbc.url, jdbc.username, tablename_jdbc, datasetcode,
 			// registration date, colonne(? chieredere maurizio o fabrizio)
 			List<Metadata> allDataset = metadataDAO.readAllMetadata(tenant, true);
