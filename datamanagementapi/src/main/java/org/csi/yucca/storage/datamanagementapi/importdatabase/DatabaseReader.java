@@ -150,13 +150,14 @@ public class DatabaseReader {
 			DatabaseTableDataset table = new DatabaseTableDataset();
 			table.setTableName(tableName);
 
-			System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
+			//System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
 			if (!tableName.equals("TOAD_PLAN_TABLE")
 					&& !tableName.equals("PLAN_TABLE")
+					&& (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE) && fieldsMetadata.get(tableName)!=null)
 					&& ((dbType.equals(DatabaseConfiguration.DB_TYPE_HIVE) && tableSchema.toLowerCase().startsWith(hiveStageArea)) || ((tableSchema == null || username
 							.toUpperCase().equalsIgnoreCase(tableSchema)) && (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))))) {
 				// printResultSetColumns(tablesResultSet);
-
+				System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
 				Field[] fields = new Field[0];
 				if (!dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)) {
 					try {
@@ -480,8 +481,7 @@ public class DatabaseReader {
 
 	public static void main(String[] args) {
 		
-
-
+	
 	}
 
 }
