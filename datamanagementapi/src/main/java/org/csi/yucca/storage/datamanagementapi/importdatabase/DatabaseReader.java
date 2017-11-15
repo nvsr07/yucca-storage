@@ -42,6 +42,7 @@ public class DatabaseReader {
 	private DatabaseConfiguration databaseConfiguation;
 
 	List<Metadata> dataset = new LinkedList<Metadata>();
+	Map<String, List<String>> columnWarnings = new HashMap<String, List<String>>();
 
 	Map<String, String> fkMap;
 	static Logger log = Logger.getLogger(DatabaseReader.class);
@@ -55,7 +56,7 @@ public class DatabaseReader {
 		this.dbUrl = dbUrl;
 		this.dbName = dbName;
 
-		if (username!=null && username.contains(":")) {
+		if (username != null && username.contains(":")) {
 			String[] usernameSchemaDB = username.split(":");
 			this.username = usernameSchemaDB[0];
 			this.dbSchema = usernameSchemaDB[1];
@@ -149,17 +150,20 @@ public class DatabaseReader {
 
 			DatabaseTableDataset table = new DatabaseTableDataset();
 			table.setTableName(tableName);
-			
-			boolean checkColumOracle = !dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE) || (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE) && fieldsMetadata.get(tableName)!=null);
 
-			//System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
+			boolean checkColumOracle = !dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)
+					|| (dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE) && fieldsMetadata.get(tableName) != null);
+
+			// System.out.println("tableType:" + tableType + ", tableSchema: " +
+			// tableSchema + ", tableName: " + tableName + " tableCat: " +
+			// tableCat);
 			if (!tableName.equals("TOAD_PLAN_TABLE")
 					&& !tableName.equals("PLAN_TABLE")
 					&& checkColumOracle
 					&& ((dbType.equals(DatabaseConfiguration.DB_TYPE_HIVE) && tableSchema.toLowerCase().startsWith(hiveStageArea)) || ((tableSchema == null || username
 							.toUpperCase().equalsIgnoreCase(tableSchema)) && (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))))) {
 				// printResultSetColumns(tablesResultSet);
-				System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
+				//System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
 				Field[] fields = new Field[0];
 				if (!dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)) {
 					try {
@@ -249,8 +253,14 @@ public class DatabaseReader {
 				}
 
 				loadPk(meta, tableName, fields);
-
+				
 				table.setDataset(metadata);
+				
+				if(columnWarnings.containsKey(table.getTableName())){
+					for (String warning : columnWarnings.get(table.getTableName())) {
+						table.addWarning(warning);
+					}
+				}
 				tables.add(table);
 			}
 
@@ -298,35 +308,44 @@ public class DatabaseReader {
 	private Field[] loadColumns(DatabaseMetaData metaData, String tableName, String tableSchema) throws SQLException {
 		List<Field> fields = new LinkedList<Field>();
 
-		ResultSet columnsResultSet = metaData.getColumns(null, tableSchema, tableName, null);
-		int columnCounter = 1;
-		while (columnsResultSet.next()) {
-			Field field = new Field();
-			String columnName = columnsResultSet.getString("COLUMN_NAME");
-			field.setFieldName(columnName);
-			if (columnsResultSet.getString("REMARKS") != null)
-				field.setFieldAlias(columnsResultSet.getString("REMARKS"));
-			else
-				field.setFieldAlias(columnName.replace("_", " "));
+		ResultSet columnsResultSet = null;
+		try {
+			columnsResultSet = metaData.getColumns(null, tableSchema, tableName, null);
+			int columnCounter = 1;
+			while (columnsResultSet.next()) {
+				Field field = new Field();
+				String columnName = columnsResultSet.getString("COLUMN_NAME");
+				field.setFieldName(columnName);
+				if (columnsResultSet.getString("REMARKS") != null)
+					field.setFieldAlias(columnsResultSet.getString("REMARKS"));
+				else
+					field.setFieldAlias(columnName.replace("_", " "));
 
-			String columnType = columnsResultSet.getString("TYPE_NAME");
-			if (columnType != null)
-				field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
-			else {
-				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
-				field.setDataType("string");
+				String columnType = columnsResultSet.getString("TYPE_NAME");
+				if (columnType != null)
+					field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
+				else {
+					if(!columnWarnings.containsKey(tableName))
+						columnWarnings.put(tableName, new LinkedList<String>());
+					columnWarnings.get(tableName).add("Unkonwn data type for column "+ columnName+ ": " + columnType);
+					log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType +" for table " + tableName + " column " + columnName);
+					field.setDataType("string");
+				}
+				field.setSourceColumn(columnCounter);
+				field.setSourceColumnName(columnName);
+
+				fields.add(field);
+				columnCounter++;
 			}
-			field.setSourceColumn(columnCounter);
-			field.setSourceColumnName(columnName);
 
-			fields.add(field);
-			columnCounter++;
+			Field[] fieldsArr = new Field[fields.size()];
+			fieldsArr = fields.toArray(fieldsArr);
+
+			return fieldsArr;
+		} finally {
+			if (columnsResultSet != null)
+				columnsResultSet.close();
 		}
-
-		Field[] fieldsArr = new Field[fields.size()];
-		fieldsArr = fields.toArray(fieldsArr);
-
-		return fieldsArr;
 
 	}
 
@@ -342,29 +361,38 @@ public class DatabaseReader {
 		if (dbSchema != null)
 			statement.setString(1, dbSchema.toUpperCase());
 
-		ResultSet rs = statement.executeQuery();
-		while (rs.next()) {
-			String tableName = rs.getString("table_name");
-			String columnName = rs.getString("column_name");
-			String columnComment = rs.getString("comments");
-			String columnType = rs.getString("data_type");
+		ResultSet rs = null;
+		try {
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				String tableName = rs.getString("table_name");
+				String columnName = rs.getString("column_name");
+				String columnComment = rs.getString("comments");
+				String columnType = rs.getString("data_type");
 
-			if (columnComment == null || columnComment.trim().equals(""))
-				columnComment = columnName.replace("_", " ");
-			else if (columnComment.length() > 500)
-				columnComment = columnComment.substring(0, 500);
+				if (columnComment == null || columnComment.trim().equals(""))
+					columnComment = columnName.replace("_", " ");
+				else if (columnComment.length() > 500)
+					columnComment = columnComment.substring(0, 500);
 
-			if (columnType != null && databaseConfiguation.getTypesMap().get(columnType) != null)
-				columnType = databaseConfiguation.getTypesMap().get(columnType);
-			else {
-				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
-				columnType = "string";
+				if (columnType != null && databaseConfiguation.getTypesMap().get(columnType) != null)
+					columnType = databaseConfiguation.getTypesMap().get(columnType);
+				else {
+					if(!columnWarnings.containsKey(tableName))
+						columnWarnings.put(tableName, new LinkedList<String>());
+					columnWarnings.get(tableName).add("Unkonwn data type for column "+ columnName+ ": " + columnType);
+					log.warn("[DatabaseReader::loadFieldsMetadata] unkonwn data type  " + columnType +" for table " + tableName + " column " + columnName);
+					columnType = "string";
+				}
+
+				if (!fieldsMetadata.containsKey(tableName)) {
+					fieldsMetadata.put(tableName, new LinkedList<String>());
+				}
+				fieldsMetadata.get(tableName).add(columnName + "|" + columnComment + "|" + columnType);
 			}
-
-			if (!fieldsMetadata.containsKey(tableName)) {
-				fieldsMetadata.put(tableName, new LinkedList<String>());
-			}
-			fieldsMetadata.get(tableName).add(columnName + "|" + columnComment + "|" + columnType);
+		} finally {
+			if (rs != null)
+				rs.close();
 		}
 	}
 
@@ -399,66 +427,82 @@ public class DatabaseReader {
 
 	private Field[] loadColumnsFromMetadata(Connection conn, String tableName, String tableSchema) throws SQLException {
 		List<Field> fields = new LinkedList<Field>();
+		PreparedStatement statement = null;
+		try {
+			statement = conn.prepareStatement("SELECT * from " + tableName + " WHERE 1 = 0");
+			ResultSetMetaData statementMetaData = statement.getMetaData();
+			for (int i = 1; i < statementMetaData.getColumnCount() + 1; i++) {
+				Field field = new Field();
+				String columnName = statementMetaData.getColumnName(i);
+				field.setFieldName(columnName);
 
-		PreparedStatement statement = conn.prepareStatement("SELECT * from " + tableName + " WHERE 1 = 0");
-		ResultSetMetaData statementMetaData = statement.getMetaData();
-		for (int i = 1; i < statementMetaData.getColumnCount() + 1; i++) {
-			Field field = new Field();
-			String columnName = statementMetaData.getColumnName(i);
-			field.setFieldName(columnName);
+				if (statementMetaData.getColumnLabel(i) != null)
+					field.setFieldAlias(statementMetaData.getColumnLabel(i));
+				else
+					field.setFieldAlias(columnName.replace("_", " "));
 
-			if (statementMetaData.getColumnLabel(i) != null)
-				field.setFieldAlias(statementMetaData.getColumnLabel(i));
-			else
-				field.setFieldAlias(columnName.replace("_", " "));
+				String columnType = statementMetaData.getColumnTypeName(i);
+				if (columnType != null && databaseConfiguation.getTypesMap().get(columnType) != null)
+					field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
+				else {
+					log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
+					field.setDataType("string");
+				}
+				field.setSourceColumn(i - 1);
 
-			String columnType = statementMetaData.getColumnTypeName(i);
-			if (columnType != null && databaseConfiguation.getTypesMap().get(columnType) != null)
-				field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
-			else {
-				log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType);
-				field.setDataType("string");
+				field.setSourceColumnName(columnName);
+
+				fields.add(field);
+
 			}
-			field.setSourceColumn(i - 1);
 
-			field.setSourceColumnName(columnName);
+			Field[] fieldsArr = new Field[fields.size()];
+			fieldsArr = fields.toArray(fieldsArr);
 
-			fields.add(field);
-
+			return fieldsArr;
+		} finally {
+			if (statement != null)
+				statement.close();
 		}
-
-		Field[] fieldsArr = new Field[fields.size()];
-		fieldsArr = fields.toArray(fieldsArr);
-
-		return fieldsArr;
 
 	}
 
 	private void loadFk(DatabaseMetaData metaData, String table) throws SQLException {
+		ResultSet foreignKeys = null;
+		try {
+			fkMap = new HashMap<String, String>();
 
-		fkMap = new HashMap<String, String>();
-
-		ResultSet foreignKeys = metaData.getImportedKeys(null, null, table);
-		while (foreignKeys.next()) {
-			String fkTableName = foreignKeys.getString("FKTABLE_NAME");
-			String fkColumnName = foreignKeys.getString("FKCOLUMN_NAME");
-			String pkTableName = foreignKeys.getString("PKTABLE_NAME");
-			String pkColumnName = foreignKeys.getString("PKCOLUMN_NAME");
-			// System.out.println("--" + fkTableName + "." + fkColumnName +
-			// " -> " + pkTableName + "." + pkColumnName);
-			fkMap.put(fkTableName + "." + fkColumnName, pkTableName + "." + pkColumnName);
+			foreignKeys = metaData.getImportedKeys(null, null, table);
+			while (foreignKeys.next()) {
+				String fkTableName = foreignKeys.getString("FKTABLE_NAME");
+				String fkColumnName = foreignKeys.getString("FKCOLUMN_NAME");
+				String pkTableName = foreignKeys.getString("PKTABLE_NAME");
+				String pkColumnName = foreignKeys.getString("PKCOLUMN_NAME");
+				// System.out.println("--" + fkTableName + "." + fkColumnName +
+				// " -> " + pkTableName + "." + pkColumnName);
+				fkMap.put(fkTableName + "." + fkColumnName, pkTableName + "." + pkColumnName);
+			}
+		} finally {
+			if (foreignKeys != null)
+				foreignKeys.close();
 		}
 
 	}
 
 	private void loadPk(DatabaseMetaData metaData, String tableName, Field[] fields) throws SQLException {
-		ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName);
-		while (primaryKeys.next()) {
-			String pkColumnName = primaryKeys.getString("COLUMN_NAME");
-			for (Field field : fields) {
-				if (field.getFieldName().equals(pkColumnName))
-					field.setIsKey(1);
+		ResultSet primaryKeys = null;
+		try {
+			primaryKeys = metaData.getPrimaryKeys(null, null, tableName);
+			while (primaryKeys.next()) {
+				String pkColumnName = primaryKeys.getString("COLUMN_NAME");
+				for (Field field : fields) {
+					if (field.getFieldName().equals(pkColumnName))
+						field.setIsKey(1);
+				}
 			}
+		} finally {
+			if (primaryKeys != null)
+				primaryKeys.close();
 		}
 	}
 
@@ -471,7 +515,7 @@ public class DatabaseReader {
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++) {
 				String name = rsmd.getColumnName(i);
-				System.out.println("" + name + ": " + rs.getObject(name));
+				//System.out.println("" + name + ": " + rs.getObject(name));
 				columnsName.add(name);
 			}
 		} catch (Exception e) {
@@ -482,8 +526,9 @@ public class DatabaseReader {
 	}
 
 	public static void main(String[] args) {
-		
-	
+
+
+
 	}
 
 }
