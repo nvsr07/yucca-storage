@@ -1350,9 +1350,11 @@ public class MetadataService {
 			if (sep == null)
 				sep = "\t";
 
-			String csv = "table"+ sep +"column"+ sep +"comments"+ sep +"datasetCode"+ sep +"registrationDate"+ sep +"dbName"+ sep +"dbSchema"+ sep +"dbUrl\n";
+			String csv = "table" + sep + "column" + sep + "comments" + sep + "datasetCode" + sep + "domain" + sep + "subdomain" + sep + "visibility" + sep + "opendata" + sep
+					+ "registrationDate" + sep + "dbName" + sep + "dbSchema" + sep + "dbUrl\n";
 			// out csv -> jdbc.url, jdbc.username, tablename_jdbc, datasetcode,
 			// registration date, colonne(? chieredere maurizio o fabrizio)
+			// dominio, sottodominio, dataset privato/pubblico/open data
 			List<Metadata> allDataset = metadataDAO.readAllMetadata(tenant, true);
 			if (allDataset != null) {
 				for (Metadata metadata : allDataset) {
@@ -1363,10 +1365,15 @@ public class MetadataService {
 						if (metadata.getInfo().getRegistrationDate() != null)
 							registrationDate = df.format(metadata.getInfo().getRegistrationDate());
 
+						String domain = metadata.getInfo().getDataDomain().toLowerCase();
+						String subdomain = metadata.getInfo().getCodSubDomain().toLowerCase();
+						String visibility = metadata.getInfo().getVisibility();
+						Boolean opendata = metadata.getOpendata() != null ? metadata.getOpendata().isOpendata() : false;
+						String dbSchema = jdbc.getDbSchema() == null ? jdbc.getDbName() : jdbc.getDbSchema();
 						for (Field f : metadata.getInfo().getFields()) {
 							String comments = f.getFieldAlias() == null ? "" : f.getFieldAlias().replaceAll("[\\t\\n\\r]+", " ");
-							String row = jdbc.getTableName() + sep + f.getSourceColumnName() + sep + comments + sep + metadata.getDatasetCode() + sep + registrationDate + sep
-									+ jdbc.getDbName() + sep + jdbc.getDbSchema() + sep + jdbc.getDbUrl();
+							String row = jdbc.getTableName() + sep + f.getSourceColumnName() + sep + comments + sep + metadata.getDatasetCode() + sep + domain + sep + subdomain
+									+ sep + visibility + sep + opendata + sep + registrationDate + sep + jdbc.getDbName() + sep + dbSchema + sep + jdbc.getDbUrl();
 							csv += row + "\n";
 						}
 					}
