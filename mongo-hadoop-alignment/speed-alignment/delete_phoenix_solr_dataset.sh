@@ -10,6 +10,7 @@ zookeeperQuorum=$7
 solrServer=$8
 solrUsr=$9
 solrPwd=${10}
+hdfsPath=${11}
 myPid=$$
 
 echo "Deleting from Phoenix: "
@@ -26,6 +27,8 @@ echo "Deleting from Solr: "
 echo "https://$solrServer:8443/gateway/default/solr/$solrCollection/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20datasetversion_l%3A[*%20TO%20$datasetVersion]%20AND%20origin_s%3A$origin</query></delete>&commit=true"
 
 curl -v -g -u $solrUsr:$solrPwd "https://$solrServer:8443/gateway/default/solr/$solrCollection/update?stream.body=<delete><query>iddataset_l%3A$idDataset%20AND%20datasetversion_l%3A[*%20TO%20$datasetVersion]%20AND%20origin_s%3A$origin</query></delete>&commit=true"
-  
-#curl -g -k -u $solrUsr:$solrPwd https://$solrServer:8443/gateway/default/solr/$solrCollection/update --data "<delete><query>iddataset_l:$idDataset AND datasetversion_l:[* TO $datasetVersion] AND origin_s:$origin</query></delete>" -H 'Content-type:text/xml; charset=utf-8'
-#curl -g -k -u $solrUsr:$solrPwd https://$solrServer:8443/gateway/default/solr/$solrCollection/update --data '<commit/>' -H 'Content-type:text/xml; charset=utf-8'
+
+echo "Deleting from HDFS: "
+echo "hdfs dfs -rm -skipTrash $hdfsPath/*.csv"
+
+hdfs dfs -rm -skipTrash $hdfsPath/*.csv
