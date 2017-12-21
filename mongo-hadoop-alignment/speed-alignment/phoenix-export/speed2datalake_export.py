@@ -171,7 +171,7 @@ for tenant in allTenants:
                         metadataHeader += name + '_fieldAlias, ' + name + '_measureUnit, ' + name + '_dataType, '
                                       
                 if subtype == 'streamDataset':
-                    metadataFields = ", '" + m['virtualEntityName'] + "', " + metadataFields + str(m['info']['fps']) + ", '"
+                    metadataFields = ", '" + m['virtualEntityName'].replace("'", "\\\\'") + "', " + metadataFields + str(m['info']['fps']) + ", '"
                     metadataHeader = ", Sensor_Name, " + metadataHeader + "Dataset_frequency, Dataset_Tags"
                                         
                     for tag in m['info']['tags']:
