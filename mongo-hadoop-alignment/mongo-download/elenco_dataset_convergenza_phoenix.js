@@ -33,6 +33,7 @@ env.DATATYPE2PHOENIX = {
     'data' : 'timestamp',
     'date' : 'timestamp',
     'datetimeOffset' : 'timestamp',
+    'datetime' : 'timestamp',
     'dateTime' : 'timestamp',
     'time' : 'timestamp',
     'float' : 'float',
