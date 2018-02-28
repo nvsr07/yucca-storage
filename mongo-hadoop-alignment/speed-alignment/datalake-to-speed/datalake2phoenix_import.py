@@ -100,7 +100,16 @@ if callResult == 0:
             aliasString += 'bda_origin\ as\ origin:chararray'
            
             # erase data from phoenix and solr (origin==datalake)
-            if mode in ["REPLACE", "replace"]:     
+            if mode in ["REPLACE", "replace"]: 
+                
+                hdfsPath = "/datalake/" + tenantData['organizationCode'] + "/rawdata/" + m['info']['dataDomain']
+                
+                if subtype == "streamDataset" or subtype == "socialDataset":
+                    hdfsPath += "/so_" + m['virtualEntitySlug'] + "/" + m['streamCode']
+                else:
+                    hdfsPath += "/db_" + m['codSubDomain'] + "/" + str(m['datasetCode'])
+                    
+                    
                 args = ['../delete_phoenix_solr_dataset.sh', 
                         globalVars.phoenixSchemaName[subtype], 
                         globalVars.phoenixTableName[subtype], 
@@ -110,7 +119,8 @@ if callResult == 0:
                         props.getProperty('zookeeperQuorum'), 
                         props.getProperty('solrServer'),
                         props.getProperty('solrUsr'),
-                        props.getProperty('solrPwd')   
+                        props.getProperty('solrPwd'),
+                        hdfsPath   
                         ]
                 call(args, shell = False)
                 
