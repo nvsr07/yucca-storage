@@ -44,8 +44,8 @@ import org.csi.yucca.storage.datamanagementapi.model.types.POJOHdfs;
 import org.csi.yucca.storage.datamanagementapi.singleton.CloudSolrSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.Config;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton;
-import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.singleton.KnoxSolrSingleton.TEHttpSolrClient;
+import org.csi.yucca.storage.datamanagementapi.singleton.MongoSingleton;
 import org.csi.yucca.storage.datamanagementapi.util.APIFiller;
 import org.csi.yucca.storage.datamanagementapi.util.MetadataFiller;
 import org.csi.yucca.storage.datamanagementapi.util.StreamFiller;
@@ -58,7 +58,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 
 @Path("/metadata")
@@ -81,10 +80,10 @@ public class InstallCepService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String clearDataset(@PathParam("tenant") String tenant, @PathParam("idDataset") String idDataset) throws UnknownHostException {
 		String returnJSONValue = deleteDatasetData(tenant, idDataset, null);
-		if (returnJSONValue.equals(JSON.parse(OK_RESULT).toString())) {
-			// Cancellazione HDFS;
-			returnJSONValue = deleteHDFSData(tenant, idDataset, null);
-		}
+//		if (returnJSONValue.equals(JSON.parse(OK_RESULT).toString())) {
+//			// Cancellazione HDFS;
+//			returnJSONValue = deleteHDFSData(tenant, idDataset, null);
+//		}
 
 		try {
 			String deleteResponse = deleteDatasetApiAdmin(tenant, idDataset, null);
@@ -102,10 +101,10 @@ public class InstallCepService {
 	public String clearDatasetByVersion(@PathParam("tenant") String tenant, @PathParam("idDataset") String idDataset, @PathParam("datasetVersion") String datasetVersion)
 			throws UnknownHostException {
 		String returnJSONValue = deleteDatasetData(tenant, idDataset, datasetVersion);
-		if (returnJSONValue.equals(JSON.parse(OK_RESULT).toString())) {
-			// Cancellazione HDFS;
-			returnJSONValue = deleteHDFSData(tenant, idDataset, datasetVersion);
-		}
+//		if (returnJSONValue.equals(JSON.parse(OK_RESULT).toString())) {
+//			// Cancellazione HDFS;
+//			returnJSONValue = deleteHDFSData(tenant, idDataset, datasetVersion);
+//		}
 		try {
 			String deleteResponse = deleteDatasetApiAdmin(tenant, idDataset, datasetVersion);
 			log.info("[InstallCepService::clearDatasetByVersion] deleteResponse:  " + deleteResponse);
@@ -132,62 +131,62 @@ public class InstallCepService {
 		mongo = MongoSingleton.getMongoClient();
 		try {
 
-			Long datasetVersionLng = null;
-			if (null != datasetVersion)
-				datasetVersionLng = new Long(Long.parseLong(datasetVersion));
-			DB db = mongo.getDB(Config.getInstance().getDbSupport());
+//			Long datasetVersionLng = null;
+//			if (null != datasetVersion)
+//				datasetVersionLng = new Long(Long.parseLong(datasetVersion));
+//			DB db = mongo.getDB(Config.getInstance().getDbSupport());
+//
+//			// recupero DatasetType
+//			DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
+//			BasicDBObject searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
+//			if (null != datasetVersionLng)
+//				searchQuery.put("datasetVersion", datasetVersionLng.longValue());
+//
+//			DBObject datasetMetaData = col.findOne(searchQuery);
+//			Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(datasetMetaData));
+//
+//			DBCollection colTenant = db.getCollection(Config.getInstance().getCollectionSupportTenant());
+//
+//			searchQuery = new BasicDBObject();
+//			searchQuery.put("tenantCode", tenant);
+//
+//			String dataDb = null;
+//			String dataCollection = null;
+//			DBObject tenantInfo = colTenant.findOne(searchQuery);
+//			// Controllo il tipo del Dataset per interrogare la Mongo Collectio
+//			// giusta
+//			if ("streamDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+//				dataDb = (String) tenantInfo.get("measuresCollectionDb");
+//				dataCollection = (String) tenantInfo.get("measuresCollectionName");
+//			} else if ("binaryDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+//				// TODO
+//				throw new Exception("invalid data type, cannot delete a mediaDataset data");
+//			} else if ("socialDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+//				dataDb = (String) tenantInfo.get("measuresCollectionDb");
+//				dataCollection = (String) tenantInfo.get("socialCollectionName");
+//			} else if ("bulkDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
+//				dataDb = (String) tenantInfo.get("dataCollectionDb");
+//				dataCollection = (String) tenantInfo.get("dataCollectionName");
+//			}
+//
+//			DBCollection colDati = null;
+//			if (db.getName().equals(dataDb))
+//				colDati = db.getCollection(dataCollection);
+//			else {
+//				DB db1 = mongo.getDB(dataDb);
+//				colDati = db1.getCollection(dataCollection);
+//			}
+//
+//			searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
+//			if (null != datasetVersionLng)
+//				searchQuery.put("datasetVersion", datasetVersionLng.longValue());
 
-			// recupero DatasetType
-			DBCollection col = db.getCollection(Config.getInstance().getCollectionSupportDataset());
-			BasicDBObject searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
-			if (null != datasetVersionLng)
-				searchQuery.put("datasetVersion", datasetVersionLng.longValue());
-
-			DBObject datasetMetaData = col.findOne(searchQuery);
-			Metadata metadataLoaded = Metadata.fromJson(JSON.serialize(datasetMetaData));
-
-			DBCollection colTenant = db.getCollection(Config.getInstance().getCollectionSupportTenant());
-
-			searchQuery = new BasicDBObject();
-			searchQuery.put("tenantCode", tenant);
-
-			String dataDb = null;
-			String dataCollection = null;
-			DBObject tenantInfo = colTenant.findOne(searchQuery);
-			// Controllo il tipo del Dataset per interrogare la Mongo Collectio
-			// giusta
-			if ("streamDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
-				dataDb = (String) tenantInfo.get("measuresCollectionDb");
-				dataCollection = (String) tenantInfo.get("measuresCollectionName");
-			} else if ("binaryDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
-				// TODO
-				throw new Exception("invalid data type, cannot delete a mediaDataset data");
-			} else if ("socialDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
-				dataDb = (String) tenantInfo.get("measuresCollectionDb");
-				dataCollection = (String) tenantInfo.get("socialCollectionName");
-			} else if ("bulkDataset".equals(metadataLoaded.getConfigData().getSubtype())) {
-				dataDb = (String) tenantInfo.get("dataCollectionDb");
-				dataCollection = (String) tenantInfo.get("dataCollectionName");
-			}
-
-			DBCollection colDati = null;
-			if (db.getName().equals(dataDb))
-				colDati = db.getCollection(dataCollection);
-			else {
-				DB db1 = mongo.getDB(dataDb);
-				colDati = db1.getCollection(dataCollection);
-			}
-
-			searchQuery = new BasicDBObject("idDataset", Long.parseLong(idDataset));
-			if (null != datasetVersionLng)
-				searchQuery.put("datasetVersion", datasetVersionLng.longValue());
-
-			System.out.println("searchQuery: " + searchQuery);
+			//System.out.println("searchQuery: " + searchQuery);
 			// Cancello i dati da Mongo
-			WriteResult wr = null;
-			wr = colDati.remove(searchQuery);
+			//WriteResult wr = null;
+			//wr = colDati.remove(searchQuery);
 
-			System.out.println("wr: " + wr);
+			//System.out.println("wr: " + wr);
 
 			// remove file list
 			String supportDb = Config.getInstance().getDbSupport();
