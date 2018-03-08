@@ -136,7 +136,7 @@ public class DatabaseReader {
 		// REF_GENERATION String => specifies how values in
 		// SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER",
 		// "DERIVED". (may be null)
-		String hiveStageArea = ("stg_" + organizationCode + "_" + tenantCode).toLowerCase();
+		String hiveStageArea = ("stg_" + organizationCode + "_" + tenantCode.replaceAll("-", "_")).toLowerCase();
 
 		while (tablesResultSet.next()) {
 
