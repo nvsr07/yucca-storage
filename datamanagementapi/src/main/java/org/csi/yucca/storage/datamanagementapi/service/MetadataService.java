@@ -1332,11 +1332,14 @@ public class MetadataService {
 	// @Produces(MediaType.APPLICATION_JSON)
 	@Produces("application/csv; charset=UTF-8")
 	public String getIngestionConfig(@PathParam("tenant") String tenant, @QueryParam("dbname") String dbName, @QueryParam("dateformat") String dateformat,
-			@QueryParam("separator") String sep, @QueryParam("help") boolean help) throws NumberFormatException, UnknownHostException {
+			@QueryParam("separator") String sep, @QueryParam("help") boolean help,  @QueryParam("onlyImported") Boolean onlyImported) throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getImportInfo] - START");
 		if (help) {
 			return "CSV da usare per caricare un csv contentente la configuarazione da usare per l'ingestion\n\n" + "PARAMETRI\n"
-					+ " - dbName: nome database da includere, se omesso vengono presi tutti\n" + " - dateformat: formato data, se omesso viene usato dd/MM/yyyy\n";
+					+ " - dbName: nome database da includere, se omesso vengono presi tutti\n" 
+					+ " - sep: separatore di colonna, se omesso viene usata la tabulazione\n" 
+					+ " - onlyImported: flag indicante se includere solo i dataset importati da db: default true\n" 
+					+ " - dateformat: formato data, se omesso viene usato dd/MM/yyyy\n";
 		} else {
 
 			MongoClient mongo = MongoSingleton.getMongoClient();
@@ -1350,6 +1353,9 @@ public class MetadataService {
 			if (sep == null)
 				sep = "\t";
 
+			if (onlyImported == null)
+				onlyImported = true;
+			
 			String csv = "table" + sep + "column" + sep + "comments" + sep + "datasetCode" + sep + "domain" + sep + "subdomain" + sep + "visibility" + sep + "opendata" + sep
 					+ "registrationDate" + sep + "dbName" + sep + "dbSchema" + sep + "dbUrl\n";
 			// out csv -> jdbc.url, jdbc.username, tablename_jdbc, datasetcode,
@@ -1358,7 +1364,7 @@ public class MetadataService {
 			List<Metadata> allDataset = metadataDAO.readAllMetadata(tenant, true);
 			if (allDataset != null) {
 				for (Metadata metadata : allDataset) {
-					if (metadata.getConfigData() != null && metadata.getConfigData().getJdbc() != null && metadata.getInfo().getFields() != null
+					if (metadata.getConfigData() != null && (!onlyImported || metadata.getConfigData().getJdbc() != null) && metadata.getInfo().getFields() != null
 							&& (dbName == null || dbName.equals(metadata.getConfigData().getJdbc().getDbName()))) {
 						Jdbc jdbc = metadata.getConfigData().getJdbc();
 						String registrationDate = "";

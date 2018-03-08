@@ -67,16 +67,16 @@ public class DatabaseReader {
 
 		if (DatabaseConfiguration.DB_TYPE_HIVE.equals(dbType)) {
 			this.dbUrl = "yucca_datalake";
-			this.dbName = ("stg_" + organizationCode + "_" + tenantCode).toLowerCase(); // stage
-																						// area
+			this.dbName = ("stg_" + organizationCode + "_" + tenantCode.replaceAll("-", "_")).toLowerCase(); // stage
+			// area
 			this.username = Config.getInstance().getHiveJdbcConnectionUser();
 			this.password = Config.getInstance().getHiveJdbcConnectionPassword();
 		}
 
 		databaseConfiguation = DatabaseConfiguration.getDatabaseConfiguration(dbType);
 		if (databaseConfiguation == null)
-			throw new ImportDatabaseException(ImportDatabaseException.INVALID_DB_TYPE, "Database type used: " + dbType
-					+ " - Database type supported: MYSQL, ORACLE, POSTGRESQL, HIVE");
+			throw new ImportDatabaseException(ImportDatabaseException.INVALID_DB_TYPE,
+					"Database type used: " + dbType + " - Database type supported: MYSQL, ORACLE, POSTGRESQL, HIVE");
 
 	}
 
@@ -157,13 +157,14 @@ public class DatabaseReader {
 			// System.out.println("tableType:" + tableType + ", tableSchema: " +
 			// tableSchema + ", tableName: " + tableName + " tableCat: " +
 			// tableCat);
-			if (!tableName.equals("TOAD_PLAN_TABLE")
-					&& !tableName.equals("PLAN_TABLE")
-					&& checkColumOracle
-					&& ((dbType.equals(DatabaseConfiguration.DB_TYPE_HIVE) && tableSchema.toLowerCase().startsWith(hiveStageArea)) || ((tableSchema == null || username
-							.toUpperCase().equalsIgnoreCase(tableSchema)) && (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))))) {
+			if (!tableName.equals("TOAD_PLAN_TABLE") && !tableName.equals("PLAN_TABLE") && checkColumOracle
+					&& ((dbType.equals(DatabaseConfiguration.DB_TYPE_HIVE) && tableSchema.toLowerCase().startsWith(hiveStageArea))
+							|| ((tableSchema == null || username.toUpperCase().equalsIgnoreCase(tableSchema))
+									&& (tableCat == null || dbName.toUpperCase().equalsIgnoreCase(tableCat))))) {
 				// printResultSetColumns(tablesResultSet);
-				//System.out.println("tableType:" + tableType + ", tableSchema: " + tableSchema + ", tableName: " + tableName + " tableCat: " + tableCat);
+				// System.out.println("tableType:" + tableType + ", tableSchema:
+				// " + tableSchema + ", tableName: " + tableName + " tableCat: "
+				// + tableCat);
 				Field[] fields = new Field[0];
 				if (!dbType.equals(DatabaseConfiguration.DB_TYPE_ORACLE)) {
 					try {
@@ -253,10 +254,10 @@ public class DatabaseReader {
 				}
 
 				loadPk(meta, tableName, fields);
-				
+
 				table.setDataset(metadata);
-				
-				if(columnWarnings.containsKey(table.getTableName())){
+
+				if (columnWarnings.containsKey(table.getTableName())) {
 					for (String warning : columnWarnings.get(table.getTableName())) {
 						table.addWarning(warning);
 					}
@@ -325,10 +326,10 @@ public class DatabaseReader {
 				if (columnType != null)
 					field.setDataType(databaseConfiguation.getTypesMap().get(columnType));
 				else {
-					if(!columnWarnings.containsKey(tableName))
+					if (!columnWarnings.containsKey(tableName))
 						columnWarnings.put(tableName, new LinkedList<String>());
-					columnWarnings.get(tableName).add("Unkonwn data type for column "+ columnName+ ": " + columnType);
-					log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType +" for table " + tableName + " column " + columnName);
+					columnWarnings.get(tableName).add("Unkonwn data type for column " + columnName + ": " + columnType);
+					log.warn("[DatabaseReader::loadColumns] unkonwn data type  " + columnType + " for table " + tableName + " column " + columnName);
 					field.setDataType("string");
 				}
 				field.setSourceColumn(columnCounter);
@@ -378,10 +379,10 @@ public class DatabaseReader {
 				if (columnType != null && databaseConfiguation.getTypesMap().get(columnType) != null)
 					columnType = databaseConfiguation.getTypesMap().get(columnType);
 				else {
-					if(!columnWarnings.containsKey(tableName))
+					if (!columnWarnings.containsKey(tableName))
 						columnWarnings.put(tableName, new LinkedList<String>());
-					columnWarnings.get(tableName).add("Unkonwn data type for column "+ columnName+ ": " + columnType);
-					log.warn("[DatabaseReader::loadFieldsMetadata] unkonwn data type  " + columnType +" for table " + tableName + " column " + columnName);
+					columnWarnings.get(tableName).add("Unkonwn data type for column " + columnName + ": " + columnType);
+					log.warn("[DatabaseReader::loadFieldsMetadata] unkonwn data type  " + columnType + " for table " + tableName + " column " + columnName);
 					columnType = "string";
 				}
 
@@ -515,7 +516,7 @@ public class DatabaseReader {
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++) {
 				String name = rsmd.getColumnName(i);
-				//System.out.println("" + name + ": " + rs.getObject(name));
+				// System.out.println("" + name + ": " + rs.getObject(name));
 				columnsName.add(name);
 			}
 		} catch (Exception e) {
@@ -527,7 +528,9 @@ public class DatabaseReader {
 
 	public static void main(String[] args) {
 
-
+		String organizationCode = "organization";
+		String tenantCode = "cittato-toriono";
+		System.out.println(("stg_" + organizationCode + "_" + tenantCode.replaceAll("-", "_")).toLowerCase());
 
 	}
 
