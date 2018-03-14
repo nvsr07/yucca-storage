@@ -1375,7 +1375,7 @@ public class MetadataService {
 						String subdomain = metadata.getInfo().getCodSubDomain().toLowerCase();
 						String visibility = metadata.getInfo().getVisibility();
 						Boolean opendata = metadata.getOpendata() != null ? metadata.getOpendata().isOpendata() : false;
-						String dbSchema = jdbc.getDbSchema() == null ? jdbc.getDbName() : jdbc.getDbSchema();
+						String dbSchema =  jdbc==null?"":jdbc.getDbSchema() == null ? jdbc.getDbName() : jdbc.getDbSchema();
 						for (Field f : metadata.getInfo().getFields()) {
 							String comments = f.getFieldAlias() == null ? "" : f.getFieldAlias().replaceAll("[\\t\\n\\r]+", " ");
 							String row = jdbc.getTableName() + sep + f.getSourceColumnName() + sep + comments + sep + metadata.getDatasetCode() + sep + domain + sep + subdomain
