@@ -441,8 +441,8 @@ public class MetadataService {
 	@GET
 	@Path("/opendata/{outputFormat}/tenant/{tenantCode}")
 	@Produces("application/json; charset=UTF-8")
-	public String getOpendataDatasetListForTenant(@PathParam("outputFormat") String outputFormat, @PathParam("tenantCode") String tenantCode) throws NumberFormatException,
-			UnknownHostException {
+	public String getOpendataDatasetListForTenant(@PathParam("outputFormat") String outputFormat, @PathParam("tenantCode") String tenantCode)
+			throws NumberFormatException, UnknownHostException {
 		return getOpendataDatasetList(outputFormat, tenantCode);
 	}
 
@@ -505,8 +505,8 @@ public class MetadataService {
 	@GET
 	@Path("/opendata/{outputFormat}/{packageId}")
 	@Produces("application/json; charset=UTF-8")
-	public String getOpendataDatasetDetail(@PathParam("outputFormat") String outputFormat, @PathParam("packageId") String packageId) throws NumberFormatException,
-			UnknownHostException {
+	public String getOpendataDatasetDetail(@PathParam("outputFormat") String outputFormat, @PathParam("packageId") String packageId)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getOpendataDatasetDetail] - START - outputFormat: " + outputFormat + " - packageId " + packageId);
 
 		MongoClient mongo = MongoSingleton.getMongoClient();
@@ -670,7 +670,8 @@ public class MetadataService {
 					if (maxDatasetNum > 0) {
 
 						int numCurrentDataset = metadataDAO.countAllMetadata(tenant, true);
-						log.info("[MetadataService::createMetadata] -  tenant=" + tenant + "     maxDatasetNum=" + maxDatasetNum + "        numCurrentDataset=" + numCurrentDataset);
+						log.info(
+								"[MetadataService::createMetadata] -  tenant=" + tenant + "     maxDatasetNum=" + maxDatasetNum + "        numCurrentDataset=" + numCurrentDataset);
 						// TODO
 						if (numCurrentDataset >= maxDatasetNum)
 							throw new MaxDatasetNumException("too many dataset");
@@ -817,8 +818,8 @@ public class MetadataService {
 	// TODO add data da aggiornare
 	@Path("/add/{tenant}/{datasetCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request) throws NumberFormatException,
-			UnknownHostException {
+	public String addData(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, @Context HttpServletRequest request)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::addData] - START");
 
 		String encoding = null;
@@ -892,8 +893,8 @@ public class MetadataService {
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{tenant}/{datasetCode}")
-	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, final String metadataInput) throws NumberFormatException,
-			UnknownHostException {
+	public String updateMetadata(@PathParam("tenant") String tenant, @PathParam("datasetCode") String datasetCode, final String metadataInput)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::updateMetadata] - START");
 		UpdateDatasetResponse updateDatasetResponse = new UpdateDatasetResponse();
 
@@ -1332,13 +1333,13 @@ public class MetadataService {
 	// @Produces(MediaType.APPLICATION_JSON)
 	@Produces("application/csv; charset=UTF-8")
 	public String getIngestionConfig(@PathParam("tenant") String tenant, @QueryParam("dbname") String dbName, @QueryParam("dateformat") String dateformat,
-			@QueryParam("separator") String sep, @QueryParam("help") boolean help,  @QueryParam("onlyImported") Boolean onlyImported) throws NumberFormatException, UnknownHostException {
+			@QueryParam("separator") String sep, @QueryParam("help") boolean help, @QueryParam("onlyImported") Boolean onlyImported)
+			throws NumberFormatException, UnknownHostException {
 		log.debug("[MetadataService::getImportInfo] - START");
 		if (help) {
 			return "CSV da usare per caricare un csv contentente la configuarazione da usare per l'ingestion\n\n" + "PARAMETRI\n"
-					+ " - dbName: nome database da includere, se omesso vengono presi tutti\n" 
-					+ " - sep: separatore di colonna, se omesso viene usata la tabulazione\n" 
-					+ " - onlyImported: flag indicante se includere solo i dataset importati da db: default true\n" 
+					+ " - dbName: nome database da includere, se omesso vengono presi tutti\n" + " - sep: separatore di colonna, se omesso viene usata la tabulazione\n"
+					+ " - onlyImported: flag indicante se includere solo i dataset importati da db: default true\n"
 					+ " - dateformat: formato data, se omesso viene usato dd/MM/yyyy\n";
 		} else {
 
@@ -1355,7 +1356,7 @@ public class MetadataService {
 
 			if (onlyImported == null)
 				onlyImported = true;
-			
+
 			String csv = "table" + sep + "column" + sep + "comments" + sep + "datasetCode" + sep + "domain" + sep + "subdomain" + sep + "visibility" + sep + "opendata" + sep
 					+ "registrationDate" + sep + "dbName" + sep + "dbSchema" + sep + "dbUrl\n";
 			// out csv -> jdbc.url, jdbc.username, tablename_jdbc, datasetcode,
@@ -1368,10 +1369,10 @@ public class MetadataService {
 							&& (dbName == null || dbName.equals(metadata.getConfigData().getJdbc().getDbName()))) {
 						Jdbc jdbc = metadata.getConfigData().getJdbc();
 						String registrationDate = "";
-						if (metadata.getInfo().getRegistrationDate() != null)
+						if (metadata.getInfo()!=null && metadata.getInfo().getRegistrationDate() != null)
 							registrationDate = df.format(metadata.getInfo().getRegistrationDate());
 
-						if(jdbc==null) {
+						if (jdbc == null) {
 							jdbc = new Jdbc();
 							jdbc.setDbName("");
 							jdbc.setDbSchema("");
@@ -1379,11 +1380,11 @@ public class MetadataService {
 							jdbc.setDbName("");
 							jdbc.setTableName("");
 						}
-						String domain = metadata.getInfo().getDataDomain().toLowerCase();
-						String subdomain = metadata.getInfo().getCodSubDomain().toLowerCase();
-						String visibility = metadata.getInfo().getVisibility();
+						String domain = metadata.getInfo() != null && metadata.getInfo().getDataDomain() != null ? metadata.getInfo().getDataDomain().toLowerCase() : "";
+						String subdomain = metadata.getInfo() != null && metadata.getInfo().getCodSubDomain() != null ? metadata.getInfo().getCodSubDomain().toLowerCase() : "";
+						String visibility = metadata.getInfo() != null ? metadata.getInfo().getVisibility() : "";
 						Boolean opendata = metadata.getOpendata() != null ? metadata.getOpendata().isOpendata() : false;
-						String dbSchema =  jdbc.getDbSchema() == null ? jdbc.getDbName() : jdbc.getDbSchema();
+						String dbSchema = jdbc.getDbSchema() == null ? jdbc.getDbName() : jdbc.getDbSchema();
 						for (Field f : metadata.getInfo().getFields()) {
 							String comments = f.getFieldAlias() == null ? "" : f.getFieldAlias().replaceAll("[\\t\\n\\r]+", " ");
 							String row = jdbc.getTableName() + sep + f.getSourceColumnName() + sep + comments + sep + metadata.getDatasetCode() + sep + domain + sep + subdomain
