@@ -959,6 +959,7 @@ public class MetadataService {
 				opendata.setAuthor(inputMetadata.getOpendata().getAuthor());
 				opendata.setLanguage(inputMetadata.getOpendata().getLanguage() == null ? "it" : inputMetadata.getOpendata().getLanguage());
 				opendata.setDataUpdateDate(inputMetadata.getOpendata().getDataUpdateDate());
+				opendata.setOpendataupdatefrequency(inputMetadata.getOpendata().getOpendataupdatefrequency());
 				newMetadata.setOpendata(opendata);
 			}
 

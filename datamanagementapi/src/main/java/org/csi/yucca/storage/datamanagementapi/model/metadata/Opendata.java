@@ -15,6 +15,7 @@ public class Opendata {
 	private Date metadaCreateDate;
 	private Date metadaUpdateDate;
 	private String language;
+	private String opendataupdatefrequency;
 
 	public static Opendata fromJson(String json) {
 		Gson gson = JSonHelper.getInstance();
@@ -84,6 +85,14 @@ public class Opendata {
 
 	public void setAuthor(String author) {
 		this.author = author;
+	}
+
+	public String getOpendataupdatefrequency() {
+		return opendataupdatefrequency;
+	}
+
+	public void setOpendataupdatefrequency(String opendataupdatefrequency) {
+		this.opendataupdatefrequency = opendataupdatefrequency;
 	}
 
 }
