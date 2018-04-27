@@ -71,7 +71,7 @@ class MT_dataSetsDownloader(
     }
   }
 
-  def checkError(executorService: ExecutorCompletionService[Outcomes], streamDatasets: Buffer[BackofficeDettaglioStreamDatasetResponse]) : Unit = {
+  def checkError(executorService: ExecutorCompletionService[Outcomes], streamDatasets: Buffer[BackofficeDettaglioStreamDatasetResponse]): Unit = {
 
     LOG.info("MultitThreadDDownloadCSV.checkError ==> BEGIN")
 
@@ -80,7 +80,7 @@ class MT_dataSetsDownloader(
 
     try {
       var count = 0
-  
+
       for (
         streamDataset <- streamDatasets if datasetCode.isEmpty || datasetCode.equals(streamDataset.getDataset.getDatasetcode())
       ) {
@@ -150,13 +150,11 @@ class MT_dataSetsDownloader(
 
       getListStreamDataset(organization.getOrganizationcode()) match {
         case Some(streamDatasets) => {
-          for (streamDataset <- streamDatasets) {
-            if (datasetCode.isEmpty || (datasetCode.equals(streamDataset.getDataset.getDatasetcode))) {
-              var lastObjectID = getLastMongoObjectIdByIdDatasetAndVersion(
+          for (streamDataset <- streamDatasets if datasetCode.isEmpty || datasetCode.equals(streamDataset.getDataset.getDatasetcode)) {
+            var lastObjectID = getLastMongoObjectIdByIdDatasetAndVersion(
                 listAllineamentoScaricoDataset, streamDataset.getDataset.getIddataset, streamDataset.getVersion)
-              executorService.submit(
+            executorService.submit(
                 new SparkDatasetsDownloader(streamDataset, newObjectID, lastObjectID, sparkContext, solrDelegate, sqlContext, adminApiUrl))
-            }
           }
           checkError(executorService, streamDatasets.toBuffer)
           executorShutdown(executor)
