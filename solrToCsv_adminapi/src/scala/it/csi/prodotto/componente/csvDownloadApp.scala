@@ -144,7 +144,7 @@ object csvDownloadApp {
 
     checkConfig(c =>
       if ((c.datasetCode != null) &&
-        c.organizations.length != 1) failure("If use datasetCode you must choose ONE organization")
+        c.organizations.length != 1) failure("When using a datasetCode you must choose ONE organization")
       else success)
   }
 

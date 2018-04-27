@@ -162,7 +162,7 @@ class MT_dataSetsDownloader(
           executorShutdown(executor)
           LOG.info("<<<<<<<<<<<<<<<<<<<<<<" + organization.getOrganizationcode + ">>>>>>>>>>>>>>> END")
         }
-        case None => throw new Exception("No stream datasets for orgId" + organization.getOrganizationcode)
+        case None => LOG.warn("No stream datasets for orgId" + organization.getOrganizationcode)
       }
 
     } catch {
