@@ -188,7 +188,7 @@ object csvDownloadApp {
     LOG.info("Created new Object Id: " + newObjectId)
 
     for (
-      organization <- organizations if config.organizations.nonEmpty && config.organizations.contains(organization.getOrganizationcode)
+      organization <- organizations if config.organizations.isEmpty || config.organizations.contains(organization.getOrganizationcode)
     ) {
       executorCompletionService.submit(
         new MT_dataSetsDownloader(organization, config.datasetCode, newObjectId, sparkContext, solrDelegate, sqlContext, config.adminApiUrl))
