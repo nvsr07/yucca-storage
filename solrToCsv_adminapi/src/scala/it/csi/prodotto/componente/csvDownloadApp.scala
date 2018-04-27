@@ -21,28 +21,8 @@ import org.slf4j.LoggerFactory
 
 object csvDownloadApp {
 
-  val ADMIN_API_URL = ""
-
-  val ZK_HOSTS_URL = ""
-
-  val dataTypes = immutable.Map( // much better than a switch/case ...
-
-    "boolean" -> Seq("_b", "BOOLEAN"),
-    "string" -> Seq("_s", "VARCHAR"),
-    "int" -> Seq("_i", "INTEGER"),
-    "long" -> Seq("_l", "BIGINT"),
-    "double" -> Seq("_d", "DOUBLE"),
-    "data" -> Seq("_dt", "TIMESTAMP"),
-    "date" -> Seq("_dt", "TIMESTAMP"),
-    "datetimeOffset" -> Seq("_dt", "TIMESTAMP"),
-    "datetime" -> Seq("_dt", "TIMESTAMP"),
-    "dateTime" -> Seq("_dt", "TIMESTAMP"),
-    "time" -> Seq("_dt", "TIMESTAMP"),
-    "float" -> Seq("_f", "FLOAT"),
-    "longitude" -> Seq("_d", "DOUBLE"),
-    "latitude" -> Seq("_d", "DOUBLE"),
-    "binary" -> Seq("_s", "VARCHAR"),
-    "bigdecimal" -> Seq("_d", "DOUBLE"));
+  val ADMIN_API_URL = "<place-holder-to-admin-http-base-uri>"
+  val ZK_HOSTS_URL = "<place-holder-to-zk-host-list>"
 
   val LOG = LoggerFactory.getLogger(getClass)
 
